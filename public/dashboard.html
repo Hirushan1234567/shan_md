@@ -19,19 +19,22 @@
 <section id="gate" class="gate" hidden>
   <div class="gate-card">
     <div class="gate-head">
-      <h1>LOG IN WITH WHATSAPP</h1>
-      <p class="lead">Enter your number and the Bot Key the bot sent to your WhatsApp when you linked it. Then we send a 6-digit OTP.</p>
+      <h1>REGISTER YOUR BOT</h1>
+      <p class="lead">Enter details to access advanced dashboard</p>
     </div>
 
     <form id="stepNum">
-      <label class="field"><span>WhatsApp number</span>
-        <input class="input" id="aNum" type="tel" inputmode="numeric" placeholder="94771234567" autocomplete="tel" maxlength="20"></label>
-      <p class="hint">Country code first, without + or 0.</p>
-      <label class="field"><span>Bot Key</span>
-        <input class="input" id="aKey" placeholder="SHAN-XXXX-XXXX" autocomplete="off" autocapitalize="characters" maxlength="14"></label>
+      <label class="field"><span>Username</span>
+        <input class="input" id="aUser" placeholder="Enter username" autocomplete="username" maxlength="30"></label>
+      <label class="field"><span>Bot WhatsApp Number</span>
+        <input class="input" id="aNum" type="tel" inputmode="numeric" placeholder="947XXXXXXXX" autocomplete="tel" maxlength="20"></label>
+      <label class="field"><span>Password</span>
+        <input class="input" id="aPass" type="password" placeholder="Password" autocomplete="current-password" maxlength="64"></label>
+      <label class="field"><span>API Key</span>
+        <input class="input" id="aKey" type="password" placeholder="API Key (SHAN-XXXX-XXXX)" autocomplete="off" maxlength="14"></label>
       <p class="hint">No key yet? <a href="/#home" style="color:var(--cyan)">Link your bot</a> and it arrives on WhatsApp. Lost it? <a href="#" id="keyResend" style="color:var(--cyan)">Send me a new key</a>.</p>
       <div class="err" id="aErr" hidden></div>
-      <button class="btn" id="sendBtn" type="submit" style="margin-top:16px">SEND OTP</button>
+      <button class="btn" id="sendBtn" type="submit" style="margin-top:16px">REGISTER BOT</button>
     </form>
 
     <form id="stepOtp" hidden>
@@ -39,7 +42,6 @@
       <label class="field"><span>6-digit OTP</span>
         <input class="input otp-in" id="aOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"></label>
       <div id="newBox" hidden>
-        <label class="field"><span>Your name</span><input class="input" id="aName" maxlength="30" placeholder="How should we call you?"></label>
         <label class="field"><span>Promo code (optional)</span><input class="input" id="aRef" maxlength="12" placeholder="SHAN-XXXXXX"></label>
       </div>
       <div class="err" id="aErr2" hidden></div>
