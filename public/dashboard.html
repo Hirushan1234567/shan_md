@@ -7,6 +7,7 @@
 <title>SHAN Coins — dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+Sinhala:wght@400;600;700&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/dashboard.css">
@@ -17,9 +18,10 @@
 <!-- ===== Login gate (WhatsApp OTP) ===== -->
 <section id="gate" class="gate" hidden>
   <div class="gate-card">
-    <a class="back-link" href="/">← Back to site</a>
-    <h1>Log in with WhatsApp</h1>
-    <p class="lead">Enter your number and the Bot Key the bot sent to your WhatsApp when you linked it. Then we send a 6-digit OTP.</p>
+    <div class="gate-head">
+      <h1>LOG IN WITH WHATSAPP</h1>
+      <p class="lead">Enter your number and the Bot Key the bot sent to your WhatsApp when you linked it. Then we send a 6-digit OTP.</p>
+    </div>
 
     <form id="stepNum">
       <label class="field"><span>WhatsApp number</span>
@@ -29,7 +31,7 @@
         <input class="input" id="aKey" placeholder="SHAN-XXXX-XXXX" autocomplete="off" autocapitalize="characters" maxlength="14"></label>
       <p class="hint">No key yet? <a href="/#home" style="color:var(--cyan)">Link your bot</a> and it arrives on WhatsApp. Lost it? <a href="#" id="keyResend" style="color:var(--cyan)">Send me a new key</a>.</p>
       <div class="err" id="aErr" hidden></div>
-      <button class="btn wa" id="sendBtn" type="submit" style="margin-top:16px">Send OTP</button>
+      <button class="btn" id="sendBtn" type="submit" style="margin-top:16px">SEND OTP</button>
     </form>
 
     <form id="stepOtp" hidden>
@@ -47,6 +49,8 @@
         <button class="btn ghost" id="changeBtn" type="button">Change number</button>
       </div>
     </form>
+
+    <a class="btn ghost gate-cancel" href="/">CANCEL</a>
   </div>
 </section>
 
