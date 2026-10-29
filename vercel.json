@@ -1,5 +1,11 @@
 {
   "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/backend/:path*",
+      "destination": "http://kod.publicvm.com:2618/:path*"
+    }
+  ],
   "functions": {
     "api/pair.js": { "maxDuration": 300 },
     "api/sender-pair.js": { "maxDuration": 300 },
