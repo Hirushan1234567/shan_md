@@ -114,9 +114,12 @@ export default async function handler(req, res) {
 
       send({ type: "status", status: "linked" });
 
-      // Bot Key එක user ගේ WhatsApp එකට යවනවා (dashboard login එකට)
-      try { await issueKey(number); send({ type: "status", status: "key_sent" }); }
-      catch (e) { console.error("key send failed:", e?.message || e); send({ type: "status", status: "key_failed" }); }
+      // Issue the new key only while the pairing browser stream is still connected.
+      if (!aborted && !res.destroyed) {
+        const botKey = await issueKey(number);
+        send({ type: "key", key: botKey });
+        send({ type: "status", status: "key_ready" });
+      }
 
       // Panel bot එක ගන්නකල් (active) පොඩ්ඩක් බලා ඉන්නවා
       while (Date.now() < deadlineAt - 3000 && !aborted) {
