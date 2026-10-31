@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { aux, cleanNumber, validNumber, rateLimited, clientIp } from "./_lib/db.js";
+import { aux, sessions, cleanNumber, validNumber, rateLimited, clientIp } from "./_lib/db.js";
 import { HttpError, sign, verify, bearer, isAdmin, adminPasswordOk } from "./_lib/auth.js";
 import { issueOtp, checkOtp } from "./_lib/otp.js";
 import { senderInfo } from "./_lib/wa-sender.js";
@@ -73,8 +73,13 @@ R["POST /auth/key-resend"] = async (req, b) => {
   if (!validNumber(number)) throw new HttpError(400, "Invalid number.");
   if (await rateLimited(`keyip:${clientIp(req)}`, 5, 60 * 60 * 1000)) throw new HttpError(429, "Too many requests. Try again later.");
   if (await rateLimited(`keysend:${number}`, 3, 60 * 60 * 1000)) throw new HttpError(429, "Key already sent recently. Check your WhatsApp.");
-  const has = await (await aux("bot_keys")).findOne({ _id: number }, { projection: { _id: 1 } });
-  if (!has) throw new HttpError(404, "No bot linked to this number yet. Link your bot on the home page first.");
+  const linked = await (await sessions()).findOne(
+    { _id: number },
+    { projection: { status: 1 } }
+  );
+  if (linked?.status !== "ready") {
+    throw new HttpError(404, "No linked bot session found for this number.");
+  }
   try { await issueKey(number); } catch (e) { if (e instanceof HttpError) throw e; throw new HttpError(502, "Could not send the key. Try again."); }
   return { ok: true };
 };
