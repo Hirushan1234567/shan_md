@@ -1,9 +1,15 @@
-import { $, api, toast, session, countdown } from "./api.js";
+import { $, api, toast, session, streamPost } from "./api.js";
 
-let number = "", isNew = false, stopCd = null;
+let controller = null;
+let pairing = false;
 
 const show = (el, on) => { el.hidden = !on; };
-const err = (id, m) => { const e = $(id); e.textContent = m || ""; show(e, !!m); };
+const err = (id, msg) => {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = msg || "";
+  show(el, !!msg);
+};
 
 function setBusy(btn, busy, label) {
   btn.disabled = busy;
@@ -11,79 +17,105 @@ function setBusy(btn, busy, label) {
   btn.innerHTML = busy ? `<span class="spin"></span> ${label}` : btn.dataset.label;
 }
 
-function startCooldown(sec) {
-  stopCd && stopCd();
-  const b = $("resendBtn");
-  b.disabled = true;
-  stopCd = countdown(b, sec, () => { b.disabled = false; b.textContent = "Resend OTP"; }, "Resend in ");
-}
-
-async function sendOtp() {
-  err("aErr", ""); err("aErr2", "");
-  number = $("aNum").value.replace(/\D/g, "");
-  if (!/^[1-9]\d{7,14}$/.test(number)) return err("aErr", "Invalid number. Use country code without + or 0 (example: 94771234567).");
-  const key = $("aKey").value.trim();
-  if (key.replace(/[^A-Za-z0-9]/g, "").length < 8) return err("aErr", "Enter your Bot Key (SHAN-XXXX-XXXX).");
-  const btn = $("sendBtn");
-  setBusy(btn, true, "Sending OTP…");
-  try {
-    const d = await api("POST", "/auth/otp", { number, key });
-    isNew = d.isNew;
-    $("sentTo").textContent = "+" + number;
-    show($("newBox"), isNew);
-    show($("stepNum"), false); show($("stepOtp"), true);
-    startCooldown(d.cooldown || 45);
-    setTimeout(() => $("aOtp").focus(), 80);
-  } catch (e) {
-    // otp step එකේ resend නම් ඒ error එකම පෙන්නනවා
-    err(!$("stepOtp").hidden ? "aErr2" : "aErr", e.message);
-  } finally { setBusy(btn, false); }
-}
-
 export function initAuth(onLogin) {
-  $("stepNum").addEventListener("submit", e => { e.preventDefault(); sendOtp(); });
-  $("aNum").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, ""); });
-  $("aOtp").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6); });
-
-  $("resendBtn").addEventListener("click", async () => {
-    err("aErr2", "");
-    try { const d = await api("POST", "/auth/otp", { number, key: $("aKey").value.trim() }); startCooldown(d.cooldown || 45); toast("New OTP sent to your WhatsApp"); }
-    catch (e) { err("aErr2", e.message); }
-  });
-  $("keyResend").addEventListener("click", e => {
+  $("stepNum").addEventListener("submit", async e => {
     e.preventDefault();
-    err("aErr", "To get a new Bot Key, return to the home page and link your WhatsApp again.");
-  });;
-  $("changeBtn").addEventListener("click", () => {
-    stopCd && stopCd(); err("aErr2", "");
-    $("aOtp").value = "";
-    show($("stepOtp"), false); show($("stepNum"), true);
-  });
+    if (pairing) return;
 
-  $("stepOtp").addEventListener("submit", async e => {
-    e.preventDefault();
-    err("aErr2", "");
-    const otp = $("aOtp").value.trim();
-    if (otp.length !== 6) return err("aErr2", "Enter the 6-digit OTP from WhatsApp.");
-    const btn = $("verifyBtn");
-    setBusy(btn, true, "Checking…");
+    err("aErr", "");
+
+    const number = $("aNum").value.replace(/\D/g, "");
+    const name = $("aName").value.trim();
+    const ref = $("aRef").value.trim().toUpperCase();
+
+    if (!/^[1-9]\d{7,14}$/.test(number)) {
+      return err("aErr", "රටේ කේතය සමඟ නිවැරදි WhatsApp අංකය ඇතුළත් කරන්න.");
+    }
+
+    pairing = true;
+    controller = new AbortController();
+
+    const btn = $("sendBtn");
+    setBusy(btn, true, "Connecting WhatsApp...");
+
+    $("pairCode").textContent = "Pairing code එක බලාපොරොත්තු වන්න...";
+    $("pairStatus").textContent = "WhatsApp සම්බන්ධ වෙමින්...";
+    show($("pairBox"), true);
+
+    let redeemPromise = null;
+
     try {
-      const d = await api("POST", "/auth/verify", {
-        number, otp,
-        name: $("aName").value.trim(),
-        ref: $("aRef").value.trim().toUpperCase()
+      await streamPost("/api/pair", {
+        number,
+        purpose: "dashboard-login"
+      }, {
+        signal: controller.signal,
+        onEvent: event => {
+          if (event.type === "code") {
+            $("pairCode").textContent = event.code;
+            $("pairStatus").textContent = "WhatsApp → Linked Devices → Link a Device වෙත ගොස් Code එක ඇතුළත් කරන්න.";
+          }
+
+          if (event.type === "status") {
+            $("pairStatus").textContent = ({
+              linking: "WhatsApp සම්බන්ධ කරමින්...",
+              linked: "WhatsApp සම්බන්ධ වුණා. Login සකස් කරමින්...",
+              active: "සම්බන්ධයි."
+            })[event.status] || event.status;
+          }
+
+          if (event.type === "error") {
+            err("aErr", event.reason === "expired"
+              ? "Pairing code එක කල් ඉකුත් වුණා. නැවත උත්සාහ කරන්න."
+              : "WhatsApp සම්බන්ධ කිරීම අසාර්ථකයි. නැවත උත්සාහ කරන්න.");
+          }
+
+          if (event.type === "login_claim" && !redeemPromise) {
+            redeemPromise = (async () => {
+              const d = await api("POST", "/auth/pair-claim", {
+                claim: event.claim,
+                name,
+                ref
+              });
+
+              session.token = d.token;
+              $("pairStatus").textContent = "Login සාර්ථකයි!";
+              toast("Welcome, " + d.user.name);
+              controller?.abort();
+              onLogin(d.user);
+            })();
+
+            redeemPromise.catch(error => {
+              err("aErr", error.message || "Login verification failed.");
+              $("pairStatus").textContent = "Login අසාර්ථකයි.";
+              controller?.abort();
+            });
+          }
+        }
       });
-      session.token = d.token;
-      $("aOtp").value = "";
-      toast(isNew ? "Account created. Welcome!" : "Welcome back, " + d.user.name);
-      onLogin(d.user);
-    } catch (e2) { err("aErr2", e2.message); }
-    finally { setBusy(btn, false); }
+
+      if (redeemPromise) await redeemPromise;
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        err("aErr", error.message || "Pairing අසාර්ථකයි.");
+      }
+    } finally {
+      pairing = false;
+      controller = null;
+      setBusy(btn, false);
+    }
+  });
+
+  $("aNum").addEventListener("input", e => {
+    e.target.value = e.target.value.replace(/\D/g, "");
   });
 }
 
 export function resetGate() {
-  stopCd && stopCd();
-  show($("stepOtp"), false); show($("stepNum"), true);
-  err("aErr", ""); err("aErr2", "");
+  controller?.abort();
+  pairing = false;
+  if ($("pairCode")) $("pairCode").textContent = "";
+  if ($("pairStatus")) $("pairStatus").textContent = "";
+  if ($("pairBox")) show($("pairBox"), false);
+  err("aErr", "");
 }

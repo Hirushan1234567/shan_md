@@ -8,11 +8,7 @@ async function load() {
     show($("admLogin"), false); show($("admPanel"), true);
     $("admStats").innerHTML = [["Users", st.users], ["Coins in wallets", st.coins], ["Plugins sold", st.sold], ["Comments", st.comments]]
       .map(x => `<div class="card" style="margin:0;text-align:center"><small class="muted">${x[0]}</small><b style="display:block;font-size:20px">${esc(x[1])}</b></div>`).join("");
-    const s = await api("GET", "/admin/sender");
-    $("admSender").innerHTML = s.linked
-      ? `OTP sender: <b class="g">linked (+${esc(s.number)})</b>`
-      : `OTP sender: <b class="r">not linked</b>. Open <a href="/sender" style="color:var(--cyan)">/sender</a> to link the bot number.`;
-    const u = await api("GET", "/admin/users");
+const u = await api("GET", "/admin/users");
     $("admUsers").innerHTML = u.length ? u.map(x => `<div class="row"><span>${esc(x.name)}<small>+${esc(x.number)} · ${esc(x.coins)} 🪙${x.banned ? " · BANNED" : ""}</small></span>
       <span><button class="pill on" data-adm="coins" data-n="${esc(x.number)}" type="button">Coins</button>
       <button class="pill off" data-adm="ban" data-n="${esc(x.number)}" data-ban="${x.banned ? 0 : 1}" type="button">${x.banned ? "Unban" : "Ban"}</button></span></div>`).join("") : `<p class="muted">No users yet.</p>`;

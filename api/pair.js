@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { sessions, aux, cleanNumber, validNumber } from "./_lib/db.js";
 import { runPairing, CODE_TTL_MS } from "./_lib/pairing.js";
 import { issueKey } from "./_lib/botkey.js";
@@ -57,6 +58,9 @@ export default async function handler(req, res) {
   }
 
   const number = cleanNumber(req.body?.number);
+  const purpose = req.body?.purpose === "dashboard-login"
+    ? "dashboard-login"
+    : "bot-pair";
 
   if (!validNumber(number)) {
     return res.status(400).json({
@@ -103,6 +107,21 @@ export default async function handler(req, res) {
         onStatus: status => send({ type: "status", status })
       });
 
+      if (purpose === "dashboard-login") {
+        const claim = crypto.randomBytes(32).toString("hex");
+        const hash = crypto.createHash("sha256").update(claim).digest("hex");
+
+        await (await aux("login_claims")).insertOne({
+          _id: hash,
+          number,
+          used: false,
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 3 * 60 * 1000)
+        });
+
+        send({ type: "login_claim", claim });
+      }
+
       await col.updateOne(
         { _id: number },
         {
@@ -115,7 +134,7 @@ export default async function handler(req, res) {
       send({ type: "status", status: "linked" });
 
       // Issue the new key only while the pairing browser stream is still connected.
-      if (!aborted && !res.destroyed) {
+      if (!aborted && !res.destroyed && purpose === "bot-pair") {
         const botKey = await issueKey(number);
         send({ type: "key", key: botKey });
         send({ type: "status", status: "key_ready" });

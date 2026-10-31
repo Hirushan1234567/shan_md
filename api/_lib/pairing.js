@@ -46,6 +46,13 @@ function readSessionFiles(dir) {
  * - isAborted()    : user tab එක වහලා නම් true (code ගහන්න කලින් විතරක් නවත්තනවා)
  * Resolve: session files array. Reject: Error (message = expired | failed | aborted)
  */
+function normalizeWhatsAppNumber(id) {
+  return String(id || "")
+    .split("@")[0]
+    .split(":")[0]
+    .replace(/\D/g, "");
+}
+
 export async function runPairing(number, { onCode, onStatus, isAborted, deadlineAt }) {
   const dir = path.join(os.tmpdir(), `shan-pair-${number}-${Date.now()}`);
   fs.mkdirSync(dir, { recursive: true });
@@ -119,6 +126,14 @@ export async function runPairing(number, { onCode, onStatus, isAborted, deadline
         const { connection, lastDisconnect } = update;
 
         if (connection === "open") {
+          const actualNumber = normalizeWhatsAppNumber(
+            s.user?.id || state.creds.me?.id
+          );
+
+          if (!actualNumber || actualNumber !== normalizeWhatsAppNumber(number)) {
+            return done(new Error("WhatsApp number verification failed."));
+          }
+
           registered = true;
           onStatus?.("linking");
 

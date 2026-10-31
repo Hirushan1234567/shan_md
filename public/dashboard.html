@@ -15,42 +15,43 @@
 <body>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<!-- ===== Login gate (WhatsApp OTP) ===== -->
+<!-- ===== Login gate (WhatsApp Pairing) ===== -->
 <section id="gate" class="gate" hidden>
   <div class="gate-card">
     <div class="gate-head">
-      <h1>REGISTER YOUR BOT</h1>
-      <p class="lead">Enter details to access advanced dashboard</p>
+      <h1>SHAN COINS LOGIN</h1>
+      <p class="lead">Connect your WhatsApp to access the dashboard.</p>
     </div>
 
     <form id="stepNum">
       <label class="field"><span>Username</span>
-        <input class="input" id="aUser" placeholder="Enter username" autocomplete="username" maxlength="30"></label>
-      <label class="field"><span>Bot WhatsApp Number</span>
-        <input class="input" id="aNum" type="tel" inputmode="numeric" placeholder="947XXXXXXXX" autocomplete="tel" maxlength="20"></label>
-      <label class="field"><span>Password</span>
-        <input class="input" id="aPass" type="password" placeholder="Password" autocomplete="current-password" maxlength="64"></label>
-      <label class="field"><span>API Key</span>
-        <input class="input" id="aKey" type="password" placeholder="API Key (SHAN-XXXX-XXXX)" autocomplete="off" maxlength="14"></label>
-      <p class="hint">No key yet? <a href="/#home" style="color:var(--cyan)">Link your bot</a> and it arrives on WhatsApp. Lost it? <a href="#" id="keyResend" style="color:var(--cyan)">Send me a new key</a>.</p>
+        <input class="input" id="aName" placeholder="Enter username"
+          autocomplete="username" maxlength="30">
+      </label>
+
+      <label class="field"><span>WhatsApp Number</span>
+        <input class="input" id="aNum" type="tel" inputmode="numeric"
+          placeholder="947XXXXXXXX" autocomplete="tel" maxlength="20">
+      </label>
+
+      <label class="field"><span>Promo Code (optional)</span>
+        <input class="input" id="aRef" maxlength="12"
+          placeholder="SHAN-XXXXXX">
+      </label>
+
       <div class="err" id="aErr" hidden></div>
-      <button class="btn" id="sendBtn" type="submit" style="margin-top:16px">REGISTER BOT</button>
+
+      <button class="btn" id="sendBtn" type="submit"
+        style="margin-top:16px">CONNECT WHATSAPP</button>
     </form>
 
-    <form id="stepOtp" hidden>
-      <div class="sent"><span>💬</span><div>Code sent to <b id="sentTo"></b><br><small>Check WhatsApp, it arrives in a few seconds.</small></div></div>
-      <label class="field"><span>6-digit OTP</span>
-        <input class="input otp-in" id="aOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••"></label>
-      <div id="newBox" hidden>
-        <label class="field"><span>Promo code (optional)</span><input class="input" id="aRef" maxlength="12" placeholder="SHAN-XXXXXX"></label>
+    <div id="pairBox" hidden>
+      <div class="card" style="margin-top:16px;text-align:center">
+        <p class="muted">YOUR WHATSAPP PAIRING CODE</p>
+        <h1 id="pairCode" style="letter-spacing:5px">--------</h1>
+        <p id="pairStatus" class="lead"></p>
       </div>
-      <div class="err" id="aErr2" hidden></div>
-      <button class="btn" id="verifyBtn" type="submit" style="margin-top:16px">Verify and log in</button>
-      <div class="row-btns" style="margin-top:10px">
-        <button class="btn ghost" id="resendBtn" type="button" disabled>Resend OTP</button>
-        <button class="btn ghost" id="changeBtn" type="button">Change number</button>
-      </div>
-    </form>
+    </div>
 
     <a class="btn ghost gate-cancel" href="/">CANCEL</a>
   </div>
@@ -76,20 +77,13 @@
       </div>
       <button class="btn gold" id="dailyBtn" data-act="daily" type="button" style="margin-top:14px">Claim daily reward</button>
 
-      <div class="card"><h3>Play and earn</h3><p class="muted" id="gInfo">Play games to earn a few coins every day.</p>
-        <div class="games">
-          <button class="btn ghost" data-game="snake" type="button">🐍 Snake</button>
-          <button class="btn ghost" data-game="g2048" type="button">🔢 2048</button>
-          <button class="btn ghost" data-game="memory" type="button">🧠 Memory</button>
-        </div></div>
-
       <div class="card"><h3>Earn more coins</h3><div id="taskList"></div></div>
 
       <div class="card"><h3>Redeem a coupon</h3>
         <input class="input" id="rdCode" maxlength="20" placeholder="Coupon code" style="margin-top:8px">
         <button class="btn" data-act="redeem" type="button" style="margin-top:10px">Redeem</button></div>
 
-      <div class="card"><h3>Send coins to a friend</h3><p class="muted">10 to 500 coins. We confirm with an OTP on your WhatsApp.</p>
+      <div class="card"><h3>Send coins to a friend</h3><p class="muted">10 to 500 coins. Send coins directly without an OTP.</p>
         <input class="input" id="snNum" type="tel" inputmode="numeric" placeholder="Friend's WhatsApp number" style="margin-top:8px">
         <input class="input" id="snAmt" type="number" inputmode="numeric" placeholder="Amount" style="margin-top:8px">
         <button class="btn" data-act="send" type="button" style="margin-top:10px">Send coins</button></div>
@@ -166,13 +160,7 @@
 </div>
 
 <!-- OTP confirm (purchase / send) -->
-<div id="otpModal" class="modal" role="dialog" aria-modal="true"><div class="sheet">
-  <h2>Confirm with OTP</h2>
-  <p class="lead" id="otpTitle"></p>
-  <input class="input otp-in" id="otpIn" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••" style="margin-top:12px">
-  <button class="btn" id="otpOk" type="button" style="margin-top:14px">Confirm</button>
-  <button class="btn ghost" id="otpCancel" type="button">Cancel</button>
-</div></div>
+
 
 <!-- New API key -->
 <div id="keyModal" class="modal" role="dialog" aria-modal="true"><div class="sheet">
@@ -181,11 +169,6 @@
   <div class="codebox sm" id="newKeyVal" style="font-size:13px;letter-spacing:0;word-break:break-all"></div>
   <button class="btn" id="keyCopy" type="button">Copy key</button>
   <button class="btn ghost" id="keyClose" type="button">Done</button>
-</div></div>
-
-<div id="gameModal" class="modal" role="dialog" aria-modal="true"><div class="sheet">
-  <h2 id="gTitle"></h2><div id="gBody"></div>
-  <button class="btn ghost" id="gClose" type="button" style="margin-top:12px">Close</button>
 </div></div>
 
 <!-- Admin (tap “Comments” heading 5 times) -->
@@ -198,24 +181,7 @@
   <div id="admPanel" hidden>
     <div class="grid2" id="admStats"></div>
     <p class="muted" id="admSender" style="margin-top:10px"></p>
-    <div class="card" id="otpSetup" style="margin-top:14px">
-      <h3>OTP Sender Setup</h3>
-      <p class="muted" id="stLine">Enter admin password to check sender status.</p>
-      <label class="field"><span>Admin password</span>
-        <input class="input" id="pw" type="password" placeholder="Admin password" autocomplete="off">
-      </label>
-      <label class="field"><span>Separate WhatsApp number</span>
-        <input class="input" id="num" type="tel" placeholder="947XXXXXXXX">
-      </label>
-      <button class="btn" id="go" type="button">Get Pair Code</button>
-      <p id="err" class="r" hidden></p>
-      <div id="codeCard" hidden style="margin-top:12px">
-        <h3 id="code"></h3>
-        <p class="muted">WhatsApp → Linked devices → Link a device</p>
-        <p id="timer"></p>
-      </div>
-      <p id="msg" class="muted"></p>
-    </div>
+
     <label class="field"><span>Announcement</span><input class="input" id="admAnn" maxlength="150" placeholder="Shown to everyone on the Coins tab"></label>
     <button class="btn" data-adm="ann" type="button" style="margin-top:8px">Post announcement</button>
     <label class="field"><span>Create coupon</span><input class="input" id="cpCode" maxlength="20" placeholder="CODE"></label>
@@ -231,6 +197,6 @@
 </div></div>
 
 <script type="module" src="/js/dashboard.js"></script>
-<script type="module" src="/js/sender.js"></script>
+
 </body>
 </html>

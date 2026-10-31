@@ -1,11 +1,8 @@
 import crypto from "crypto";
 import { aux, sessions, cleanNumber, validNumber, rateLimited, clientIp } from "./_lib/db.js";
 import { HttpError, sign, verify, bearer, isAdmin, adminPasswordOk, adminCredentialsOk } from "./_lib/auth.js";
-import { issueOtp, checkOtp } from "./_lib/otp.js";
-import { senderInfo } from "./_lib/wa-sender.js";
-import { checkKey } from "./_lib/botkey.js";
 import {
-  DAY, GAME_DAILY_CAP, WELCOME, REF_BONUS, REF_REWARD,
+  DAY, WELCOME, REF_BONUS, REF_REWARD,
   CATALOG, TASKS, DEFAULT_SETTINGS
 } from "./_lib/config.js";
 
@@ -55,28 +52,24 @@ const owned = (u, id) => id === "boost" ? Date.now() < (u.boostUntil || 0) : (u.
 
 const R = {};
 
-// ===== Auth (WhatsApp OTP only) =====
-R["POST /auth/otp"] = async (req, b) => {
-  const number = cleanNumber(b.number);
-  if (!validNumber(number)) throw new HttpError(400, "Invalid number. Use country code without + or 0.");
-  if (await rateLimited(`otpip:${clientIp(req)}`, 12, 10 * 60 * 1000)) throw new HttpError(429, "Too many attempts. Please wait a few minutes.");
-  await checkKey(number, b.key); // Bot Key නැතුව OTP යවන්නේ නෑ
-  const u = await (await users()).findOne({ _id: number });
-  if (u?.banned) throw new HttpError(403, "This account is banned.");
-  const r = await issueOtp(number, "login");
-  return { ok: true, isNew: !u, ...r };
-};
+// ===== Auth (verified WhatsApp pairing claim) =====
+R["POST /auth/pair-claim"] = async (req, b) => {
+  const claim = str(b.claim, 128);
+  if (!/^[a-f0-9]{64}$/i.test(claim)) throw new HttpError(401, "Invalid pairing claim.");
 
-// Key අමතක නම්: අලුත් key එකක් user ගේ WhatsApp එකටම යවනවා (පරණ එක අවලංගු)
-R["POST /auth/key-resend"] = async () => {
-  throw new HttpError(409, "To get a new Bot Key, link your WhatsApp again on the home page.");
-};
+  const hash = crypto.createHash("sha256").update(claim).digest("hex");
+  const claims = await aux("login_claims");
+  const result = await claims.findOneAndUpdate(
+    { _id: hash, used: false, expiresAt: { $gt: new Date() } },
+    { $set: { used: true, usedAt: new Date() } },
+    { returnDocument: "before" }
+  );
+  const saved = result?.value !== undefined ? result.value : result;
+  if (!saved?.number || !validNumber(saved.number)) {
+    throw new HttpError(401, "Pairing claim expired or already used.");
+  }
 
-R["POST /auth/verify"] = async (req, b) => {
-  const number = cleanNumber(b.number);
-  if (!validNumber(number)) throw new HttpError(400, "Invalid number.");
-  await checkOtp(number, "login", b.otp);
-
+  const number = cleanNumber(saved.number);
   const col = await users();
   let u = await col.findOne({ _id: number });
   if (u?.banned) throw new HttpError(403, "This account is banned.");
@@ -92,7 +85,8 @@ R["POST /auth/verify"] = async (req, b) => {
       coins: start, earned: start, spent: 0,
       last: 0, streak: 0, joined: Date.now(),
       code: "SHAN-" + crypto.randomBytes(3).toString("hex").toUpperCase(),
-      refs: 0, mine: [], boostUntil: 0, redeemed: [], tk: {}, g: { day: "", earned: 0 },
+      refs: 0, mine: [], boostUntil: 0, redeemed: [], tk: {},
+      g: { day: "", earned: 0 },
       settings: { ...DEFAULT_SETTINGS }, botStatus: "offline", keys: [],
       tx: [entry("earn", start, bonus ? "Welcome bonus + promo code" : "Welcome bonus")],
       log: [{ t: Date.now(), msg: "Account created" }]
@@ -100,8 +94,9 @@ R["POST /auth/verify"] = async (req, b) => {
     await col.insertOne(u);
     if (bonus) await credit(referrer, REF_REWARD, "Friend joined with your promo code", { refs: 1 });
   } else {
-    await note(u, "Logged in");
+    await note(u, "Logged in with WhatsApp pairing");
   }
+
   return { token: sign({ n: number }, SESSION_TTL), user: pub(u) };
 };
 
@@ -114,12 +109,10 @@ R["GET /me"] = async req => {
 
 R["GET /coins"] = async req => {
   const u = await me(req);
-  const g = u.g?.day === today() ? u.g.earned : 0;
   return {
     balance: u.coins, earned: u.earned, spent: u.spent, tx: u.tx || [],
     canDaily: Date.now() - (u.last || 0) > DAY,
     code: u.code, refs: u.refs || 0, refReward: REF_REWARD, refBonus: REF_BONUS,
-    gInfo: `Game coins today: ${g}/${GAME_DAILY_CAP}`
   };
 };
 
@@ -155,25 +148,18 @@ R["POST /coins/redeem"] = async (req, b) => {
 
 R["POST /coins/send"] = async (req, b) => {
   const u = await me(req);
-  const to = cleanNumber(b.number), a = Math.floor(+b.amount);
+  const to = cleanNumber(b.number), amount = Math.floor(+b.amount);
   if (!validNumber(to)) throw new HttpError(400, "Invalid number.");
   if (to === u._id) throw new HttpError(400, "You cannot send to yourself.");
-  if (!(a >= 10 && a <= 500)) throw new HttpError(400, "Amount must be 10-500.");
-  if (u.coins < a) throw new HttpError(400, "Not enough coins.");
-  if (!(await (await users()).findOne({ _id: to }, { projection: { _id: 1 } }))) throw new HttpError(400, "That number has no SHAN account yet.");
-  await issueOtp(u._id, "send", { to, a });
-  return { otpRequired: true, txId: "send" };
-};
+  if (!(amount >= 10 && amount <= 500)) throw new HttpError(400, "Amount must be 10-500.");
 
-R["POST /coins/send/confirm"] = async (req, b) => {
-  const u = await me(req);
-  const { to, a } = (await checkOtp(u._id, "send", b.otp)) || {};
   const col = await users();
   const rec = await col.findOne({ _id: to });
   if (!rec || rec.banned) throw new HttpError(400, "Receiver not found.");
-  await debit(u, a, `Sent to +${to}`);
-  await credit(rec, a, `Received from +${u._id}`);
-  await note(u, `Sent ${a} coins to +${to}`);
+
+  await debit(u, amount, `Sent to +${to}`);
+  await credit(rec, amount, `Received from +${u._id}`);
+  await note(u, `Sent ${amount} coins to +${to}`);
   return { ok: 1 };
 };
 
@@ -187,54 +173,20 @@ R["POST /plugins/buy"] = async (req, b) => {
   const u = await me(req);
   const c = CATALOG.find(x => x.id === b.id);
   if (!c) throw new HttpError(404, "Plugin not found.");
-  if (owned(u, c.id)) throw new HttpError(400, "Already active/owned.");
-  if (u.coins < c.price) throw new HttpError(400, "Not enough coins.");
-  await issueOtp(u._id, "purchase", { id: c.id });
-  return { otpRequired: true, txId: c.id };
-};
 
-R["POST /plugins/confirm"] = async (req, b) => {
-  const u = await me(req);
-  const data = await checkOtp(u._id, "purchase", b.otp);
-  const c = CATALOG.find(x => x.id === data?.id && x.id === b.txId);
-  if (!c) throw new HttpError(400, "Purchase does not match the OTP.");
-  const fresh = await (await users()).findOne({ _id: u._id });
+  const col = await users();
+  const fresh = await col.findOne({ _id: u._id });
+  if (!fresh) throw new HttpError(401, "Please login again.");
   if (owned(fresh, c.id)) throw new HttpError(400, "Already active/owned.");
-  await debit(u, c.price, `Bought ${c.name}`);
-  await (await users()).updateOne({ _id: u._id },
-    c.id === "boost" ? { $set: { boostUntil: Date.now() + 7 * DAY }, $push: logPush(`Purchased: ${c.name}`) }
-                     : { $addToSet: { mine: c.id }, $push: logPush(`Purchased: ${c.name}`) });
+
+  await debit(fresh, c.price, `Bought ${c.name}`);
+  await col.updateOne(
+    { _id: u._id },
+    c.id === "boost"
+      ? { $set: { boostUntil: Date.now() + 7 * DAY }, $push: logPush(`Purchased: ${c.name}`) }
+      : { $addToSet: { mine: c.id }, $push: logPush(`Purchased: ${c.name}`) }
+  );
   return { ok: 1 };
-};
-
-// ===== Games =====
-R["POST /games/start"] = async (req, b) => {
-  const u = await me(req);
-  if (!["snake", "g2048", "memory"].includes(b.game)) throw new HttpError(400, "Unknown game.");
-  const sid = crypto.randomBytes(6).toString("hex");
-  await (await users()).updateOne({ _id: u._id }, { $set: { gs: { game: b.game, t0: Date.now(), sid } } });
-  return { sid };
-};
-
-R["POST /games/finish"] = async (req, b) => {
-  const u = await me(req);
-  const prev = await (await users()).findOneAndUpdate({ _id: u._id, "gs.sid": String(b.sid) }, { $unset: { gs: "" } }, { returnDocument: "before" });
-  const G = (prev?.value !== undefined ? prev.value : prev)?.gs;
-  if (!G) throw new HttpError(400, "No active game.");
-  const sec = (Date.now() - G.t0) / 1000, sc = +b.score || 0;
-  let r = 0;
-  if (G.game === "snake") { if (sec >= sc * 0.6) r = Math.min(10, Math.floor(sc / 3)); }
-  else if (G.game === "g2048") { if (sec >= sc / 8) r = sc >= 2048 ? 15 : sc >= 1024 ? 12 : sc >= 512 ? 8 : sc >= 256 ? 5 : sc >= 128 ? 2 : 0; }
-  else if (sec >= 8) r = Math.min(6, Math.floor(sc / 20));
-
-  const gDay = u.g?.day === today() ? u.g.earned : 0;
-  const a = Math.max(0, Math.min(r, GAME_DAILY_CAP - gDay));
-  if (a > 0) {
-    await credit(u, a, `Game reward: ${G.game}`);
-    await (await users()).updateOne({ _id: u._id }, { $set: { g: { day: today(), earned: gDay + a } } });
-  }
-  await note(u, `Played ${G.game} (score ${sc})`);
-  return { msg: a ? `🎉 +${a} coins!` : r ? "Daily game coin limit reached." : "No coins this time — try again!" };
 };
 
 // ===== Tasks / announce / leaderboard =====
@@ -411,8 +363,6 @@ R["GET /admin/sessions"] = async req => {
     claimedAt: x.claimedAt || null
   }));
 };
-
-R["GET /admin/sender"] = async req => { needAdmin(req); return senderInfo(); };
 
 /* ---------- entry ---------- */
 

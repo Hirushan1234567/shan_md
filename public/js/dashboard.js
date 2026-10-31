@@ -1,6 +1,5 @@
 import { $, api, esc, fmt, toast, session, setUnauthorizedHandler } from "./api.js";
 import { initAuth, resetGate } from "./auth.js";
-import { playGame, closeGame } from "./games.js";
 import { initAdmin } from "./admin.js";
 
 const show = (el, on) => { el.hidden = !on; };
@@ -66,22 +65,6 @@ async function taskClaim(id) {
   try { await api("POST", "/tasks/claim", { id }); toast("🎉 Reward claimed"); loadCoins(); } catch (e) { toast(e.message, true); }
 }
 
-/* ---------- OTP confirm sheet ---------- */
-function otpAsk(txId, title, url) {
-  PEND = txId; PENDU = url;
-  $("otpTitle").textContent = title; $("otpIn").value = "";
-  $("otpModal").classList.add("show"); setTimeout(() => $("otpIn").focus(), 80);
-}
-$("otpIn").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6); });
-$("otpCancel").onclick = () => $("otpModal").classList.remove("show");
-$("otpOk").onclick = async () => {
-  try {
-    await api("POST", PENDU, { txId: PEND, otp: $("otpIn").value.trim() });
-    $("otpModal").classList.remove("show"); toast("✅ Done");
-    PENDU === "/plugins/confirm" ? loadShop() : loadCoins();
-  } catch (e) { toast(e.message, true); }
-};
-
 /* ---------- shop ---------- */
 async function loadShop() {
   try {
@@ -103,10 +86,12 @@ function drawShop() {
 }
 async function buy(id) {
   const p = PLUG.find(x => x.id === id);
-  if (!p || !confirm(`Buy ${p.name} for ${p.price} coins? We'll send an OTP to your WhatsApp.`)) return;
+  if (!p || !confirm(`Buy ${p.name} for ${p.price} coins? `)) return;
   try {
     const d = await api("POST", "/plugins/buy", { id });
-    if (d.otpRequired) { otpAsk(d.txId, "Enter the OTP the bot sent you to buy " + p.name, "/plugins/confirm"); toast("OTP sent to your WhatsApp"); }
+    toast(d.message || "Plugin purchased successfully");
+    await loadShop();
+    await loadCoins();
   } catch (e) { toast(e.message, true); }
 }
 
@@ -152,11 +137,10 @@ async function loadCm() {
 
 /* ---------- one delegated click handler ---------- */
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-act],[data-task],[data-buy],[data-shop],[data-bot],[data-revoke],[data-copy-key],[data-game]");
+  const t = e.target.closest("[data-act],[data-task],[data-buy],[data-shop],[data-bot],[data-revoke],[data-copy-key]");
   if (!t) return;
   const D = t.dataset;
   try {
-    if (D.game) return playGame(D.game);
     if (D.shop !== undefined) { SHOP = +D.shop; return drawShop(); }
     if (D.buy) return buy(D.buy);
     if (D.task) { if (D.link) { window.open(D.link, "_blank", "noopener"); toast("Checking…"); setTimeout(() => taskClaim(D.task), 7000); } else taskClaim(D.task); return; }
@@ -170,8 +154,16 @@ document.addEventListener("click", async e => {
       case "daily": await api("POST", "/coins/daily"); toast("🎉 Daily reward claimed"); return loadCoins();
       case "redeem": { const code = $("rdCode").value.trim().toUpperCase(); if (!code) return;
         const d = await api("POST", "/coins/redeem", { code }); $("rdCode").value = ""; toast(`🎟 +${d.coins} coins`); return loadCoins(); }
-      case "send": { const d = await api("POST", "/coins/send", { number: $("snNum").value.replace(/\D/g, ""), amount: +$("snAmt").value });
-        if (d.otpRequired) { otpAsk("send", "Enter the OTP the bot sent you to confirm this transfer", "/coins/send/confirm"); toast("OTP sent to your WhatsApp"); } return; }
+      case "send": {
+        const d = await api("POST", "/coins/send", {
+          number: $("snNum").value.replace(/\D/g, ""),
+          amount: +$("snAmt").value
+        });
+        $("snNum").value = "";
+        $("snAmt").value = "";
+        toast(d.message || "Coins sent successfully");
+        return loadCoins();
+      }
       case "copyRef": await navigator.clipboard?.writeText($("refCode").textContent); return toast("Code copied");
       case "saveSet": await api("PUT", "/settings", { prefix: $("sPrefix").value || ".", name: $("sName").value || "SHAN MINI BOT", mode: $("sMode").value, seen: $("sSeen").checked, typing: $("sTyping").checked, img: $("sImg").value.trim() }); return toast("💾 Settings saved");
       case "newKey": { const d = await api("POST", "/keys", { name: $("kName").value.trim() || "key" }); $("kName").value = "";
@@ -185,8 +177,7 @@ document.addEventListener("click", async e => {
 
 $("keyClose").onclick = () => $("keyModal").classList.remove("show");
 $("keyCopy").onclick = async () => { try { await navigator.clipboard.writeText($("newKeyVal").textContent); toast("Key copied"); } catch {} };
-$("gClose").onclick = () => closeGame(loadCoins);
-document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".modal.show").forEach(m => m.id === "gameModal" ? closeGame(loadCoins) : m.classList.remove("show")); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".modal.show").forEach(m => m.classList.remove("show")); });
 
 /* ---------- boot ---------- */
 initAuth(() => showApp());
