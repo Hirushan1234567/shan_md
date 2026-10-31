@@ -59,7 +59,7 @@ function pErr(m) { $("pErr").textContent = m; show($("pErr"), true); }
 function reset() {
   stopAll(); done = linked = false;
   try { ctrl && ctrl.abort(); } catch {}
-  show($("pCodeBox"), false); show($("pForm"), true); show($("pErr"), false);
+  show($("pCodeBox"), false); show($("pForm"), true); show($("pErr"), false); document.getElementById("browserBotKeyBox")?.remove();
   $("pGo").disabled = false; $("pGo").textContent = "Get pair code";
   $("pState").className = "state wait"; $("pSpin").style.display = "";
   $("pStText").textContent = "Waiting for you to enter the code…";
@@ -73,7 +73,7 @@ function closePair() { reset(); $("pairModal").classList.remove("show"); }
 function active() {
   done = true; stopAll();
   $("pState").className = "state ok"; $("pSpin").style.display = "none";
-  $("pStText").textContent = "Connected! Your bot is active. Your Bot Key is in your WhatsApp. Send .menu to your own chat.";
+  $("pStText").textContent = "Connected! Your bot is active. Your Bot Key is shown above. Copy it and keep it private. Send .menu to your own chat.";
   $("pTimer").textContent = ""; $("pCopy").hidden = true; show($("pDash"), true);
 }
 function failed(reason) {
@@ -95,6 +95,20 @@ function handle(ev) {
   if (ev.type === "code") {
     $("pCode").textContent = ev.code; show($("pForm"), false); show($("pCodeBox"), true);
     stopTimer = countdown($("pTimer"), ev.expiresIn || 180);
+  } else if (ev.type === "key") {
+    let box = document.getElementById("browserBotKeyBox");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "browserBotKeyBox";
+      box.style.cssText = "margin:14px 0;padding:14px;border:1px solid #00aaff;border-radius:12px;background:rgba(0,170,255,.08);";
+      $("pStText").insertAdjacentElement("afterend", box);
+    }
+    box.innerHTML = '<b>Your new Bot Key</b><div id="browserBotKeyValue" style="font-weight:bold;word-break:break-all;margin:10px 0"></div><button type="button" id="browserBotKeyCopy" class="btn">Copy Bot Key</button><small style="display:block;margin-top:8px">Keep this key private. It will only be shown here once.</small>';
+    $("browserBotKeyValue").textContent = ev.key;
+    $("browserBotKeyCopy").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(ev.key); $("browserBotKeyCopy").textContent = "Copied ✔"; }
+      catch { toast("Copy failed. Select and copy the key manually.", true); }
+    });
   } else if (ev.type === "status") {
     if (ev.status === "linking") linkedUi();
     if (ev.status === "linked") { linkedUi(); linked = true; }

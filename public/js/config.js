@@ -54,13 +54,10 @@ export function initAuth(onLogin) {
     try { const d = await api("POST", "/auth/otp", { number, key: $("aKey").value.trim(), username: $("aUser").value.trim(), password: $("aPass").value }); startCooldown(d.cooldown || 45); toast("New OTP sent to your WhatsApp"); }
     catch (e) { err("aErr2", e.message); }
   });
-  $("keyResend").addEventListener("click", async e => {
-    e.preventDefault(); err("aErr", "");
-    const n = $("aNum").value.replace(/\D/g, "");
-    if (!/^[1-9]\d{7,14}$/.test(n)) return err("aErr", "Enter your WhatsApp number first.");
-    try { await api("POST", "/auth/key-resend", { number: n }); toast("New Bot Key sent to your WhatsApp"); }
-    catch (er) { err("aErr", er.message); }
-  });
+  $("keyResend").addEventListener("click", e => {
+    e.preventDefault();
+    err("aErr", "To get a new Bot Key, return to the home page and link your WhatsApp again.");
+  });;
   $("changeBtn").addEventListener("click", () => {
     stopCd && stopCd(); err("aErr2", "");
     $("aOtp").value = "";

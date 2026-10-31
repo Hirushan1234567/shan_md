@@ -3,7 +3,7 @@ import { aux, sessions, cleanNumber, validNumber, rateLimited, clientIp } from "
 import { HttpError, sign, verify, bearer, isAdmin, adminPasswordOk, adminCredentialsOk } from "./_lib/auth.js";
 import { issueOtp, checkOtp } from "./_lib/otp.js";
 import { senderInfo } from "./_lib/wa-sender.js";
-import { issueKey, checkKey } from "./_lib/botkey.js";
+import { checkKey } from "./_lib/botkey.js";
 import {
   DAY, GAME_DAILY_CAP, WELCOME, REF_BONUS, REF_REWARD,
   CATALOG, TASKS, DEFAULT_SETTINGS
@@ -68,20 +68,8 @@ R["POST /auth/otp"] = async (req, b) => {
 };
 
 // Key අමතක නම්: අලුත් key එකක් user ගේ WhatsApp එකටම යවනවා (පරණ එක අවලංගු)
-R["POST /auth/key-resend"] = async (req, b) => {
-  const number = cleanNumber(b.number);
-  if (!validNumber(number)) throw new HttpError(400, "Invalid number.");
-  if (await rateLimited(`keyip:${clientIp(req)}`, 5, 60 * 60 * 1000)) throw new HttpError(429, "Too many requests. Try again later.");
-  if (await rateLimited(`keysend:${number}`, 3, 60 * 60 * 1000)) throw new HttpError(429, "Key already sent recently. Check your WhatsApp.");
-  const linked = await (await sessions()).findOne(
-    { _id: number },
-    { projection: { status: 1 } }
-  );
-  if (linked?.status !== "ready") {
-    throw new HttpError(404, "No linked bot session found for this number.");
-  }
-  try { await issueKey(number); } catch (e) { if (e instanceof HttpError) throw e; throw new HttpError(502, "Could not send the key. Try again."); }
-  return { ok: true };
+R["POST /auth/key-resend"] = async () => {
+  throw new HttpError(409, "To get a new Bot Key, link your WhatsApp again on the home page.");
 };
 
 R["POST /auth/verify"] = async (req, b) => {
