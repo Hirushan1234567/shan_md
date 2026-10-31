@@ -112,7 +112,7 @@ function handle(ev) {
   } else if (ev.type === "status") {
     if (ev.status === "linking") linkedUi();
     if (ev.status === "linked") { linkedUi(); linked = true; }
-    if (ev.status === "key_sent") $("pStText").textContent = "Linked! Your Bot Key was sent to your WhatsApp. Use it to log in to the dashboard.";
+    if (ev.status === "key_ready") $("pStText").textContent = "Your new Bot Key is shown above. Copy it and keep it private.";
     if (ev.status === "active") active();
   } else if (ev.type === "error" && ev.reason !== "aborted") failed(ev.reason);
 }
