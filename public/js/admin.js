@@ -16,6 +16,17 @@ async function load() {
     $("admUsers").innerHTML = u.length ? u.map(x => `<div class="row"><span>${esc(x.name)}<small>+${esc(x.number)} · ${esc(x.coins)} 🪙${x.banned ? " · BANNED" : ""}</small></span>
       <span><button class="pill on" data-adm="coins" data-n="${esc(x.number)}" type="button">Coins</button>
       <button class="pill off" data-adm="ban" data-n="${esc(x.number)}" data-ban="${x.banned ? 0 : 1}" type="button">${x.banned ? "Unban" : "Ban"}</button></span></div>`).join("") : `<p class="muted">No users yet.</p>`;
+    const sessions = await api("GET", "/admin/sessions");
+    $("admSessions").innerHTML = sessions.length ? sessions.map(x => `
+      <div class="row">
+        <span>+${esc(x.number)}
+          <small>${esc(x.status)} · ${x.active ? "ACTIVE" : "INACTIVE"}</small>
+          <small>Updated: ${x.updatedAt ? esc(new Date(x.updatedAt).toLocaleString()) : "Unknown"}</small>
+        </span>
+        <span class="pill ${x.status === "ready" ? "on" : "off"}">${x.status === "ready" ? "LINKED" : "WAITING"}</span>
+      </div>
+    `).join("") : `<p class="muted">No linked sessions yet.</p>`;
+
     const c = await api("GET", "/comments");
     $("admCms").innerHTML = c.length ? c.map(x => `<div class="cm"><b>${esc(x.name)}</b><br>${esc(x.msg)}
       <button class="btn danger sm" data-adm="delcm" data-id="${esc(x.id)}" type="button" style="margin-top:8px">Delete</button></div>`).join("") : `<p class="muted">No comments.</p>`;

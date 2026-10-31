@@ -399,6 +399,24 @@ R["POST /admin/coupons"] = async (req, b) => {
   return { ok: 1 };
 };
 
+R["GET /admin/sessions"] = async req => {
+  needAdmin(req);
+  const col = await sessions();
+  const list = await col.find(
+    {},
+    { projection: { status: 1, active: 1, createdAt: 1, updatedAt: 1, claimedAt: 1 } }
+  ).sort({ updatedAt: -1, createdAt: -1 }).limit(100).toArray();
+
+  return list.map(x => ({
+    number: x._id,
+    status: x.status || "unknown",
+    active: !!x.active,
+    createdAt: x.createdAt || null,
+    updatedAt: x.updatedAt || x.createdAt || null,
+    claimedAt: x.claimedAt || null
+  }));
+};
+
 R["GET /admin/sender"] = async req => { needAdmin(req); return senderInfo(); };
 
 /* ---------- entry ---------- */
