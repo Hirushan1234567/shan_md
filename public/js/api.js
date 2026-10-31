@@ -27,23 +27,47 @@ export const setUnauthorizedHandler = fn => { onUnauthorized = fn; };
 
 export async function api(method, path, body) {
   const headers = { "Content-Type": "application/json" };
+
   if (session.token) headers.Authorization = "Bearer " + session.token;
   if (session.admin) headers["X-Admin"] = session.admin;
 
-  let r, data;
+  let r;
+
   try {
-    r = await fetch("/api" + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
-    data = await r.json();
-  } catch {
-    throw new ApiError("Can't reach the server. Check your connection.", 0);
+    r = await fetch("/api" + path, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
+  } catch (error) {
+    console.error("FETCH ERROR:", error);
+    throw new ApiError("Network error: " + error.message, 0);
   }
+
+  let data;
+  const raw = await r.text();
+
+  try {
+    data = JSON.parse(raw);
+  } catch (error) {
+    console.error("INVALID SERVER RESPONSE:", r.status, raw);
+
+    throw new ApiError(
+      "Server response error (HTTP " + r.status + "). Check Vercel Logs.",
+      r.status
+    );
+  }
+
   if (!r.ok) {
+    console.error("API ERROR:", r.status, data);
+
     if (r.status === 401 && !session.admin) onUnauthorized();
+
     throw new ApiError(data.error || "Request failed.", r.status);
   }
+
   return data;
 }
-
 /** NDJSON stream (pair code flow). onEvent(ev) for each line. */
 export async function streamPost(url, body, { signal, headers = {}, onEvent }) {
   const r = await fetch(url, {
