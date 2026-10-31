@@ -194,6 +194,24 @@
   <div id="admPanel" hidden>
     <div class="grid2" id="admStats"></div>
     <p class="muted" id="admSender" style="margin-top:10px"></p>
+    <div class="card" id="otpSetup" style="margin-top:14px">
+      <h3>OTP Sender Setup</h3>
+      <p class="muted" id="stLine">Enter admin password to check sender status.</p>
+      <label class="field"><span>Admin password</span>
+        <input class="input" id="pw" type="password" placeholder="Admin password" autocomplete="off">
+      </label>
+      <label class="field"><span>Separate WhatsApp number</span>
+        <input class="input" id="num" type="tel" placeholder="947XXXXXXXX">
+      </label>
+      <button class="btn" id="go" type="button">Get Pair Code</button>
+      <p id="err" class="r" hidden></p>
+      <div id="codeCard" hidden style="margin-top:12px">
+        <h3 id="code"></h3>
+        <p class="muted">WhatsApp → Linked devices → Link a device</p>
+        <p id="timer"></p>
+      </div>
+      <p id="msg" class="muted"></p>
+    </div>
     <label class="field"><span>Announcement</span><input class="input" id="admAnn" maxlength="150" placeholder="Shown to everyone on the Coins tab"></label>
     <button class="btn" data-adm="ann" type="button" style="margin-top:8px">Post announcement</button>
     <label class="field"><span>Create coupon</span><input class="input" id="cpCode" maxlength="20" placeholder="CODE"></label>
@@ -206,5 +224,6 @@
 </div></div>
 
 <script type="module" src="/js/dashboard.js"></script>
+<script type="module" src="/js/sender.js"></script>
 </body>
 </html>
