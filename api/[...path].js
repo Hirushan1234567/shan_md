@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { aux, sessions, cleanNumber, validNumber, rateLimited, clientIp } from "./_lib/db.js";
-import { HttpError, sign, verify, bearer, isAdmin, adminPasswordOk } from "./_lib/auth.js";
+import { HttpError, sign, verify, bearer, isAdmin, adminPasswordOk, adminCredentialsOk } from "./_lib/auth.js";
 import { issueOtp, checkOtp } from "./_lib/otp.js";
 import { senderInfo } from "./_lib/wa-sender.js";
 import { issueKey, checkKey } from "./_lib/botkey.js";
@@ -348,7 +348,8 @@ R["DELETE /comments"] = async (req, b, q) => {
 // ===== Admin =====
 R["POST /admin/login"] = async (req, b) => {
   if (await rateLimited(`adm:${clientIp(req)}`, 8, 10 * 60 * 1000)) throw new HttpError(429, "Too many attempts.");
-  if (!adminPasswordOk(b.password)) throw new HttpError(401, "Wrong admin password.");
+  if (!adminCredentialsOk(b.number, b.password, b.apiKey))
+    throw new HttpError(401, "Invalid owner credentials.");
   return { token: sign({ adm: 1 }, 2 * 60 * 60 * 1000) };
 };
 

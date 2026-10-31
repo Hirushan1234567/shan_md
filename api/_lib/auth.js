@@ -53,3 +53,17 @@ export function isAdmin(req) {
   const p = verify(String(req.headers["x-admin"] || ""));
   return !!(p && p.adm);
 }
+
+
+export function adminCredentialsOk(number, password, apiKey) {
+  const ownerNumber = String(process.env.OWNER_NUMBER || "").replace(/\\D/g, "");
+  const ownerApiKey = String(process.env.OWNER_API_KEY || "");
+  const realPassword = String(process.env.ADMIN_PASSWORD || "");
+
+  const numberOk = safeEqual(String(number || "").replace(/\\D/g, ""), ownerNumber);
+  const passwordOk = safeEqual(password || "", realPassword);
+  const apiKeyOk = safeEqual(apiKey || "", ownerApiKey);
+
+  return !!ownerNumber && !!ownerApiKey && realPassword.length >= 4
+    && numberOk && passwordOk && apiKeyOk;
+}

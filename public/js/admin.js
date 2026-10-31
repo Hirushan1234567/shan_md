@@ -32,8 +32,12 @@ export function initAdmin() {
   $("admClose").onclick = () => $("admModal").classList.remove("show");
   $("admGo").onclick = async () => {
     try {
-      const d = await api("POST", "/admin/login", { password: $("admPass").value });
-      session.admin = d.token; $("admPass").value = ""; load();
+      const d = await api("POST", "/admin/login", {
+        number: $("admNumber").value.replace(/\\D/g, ""),
+        password: $("admPass").value,
+        apiKey: $("admApiKey").value
+      });
+      session.admin = d.token; $("admPass").value = ""; $("admApiKey").value = ""; load();
     } catch (e) { toast(e.message, true); }
   };
   $("admModal").addEventListener("click", async e => {
