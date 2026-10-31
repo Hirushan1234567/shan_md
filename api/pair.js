@@ -74,11 +74,6 @@ export default async function handler(req, res) {
     const col = await sessions();
     const existing = await col.findOne({ _id: number }, { projection: { status: 1, active: 1 } });
 
-    if (existing?.status === "ready" && existing?.active) {
-      return res.status(409).json({
-        error: "This number is already connected to the bot. To re-pair, remove the linked device in WhatsApp first."
-      });
-    }
 
     locked = await acquireLock(number);
     if (!locked) {
