@@ -92,7 +92,7 @@ export async function sendWhatsApp(number, text) {
     if (!r?.exists) throw new HttpError(400, "This number is not on WhatsApp.");
 
     await sock.sendMessage(r.jid, { text });
-    await sleep(800);
+    await sleep(5000);
     await pending;
   } finally {
     try { sock?.ev?.removeAllListeners?.(); sock?.end?.(undefined); } catch {}
