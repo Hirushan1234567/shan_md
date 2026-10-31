@@ -44,11 +44,9 @@ export function initAdmin() {
   $("admGo").onclick = async () => {
     try {
       const d = await api("POST", "/admin/login", {
-        number: $("admNumber").value.replace(/\D/g, ""),
-        password: $("admPass").value,
-        apiKey: $("admApiKey").value
+        password: $("admPass").value
       });
-      session.admin = d.token; $("admPass").value = ""; $("admApiKey").value = ""; load();
+      session.admin = d.token; $("admPass").value = ""; load();
     } catch (e) { toast(e.message, true); }
   };
   $("admModal").addEventListener("click", async e => {
@@ -71,10 +69,5 @@ export function initAdmin() {
     } catch (err) { toast(err.message, true); }
   });
 
-  // “Comments” heading 5 taps -> admin
-  let taps = 0, t = null;
-  $("adminTap").addEventListener("click", () => {
-    taps++; clearTimeout(t); t = setTimeout(() => taps = 0, 1500);
-    if (taps >= 5) { taps = 0; openAdmin(); }
-  });
+  $("adminOpen").addEventListener("click", openAdmin);
 }

@@ -106,7 +106,11 @@ R["POST /auth/verify"] = async (req, b) => {
 };
 
 // ===== Account / coins =====
-R["GET /me"] = async req => pub(await me(req));
+R["GET /me"] = async req => {
+  const u = await me(req);
+  const owner = cleanNumber(process.env.OWNER_NUMBER || "");
+  return { ...pub(u), isOwner: !!owner && u._id === owner };
+};
 
 R["GET /coins"] = async req => {
   const u = await me(req);
@@ -335,10 +339,13 @@ R["DELETE /comments"] = async (req, b, q) => {
 
 // ===== Admin =====
 R["POST /admin/login"] = async (req, b) => {
-  if (await rateLimited(`adm:${clientIp(req)}`, 8, 10 * 60 * 1000)) throw new HttpError(429, "Too many attempts.");
-  if (!adminCredentialsOk(b.number, b.password, b.apiKey))
-    throw new HttpError(401, "Invalid owner credentials.");
-  return { token: sign({ adm: 1 }, 2 * 60 * 60 * 1000) };
+  if (await rateLimited(`adm:${clientIp(req)}`, 8, 10 * 60 * 1000))
+    throw new HttpError(429, "Too many attempts.");
+  const user = verify(bearer(req));
+  const owner = cleanNumber(process.env.OWNER_NUMBER || "");
+  if (!owner || !user?.n || user.n !== owner || !adminPasswordOk(b.password))
+    throw new HttpError(401, "Owner account and password required.");
+  return { token: sign({ adm: 1, n: owner }, 2 * 60 * 60 * 1000) };
 };
 
 R["GET /admin/stats"] = async req => {

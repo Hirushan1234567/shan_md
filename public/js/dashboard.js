@@ -8,7 +8,17 @@ let SHOP = 0, PLUG = [], PEND = null, PENDU = "";
 
 /* ---------- gate / app switch ---------- */
 function showGate() { session.token = ""; show($("app"), false); show($("gate"), true); resetGate(); }
-function showApp() { show($("gate"), false); show($("app"), true); go("coins"); }
+async function showApp() {
+  show($("gate"), false);
+  show($("app"), true);
+  go("coins");
+  try {
+    const profile = await api("GET", "/me");
+    $("adminOpen").hidden = !profile.isOwner;
+  } catch {
+    $("adminOpen").hidden = true;
+  }
+}
 setUnauthorizedHandler(showGate);
 
 /* ---------- navigation ---------- */

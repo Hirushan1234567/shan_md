@@ -61,6 +61,7 @@
   <header class="bar">
     <div class="wrap bar-row">
       <a class="brand" href="/">SHAN <b>COINS</b></a>
+      <button class="btn ghost" id="adminOpen" type="button" hidden>👑 Admin Panel</button>
       <a class="home-link" href="/">Site</a>
     </div>
   </header>
@@ -191,9 +192,7 @@
 <div id="admModal" class="modal" role="dialog" aria-modal="true"><div class="sheet" style="max-width:520px">
   <h2>Admin panel</h2>
   <div id="admLogin">
-    <input class="input" id="admNumber" type="tel" placeholder="Owner WhatsApp number (country code)" autocomplete="off">
-    <input class="input" id="admPass" type="password" placeholder="Owner password" autocomplete="off" style="margin-top:8px">
-    <input class="input" id="admApiKey" type="password" placeholder="Owner API key" autocomplete="off" style="margin-top:8px">
+    <input class="input" id="admPass" type="password" placeholder="Admin password" autocomplete="current-password">
     <button class="btn" id="admGo" type="button" style="margin-top:10px">Log in</button>
   </div>
   <div id="admPanel" hidden>
