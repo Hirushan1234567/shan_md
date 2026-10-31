@@ -78,7 +78,15 @@ export async function sendWhatsApp(number, text) {
         if (u.connection === "open") { clearTimeout(t); resolve(); }
         if (u.connection === "close") {
           clearTimeout(t);
-          const code = u.lastDisconnect?.error?.output?.statusCode;
+          const code =
+            u.lastDisconnect?.error?.output?.statusCode ||
+            u.lastDisconnect?.error?.statusCode ||
+            null;
+          console.error("[OTP-SENDER] Connection closed:", {
+            code,
+            registered: !!state.creds.registered,
+            message: String(u.lastDisconnect?.error?.message || "unknown").slice(0, 160)
+          });
           if (code === DisconnectReason.loggedOut)
             reject(new HttpError(503, "OTP sender was logged out. Admin: re-link it at /sender."));
           else if (code === DisconnectReason.connectionReplaced)
