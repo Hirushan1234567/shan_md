@@ -113,7 +113,7 @@ async function loadBot() {
     show($("wimgBox"), !!c.canImg); $("sImg").value = c.img || "";
     const k = await api("GET", "/keys");
     $("keyList").innerHTML = k.length ? k.map(x => `<div class="keyrow row" style="display:block"><b>${esc(x.name)}</b> <small class="muted">${fmt(x.created)}</small>
-      <code>${esc(x.key)}</code><button class="btn danger sm" data-revoke="${esc(x.id)}" type="button">Revoke</button></div>`).join("")
+      <code>${esc(x.key)}</code><button class="btn ghost sm" data-copy-key="${esc(x.key)}" type="button">Copy API</button><button class="btn danger sm" data-revoke="${esc(x.id)}" type="button">Revoke</button></div>`).join("")
       : `<p class="muted">No API keys yet.</p>`;
   } catch (e) { toast(e.message, true); }
 }
@@ -142,7 +142,7 @@ async function loadCm() {
 
 /* ---------- one delegated click handler ---------- */
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-act],[data-task],[data-buy],[data-shop],[data-bot],[data-revoke],[data-game]");
+  const t = e.target.closest("[data-act],[data-task],[data-buy],[data-shop],[data-bot],[data-revoke],[data-copy-key],[data-game]");
   if (!t) return;
   const D = t.dataset;
   try {
@@ -154,6 +154,7 @@ document.addEventListener("click", async e => {
       if (D.bot === "stop" && !confirm("Stop your bot?")) return;
       await api("POST", "/bot", { action: D.bot }); toast(D.bot === "start" ? "▶ Bot started" : "⏹ Bot stopped"); return loadBot();
     }
+    if (D.copyKey) { try { await navigator.clipboard.writeText(D.copyKey); toast("API key copied"); } catch { toast("Copy failed. Select and copy the key manually.", true); } return; }
     if (D.revoke) { if (!confirm("Revoke this key?")) return; await api("DELETE", "/keys?id=" + encodeURIComponent(D.revoke)); toast("Key revoked"); return loadBot(); }
     switch (D.act) {
       case "daily": await api("POST", "/coins/daily"); toast("🎉 Daily reward claimed"); return loadCoins();

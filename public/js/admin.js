@@ -33,7 +33,7 @@ export function initAdmin() {
   $("admGo").onclick = async () => {
     try {
       const d = await api("POST", "/admin/login", {
-        number: $("admNumber").value.replace(/\\D/g, ""),
+        number: $("admNumber").value.replace(/\D/g, ""),
         password: $("admPass").value,
         apiKey: $("admApiKey").value
       });
