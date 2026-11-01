@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHAN MINI BOT - Developer Dashboard</title>
+<style>
+:root {
+  --bg:#050a18;
+  --panel:#0c1730;
+  --blue:#00bfff;
+  --purple:#a855f7;
+  --text:#f4f7ff;
+  --muted:#9aa9c5;
+  --green:#00e6a0;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 5% 0%,#07365b66,transparent 35%),
+    radial-gradient(circle at 100% 30%,#520b7850,transparent 35%),
+    var(--bg);
+}
+header{
+  height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 5%;
+  background:#080f20;
+  border-bottom:1px solid #12436c;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+  width:48px;height:48px;border-radius:15px;
+  display:grid;place-items:center;font-size:25px;
+  background:linear-gradient(135deg,#008cff,#8500ff);
+  box-shadow:0 0 18px #008cff66;
+}
+.brand h2{font-size:18px;margin:0}
+.brand h2 span{color:var(--blue)}
+.brand small{display:block;color:var(--muted);margin-top:5px}
+.premium{
+  border:1px solid var(--purple);
+  color:#e1a5ff;padding:11px 17px;
+  border-radius:30px;font-size:13px;
+}
+main{max-width:1200px;margin:auto;padding:25px 20px 100px}
+.welcome{
+  padding:27px;
+  border:1px solid var(--blue);
+  border-right:2px solid var(--purple);
+  border-radius:20px;
+  background:linear-gradient(110deg,#092b50,#11102b,#31054b);
+  box-shadow:0 0 20px #008cff25;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:20px;
+}
+.welcome h1{font-size:25px;margin:0 0 10px}
+.welcome p{color:var(--muted);margin:0;line-height:1.5}
+.crown{font-size:48px;color:var(--blue)}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:20px;
+}
+.card{
+  background:linear-gradient(145deg,#101d38,#091226);
+  border:1px solid #1c4168;
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 0 14px #008cff12;
+  min-width:0;
+}
+.stat{display:flex;gap:13px;align-items:center}
+.stat-icon{font-size:29px}
+.stat small{color:var(--muted)}
+.stat h2{font-size:25px;margin:9px 0}
+.green{color:var(--green)}
+.blue{color:var(--blue)}
+.purple{color:#d18aff}
+.yellow{color:#ffd65a}
+.columns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:17px;
+  margin-bottom:18px;
+}
+.card-title{font-size:19px;font-weight:bold;margin-bottom:19px}
+.key{
+  padding:15px;
+  border-radius:12px;
+  border:1px solid #294d76;
+  background:#061126;
+  color:#d5e6ff;
+  overflow-wrap:anywhere;
+  font-size:13px;
+}
+.key-status{color:var(--green);margin-top:15px;font-size:13px}
+button{
+  cursor:pointer;
+  border:0;
+  border-radius:10px;
+  padding:12px 17px;
+  color:white;
+  font-weight:bold;
+  background:linear-gradient(100deg,#008cff,#9300ff);
+  margin-top:15px;
+}
+button:hover{filter:brightness(1.2)}
+.plan{
+  background:linear-gradient(120deg,#08244a,#15102e,#35004e);
+  border-color:#8c35e8;
+}
+.plan h1{font-size:29px;margin:12px 0}
+.plan p{color:#c3cde1}
+.docs{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  background:linear-gradient(100deg,#09294b,#10132e,#300044);
+  border:1px solid var(--blue);
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:18px;
+}
+.docs h2{font-size:20px;margin:0 0 9px}
+.docs p{color:var(--muted);font-size:14px;line-height:1.5}
+.code-icon{font-size:48px;color:var(--blue)}
+.bottom-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:17px;
+}
+.usage{display:flex;align-items:center;gap:22px}
+.circle{
+  width:115px;height:115px;flex-shrink:0;
+  border-radius:50%;
+  display:grid;place-items:center;
+  background:conic-gradient(var(--blue) 68%,#243453 0);
+  position:relative;
+}
+.circle:before{
+  content:"";
+  position:absolute;
+  width:87px;height:87px;
+  border-radius:50%;
+  background:#0c1730;
+}
+.circle strong{z-index:1;font-size:24px}
+.bar{
+  height:10px;background:#243453;
+  border-radius:20px;margin-top:13px;
+  overflow:hidden;
+}
+.bar span{
+  display:block;width:68%;height:100%;
+  background:linear-gradient(90deg,var(--blue),var(--purple));
+}
+.quick a{
+  display:flex;
+  justify-content:space-between;
+  padding:13px 2px;
+  border-bottom:1px solid #253653;
+  color:#dce8ff;
+  text-decoration:none;
+  font-size:14px;
+}
+.quick a:last-child{border:0}
+footer{
+  text-align:center;
+  color:var(--muted);
+  padding:28px 10px 15px;
+  font-size:13px;
+}
+nav{
+  display:none;
+  position:fixed;
+  bottom:0;left:0;width:100%;
+  background:#080f20;
+  border-top:1px solid #21446c;
+  padding:11px 4px;
+  justify-content:space-around;
+  z-index:20;
+}
+nav a{
+  text-decoration:none;
+  color:#aebbd4;
+  text-align:center;
+  font-size:11px;
+}
+nav span{display:block;font-size:21px;margin-bottom:5px}
+nav a:first-child{color:var(--blue)}
+@media(max-width:750px){
+  header{height:70px;padding:0 14px}
+  .logo{width:43px;height:43px}
+  .brand h2{font-size:15px}
+  .premium{font-size:11px;padding:9px 12px}
+  main{padding:17px 12px 95px}
+  .welcome{padding:20px}
+  .welcome h1{font-size:20px}
+  .welcome p{font-size:13px}
+  .crown{font-size:36px}
+  .stats{grid-template-columns:1fr 1fr;gap:10px}
+  .card{padding:15px}
+  .stat{gap:9px}
+  .stat-icon{font-size:24px}
+  .stat h2{font-size:21px}
+  .columns,.bottom-grid{grid-template-columns:1fr;gap:12px}
+  .docs{padding:18px}
+  .docs h2{font-size:18px}
+  .code-icon{font-size:37px}
+  .usage{gap:15px}
+  nav{display:flex}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">👑</div>
+    <div>
+      <h2>SHAN <span>MINI BOT</span></h2>
+      <small>Developer Portal</small>
+    </div>
+  </div>
+  <div class="premium">👑 PREMIUM</div>
+</header>
+
+<main>
+  <section class="welcome">
+    <div>
+      <h1>Welcome Back, Developer! 👋</h1>
+      <p>Manage your APIs, track requests and explore developer tools.</p>
+    </div>
+    <div class="crown">♛</div>
+  </section>
+
+  <section class="stats">
+    <div class="card stat">
+      <div class="stat-icon">🚀</div>
+      <div>
+        <small>Total Requests</small>
+        <h2>12.4K</h2>
+        <span class="green">↑ +12%</span>
+      </div>
+    </div>
+    <div class="card stat">
+      <div class="stat-icon">🔑</div>
+      <div>
+        <small>API Keys</small>
+        <h2>01</h2>
+        <span class="green">● Active</span>
+      </div>
+    </div>
+    <div class="card stat">
+      <div class="stat-icon">📊</div>
+      <div>
+        <small>This Month</small>
+        <h2>8.7K</h2>
+        <span class="green">↑ +18%</span>
+      </div>
+    </div>
+    <div class="card stat">
+      <div class="stat-icon yellow">⭐</div>
+      <div>
+        <small>Current Plan</small>
+        <h2>Free</h2>
+        <span class="purple">Upgrade Plan</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="columns">
+    <div class="card" id="keys">
+      <div class="card-title">🔑 Your API Keys</div>
+      <div class="key">sk_live_••••••••••••••••••</div>
+      <div class="key-status">● Status: Active</div>
+      <button onclick="alert('API key generation will be connected later.')">＋ Generate New Key</button>
+    </div>
+
+    <div class="card plan">
+      <div class="card-title">👑 Your Plan</div>
+      <h1>FREE PLAN</h1>
+      <p>50 requests total per API key.</p>
+      <p>Upgrade to unlock more features.</p>
+      <button onclick="alert('Premium upgrade will be connected later.')">Upgrade to Premium →</button>
+    </div>
+  </section>
+
+  <section class="docs" id="docs">
+    <div>
+      <h2>📘 API Documentation</h2>
+      <p>Learn how to integrate SHAN APIs into your applications.</p>
+      <button onclick="alert('Documentation will be connected later.')">View Documentation →</button>
+    </div>
+    <div class="code-icon">&lt;/&gt;</div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="card" id="usage">
+      <div class="card-title">📈 Usage Statistics</div>
+      <div class="usage">
+        <div class="circle"><strong>68%</strong></div>
+        <div>
+          <h2>8.7K / 12.4K</h2>
+          <p class="muted">Requests Used</p>
+          <div class="bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card quick">
+      <div class="card-title">🔗 Quick Links</div>
+      <a href="#keys">🔑 API Keys <span>›</span></a>
+      <a href="#docs">📘 Developer Guide <span>›</span></a>
+      <a href="#usage">📊 Usage Statistics <span>›</span></a>
+      <a href="mailto:support@shanmd.com">✉ Contact Support <span>›</span></a>
+      <a href="#">👑 Admin Panel <span>›</span></a>
+    </div>
+  </section>
+
+  <footer>
+    👑 SHAN MINI BOT<br><br>
+    Powered by SHAN MD | Kingdom Of Devil
+  </footer>
+</main>
+
+<nav>
+  <a href="#"><span>⌂</span>Home</a>
+  <a href="#keys"><span>🔑</span>API Keys</a>
+  <a href="#docs"><span>📘</span>Docs</a>
+  <a href="#usage"><span>📊</span>Stats</a>
+  <a href="#"><span>⚙️</span>Settings</a>
+</nav>
+
+</body>
+</html>
+
