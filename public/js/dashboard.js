@@ -37,7 +37,7 @@ async function loadCoins() {
     $("bal").textContent = d.balance; $("earn").textContent = d.earned; $("spent").textContent = d.spent;
     $("refCode").textContent = d.code || "-";
     $("refInfo").textContent = `Friends joined: ${d.refs || 0}. You get +${d.refReward} coins per friend and they get +${d.refBonus}.`;
-    $("gInfo").textContent = d.gInfo || "";
+    if ($("gInfo")) $("gInfo").textContent = d.gInfo || "";
     $("dailyBtn").disabled = !d.canDaily;
     $("dailyBtn").textContent = d.canDaily ? "Claim daily reward" : "Daily reward claimed";
     $("txList").innerHTML = d.tx.length
