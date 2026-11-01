@@ -83,11 +83,6 @@
         <input class="input" id="rdCode" maxlength="20" placeholder="Coupon code" style="margin-top:8px">
         <button class="btn" data-act="redeem" type="button" style="margin-top:10px">Redeem</button></div>
 
-      <div class="card"><h3>Send coins to a friend</h3><p class="muted">10 to 500 coins. Send coins directly without an OTP.</p>
-        <input class="input" id="snNum" type="tel" inputmode="numeric" placeholder="Friend's WhatsApp number" style="margin-top:8px">
-        <input class="input" id="snAmt" type="number" inputmode="numeric" placeholder="Amount" style="margin-top:8px">
-        <button class="btn" data-act="send" type="button" style="margin-top:10px">Send coins</button></div>
-
       <div class="card"><h3>Top earners</h3><div id="lbList"></div></div>
 
       <div class="card"><h3>Your promo code</h3>
@@ -113,16 +108,7 @@
           <button class="btn wa" id="bStart" data-bot="start" type="button">Start</button>
           <button class="btn danger" id="bStop" data-bot="stop" type="button">Stop</button>
         </div>
-        <a class="btn ghost" href="/#home" style="margin-top:10px">Link or re-link bot (pair code)</a>
-      </div>
-      <div class="card"><h3>Bot settings</h3>
-        <label class="field"><span>Prefix</span><input class="input" id="sPrefix" maxlength="3" placeholder="."></label>
-        <label class="field"><span>Bot name</span><input class="input" id="sName" maxlength="30" placeholder="SHAN MINI BOT"></label>
-        <label class="field"><span>Mode</span><select class="input" id="sMode"><option value="public">Public</option><option value="private">Private</option></select></label>
-        <label class="sw"><span>Auto seen</span><input type="checkbox" id="sSeen"></label>
-        <label class="sw"><span>Typing indicator</span><input type="checkbox" id="sTyping"></label>
-        <div id="wimgBox" hidden><label class="field"><span>Welcome image URL</span><input class="input" id="sImg" placeholder="https://…"></label></div>
-        <button class="btn" data-act="saveSet" type="button" style="margin-top:14px">Save settings</button>
+        <p class="muted" style="margin-top:10px">Connect your WhatsApp through Linked Devices.</p>
       </div>
       <div class="card"><h3>API keys</h3><div id="keyList"></div>
         <input class="input" id="kName" maxlength="30" placeholder="Key name, e.g. my-app" style="margin-top:10px">

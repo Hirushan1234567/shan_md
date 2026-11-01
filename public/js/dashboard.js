@@ -102,10 +102,6 @@ async function loadBot() {
     $("stDot").className = "dot" + (on ? "" : " off"); $("stTxt").textContent = on ? "Online" : "Offline";
     $("stPill").textContent = on ? "Running" : "Stopped"; $("stPill").className = "pill " + (on ? "on" : "off");
     $("bStart").disabled = on; $("bStop").disabled = !on;
-    const c = await api("GET", "/settings");
-    $("sPrefix").value = c.prefix; $("sName").value = c.name; $("sMode").value = c.mode;
-    $("sSeen").checked = c.seen; $("sTyping").checked = c.typing;
-    show($("wimgBox"), !!c.canImg); $("sImg").value = c.img || "";
     const k = await api("GET", "/keys");
     $("keyList").innerHTML = k.length ? k.map(x => `<div class="keyrow row" style="display:block"><b>${esc(x.name)}</b> <small class="muted">${fmt(x.created)}</small>
       <code>${esc(x.key)}</code><button class="btn ghost sm" data-copy-key="${esc(x.key)}" type="button">Copy API</button><button class="btn danger sm" data-revoke="${esc(x.id)}" type="button">Revoke</button></div>`).join("")
@@ -154,18 +150,7 @@ document.addEventListener("click", async e => {
       case "daily": await api("POST", "/coins/daily"); toast("🎉 Daily reward claimed"); return loadCoins();
       case "redeem": { const code = $("rdCode").value.trim().toUpperCase(); if (!code) return;
         const d = await api("POST", "/coins/redeem", { code }); $("rdCode").value = ""; toast(`🎟 +${d.coins} coins`); return loadCoins(); }
-      case "send": {
-        const d = await api("POST", "/coins/send", {
-          number: $("snNum").value.replace(/\D/g, ""),
-          amount: +$("snAmt").value
-        });
-        $("snNum").value = "";
-        $("snAmt").value = "";
-        toast(d.message || "Coins sent successfully");
-        return loadCoins();
-      }
       case "copyRef": await navigator.clipboard?.writeText($("refCode").textContent); return toast("Code copied");
-      case "saveSet": await api("PUT", "/settings", { prefix: $("sPrefix").value || ".", name: $("sName").value || "SHAN MINI BOT", mode: $("sMode").value, seen: $("sSeen").checked, typing: $("sTyping").checked, img: $("sImg").value.trim() }); return toast("💾 Settings saved");
       case "newKey": { const d = await api("POST", "/keys", { name: $("kName").value.trim() || "key" }); $("kName").value = "";
         $("newKeyVal").textContent = d.key; $("keyModal").classList.add("show"); return loadBot(); }
       case "postCm": { const msg = $("dcMsg").value.trim(); if (!msg) return toast("Write a comment first.", true);

@@ -6,15 +6,15 @@ export const REF_BONUS = 30;   // promo code දාපු අලුත් user �
 export const REF_REWARD = 60;  // promo code owner ට
 
 export const CATALOG = [
-  { id: "cartoon", name: "Sinhala Cartoon", price: 200, desc: "Search any cartoon, pick episode & quality, file sent to WhatsApp.", cmd: ".cartoon <name>", ver: "1.0" },
-  { id: "song", name: "Song Downloader", price: 100, desc: "Download any song as audio.", cmd: ".song <name>", ver: "1.2" },
-  { id: "ai", name: "AI Chat", price: 150, desc: "ChatGPT-like assistant inside WhatsApp.", cmd: ".ai <question>", ver: "2.0" },
-  { id: "tiktok", name: "TikTok Downloader", price: 80, desc: "No-watermark TikTok videos.", cmd: ".tiktok <url>", ver: "1.1" },
-  { id: "antilink", name: "Anti-Link", price: 60, desc: "Auto remove links in groups.", cmd: ".antilink on/off", ver: "1.0" },
-  { id: "sticker", name: "Sticker Maker", price: 50, desc: "Image/video to sticker.", cmd: ".sticker", ver: "1.0" },
-  { id: "boost", name: "⚡ Daily Booster", price: 150, desc: "2× daily reward for 7 days.", cmd: "Auto-applied", ver: "perk" },
-  { id: "vip", name: "⭐ VIP Badge", price: 300, desc: "VIP badge on your profile + priority support.", cmd: "Profile badge", ver: "perk" },
-  { id: "wimg", name: "🖼 Custom Welcome Image", price: 100, desc: "Use your own image in the bot connect message.", cmd: "Bot Settings", ver: "perk" }
+  { id: "cartoon", name: "Sinhala Cartoon", price: 200, desc: "Search any cartoon, pick episode & quality, file sent to WhatsApp.", cmd: ".cartoon <name>", ver: "1.0", tier: "premium" },
+  { id: "song", name: "Song Downloader", price: 100, desc: "Download any song as audio.", cmd: ".song <name>", ver: "1.2", tier: "standard" },
+  { id: "ai", name: "AI Chat", price: 150, desc: "ChatGPT-like assistant inside WhatsApp.", cmd: ".ai <question>", ver: "2.0", tier: "premium" },
+  { id: "tiktok", name: "TikTok Downloader", price: 80, desc: "No-watermark TikTok videos.", cmd: ".tiktok <url>", ver: "1.1", tier: "standard" },
+  { id: "antilink", name: "Anti-Link", price: 60, desc: "Auto remove links in groups.", cmd: ".antilink on/off", ver: "1.0", tier: "standard" },
+  { id: "sticker", name: "Sticker Maker", price: 50, desc: "Image/video to sticker.", cmd: ".sticker", ver: "1.0", tier: "standard" },
+  { id: "boost", name: "⚡ Daily Booster", price: 150, desc: "2× daily reward for 7 days.", cmd: "Auto-applied", ver: "perk", tier: "standard" },
+  { id: "vip", name: "⭐ VIP Badge", price: 300, desc: "VIP badge on your profile + priority support.", cmd: "Profile badge", ver: "perk", tier: "premium" },
+  { id: "wimg", name: "🖼 Custom Welcome Image", price: 100, desc: "Use your own image in the bot connect message.", cmd: "Bot Settings", ver: "perk", tier: "premium" }
 ];
 
 export const TASKS = [
