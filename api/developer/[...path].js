@@ -1,12 +1,12 @@
-import login from "../../lib/developer/login.js";
-import logout from "../../lib/developer/logout.js";
-import register from "../../lib/developer/register.js";
-import me from "../../lib/developer/me.js";
-import catalog from "../../lib/developer/catalog.js";
-import keys from "../../lib/developer/keys.js";
-import usage from "../../lib/developer/usage.js";
-import usageIngest from "../../lib/developer/usage-ingest.js";
-import premium from "../../lib/developer/premium.js";
+import login from "../../lib/developer/login.cjs";
+import logout from "../../lib/developer/logout.cjs";
+import register from "../../lib/developer/register.cjs";
+import me from "../../lib/developer/me.cjs";
+import catalog from "../../lib/developer/catalog.cjs";
+import keys from "../../lib/developer/keys.cjs";
+import usage from "../../lib/developer/usage.cjs";
+import usageIngest from "../../lib/developer/usage-ingest.cjs";
+import premium from "../../lib/developer/premium.cjs";
 
 const routes = {
   login, logout, register, me, catalog, keys, usage,
