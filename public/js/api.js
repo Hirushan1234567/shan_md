@@ -34,7 +34,7 @@ export async function api(method, path, body) {
   let r;
 
   try {
-    r = await fetch("/api" + path, {
+    r = await fetch("/api/" + String(path).replace(/^\/+/, ""), {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined
