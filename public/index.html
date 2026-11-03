@@ -1,805 +1,445 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SHAN API | Developer Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#030714">
+<title>SHAN MINI BOT | Developer Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#080d18; --panel:#101a2b; --panel2:#142239;
-  --line:#243650; --text:#edf4ff; --muted:#91a4bf;
-  --blue:#398bff; --purple:#895cff; --green:#27d99a;
+:root{
+ --bg:#030714;--panel:#091329;--panel2:#0c1831;
+ --blue:#00bfff;--purple:#a100ff;--cyan:#00eaff;
+ --green:#00e6a0;--muted:#aab8d4;--text:#f5f8ff;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
-button,input{font:inherit}
-button{cursor:pointer}
-.hidden{display:none!important}
-.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
-.auth-box{width:100%;max-width:410px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px}
-.logo{font-size:25px;font-weight:900;letter-spacing:1px}
-.logo span{color:var(--blue)}
-.sub{color:var(--muted);font-size:13px;margin:9px 0 25px}
-.field{margin:14px 0}
-.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:8px}
-.field input{width:100%;padding:13px;background:#091323;border:1px solid var(--line);border-radius:10px;color:white;outline:none}
-.field input:focus{border-color:var(--blue)}
-.primary{width:100%;padding:13px;border:0;border-radius:10px;color:white;font-weight:bold;background:linear-gradient(100deg,var(--blue),var(--purple))}
-.switch{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
-.switch a{color:#71aaff;cursor:pointer}
-.message{font-size:13px;margin-top:12px;color:#ff8585;min-height:18px}
-.app{min-height:100vh}
-.sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:#0c1525;border-right:1px solid var(--line);padding:24px 16px}
-.brand{padding:4px 12px 30px}
-.brand small{display:block;color:var(--muted);font-size:11px;margin-top:7px}
-.nav-label{font-size:10px;color:#647894;padding:12px}
-.nav button{display:block;width:100%;text-align:left;padding:13px 14px;margin:4px 0;border:0;border-radius:9px;background:transparent;color:#aebed3}
-.nav button.active,.nav button:hover{background:#172b49;color:white}
-.nav button span{display:inline-block;width:27px}
-.side-bottom{position:absolute;bottom:20px;left:16px;right:16px}
-.user-mini{border:1px solid var(--line);padding:12px;border-radius:12px;font-size:12px;overflow-wrap:anywhere}
-.user-mini small{display:block;color:var(--muted);margin-top:5px}
-.logout{margin-top:10px;width:100%;padding:10px;border:1px solid var(--line);background:transparent;color:#ff9a9a;border-radius:9px}
-.main{margin-left:245px;padding:30px;max-width:1500px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}
-.top h1{font-size:25px;margin:0}
-.top p{color:var(--muted);font-size:13px;margin:7px 0 0}
-.pill{background:#153b36;color:#61e4b5;border:1px solid #21614f;padding:8px 12px;border-radius:30px;font-size:11px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:19px}
-.stat-label{color:var(--muted);font-size:12px}
-.stat{font-size:27px;font-weight:800;margin-top:12px}
-.stat-note{font-size:11px;color:var(--muted);margin-top:7px}
-.section{margin-top:22px}
-.section-title{font-size:16px;margin:0 0 13px}
-.two{display:grid;grid-template-columns:1.4fr 1fr;gap:15px}
-.welcome{background:linear-gradient(110deg,#12335d,#29204d);border:1px solid #31517d;border-radius:16px;padding:23px}
-.welcome h2{margin:0 0 9px;font-size:21px}
-.welcome p{color:#c1d4ef;font-size:13px;line-height:1.6}
-.action{padding:10px 14px;border:1px solid #668dc1;background:#16375e;color:white;border-radius:9px}
-.item{padding:14px 0;border-bottom:1px solid var(--line);font-size:13px}
-.item:last-child{border:0}
-.item small{display:block;color:var(--muted);margin-top:6px}
-.code{background:#07101e;border:1px solid var(--line);padding:14px;border-radius:10px;color:#9fc7ff;overflow:auto;font:12px monospace;white-space:pre-wrap}
-.page{display:none}
-.page.active{display:block}
-.notice{border:1px dashed #385274;border-radius:12px;padding:22px;color:var(--muted);font-size:13px;line-height:1.7}
-.table{width:100%;border-collapse:collapse;font-size:12px}
-.table th,.table td{text-align:left;padding:13px;border-bottom:1px solid var(--line)}
-.table th{color:var(--muted);font-weight:normal}
-@media(max-width:900px){
- .sidebar{width:190px}.main{margin-left:190px;padding:20px}.grid{grid-template-columns:repeat(2,1fr)}
+html{scroll-behavior:smooth}
+body{
+ margin:0;background:
+ radial-gradient(ellipse at 0% 20%,#003e8050,transparent 35%),
+ radial-gradient(ellipse at 100% 50%,#6200a833,transparent 35%),var(--bg);
+ color:var(--text);font-family:Poppins,Arial,sans-serif;
+ padding-bottom:90px;overflow-x:hidden
 }
-@media(max-width:650px){
- .sidebar{position:relative;width:auto;height:auto;padding:14px;border-right:0;border-bottom:1px solid var(--line)}
- .brand{padding:5px 8px 14px}.nav{display:flex;overflow:auto;gap:5px}
- .nav-label,.side-bottom{display:none}.nav button{white-space:nowrap;width:auto;padding:10px}
- .main{margin:0;padding:17px}.two{grid-template-columns:1fr}.top h1{font-size:21px}
+button,a{font-family:inherit}
+button{cursor:pointer}
+header{
+ height:78px;position:sticky;top:0;z-index:100;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:0 4%;background:#030817f2;
+ border-bottom:1px solid #123c67;backdrop-filter:blur(15px)
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+ width:51px;height:51px;border-radius:50%;display:grid;place-items:center;
+ border:2px solid var(--cyan);font-size:25px;
+ box-shadow:0 0 15px var(--blue),inset 0 0 15px #008cff55;
+ background:linear-gradient(135deg,#092b54,#150c37)
+}
+.brand h2{font-family:Orbitron;font-size:17px;margin:0}
+.brand h2 span{color:var(--cyan)}
+.brand small{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+.header-right{display:flex;align-items:center;gap:12px}
+.premium{
+ padding:10px 17px;border:1px solid var(--purple);border-radius:30px;
+ color:#e6a2ff;background:#8000ff18;box-shadow:0 0 16px #a100ff55;
+ font-weight:700;font-size:12px
+}
+.profile{
+ border:1px solid #174b75;border-radius:14px;padding:7px 12px;
+ display:flex;align-items:center;gap:9px;background:#091329
+}
+.avatar{width:37px;height:37px;border-radius:50%;display:grid;place-items:center;background:#102d55}
+.profile b{font-size:12px}.profile small{display:block;color:var(--muted);font-size:10px}
+main{max-width:1250px;margin:auto;padding:20px 25px 30px}
+.glow{
+ border:1px solid #087fc9;
+ box-shadow:0 0 9px #008cff55,inset 0 0 14px #007bff16;
+ border-radius:20px;position:relative;overflow:hidden
+}
+.welcome{
+ min-height:125px;padding:22px 28px;margin-bottom:20px;
+ display:flex;align-items:center;justify-content:space-between;gap:15px;
+ background:linear-gradient(110deg,#071d3d,#080d25 65%,#17072d);
+ border-right:2px solid var(--purple);
+ box-shadow:0 0 18px #008cff55,0 0 25px #a100ff33
+}
+.welcome-left{display:flex;align-items:center;gap:22px}
+.crown{font-size:48px;color:var(--cyan);text-shadow:0 0 17px var(--blue)}
+.welcome h1{font-size:23px;margin:0 0 7px}
+.welcome p{font-size:13px;color:var(--muted);margin:0}
+.portal{text-align:center;color:var(--cyan);font-weight:800;font-size:17px}
+.portal small{display:block;color:#00d6c9;font-size:11px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.card{
+ background:linear-gradient(145deg,#0d1b35,#070f21);
+ border:1px solid #1c4168;border-radius:18px;padding:19px;
+ box-shadow:0 0 13px #008cff18;min-width:0
+}
+.stat{display:flex;align-items:center;gap:14px;min-height:125px}
+.stat-icon{font-size:34px;color:var(--cyan);text-shadow:0 0 13px var(--blue)}
+.stat small{color:var(--muted);font-size:12px}
+.stat h2{font-size:25px;margin:5px 0}
+.green{color:var(--green);font-size:13px;font-weight:700}
+.purple-text{color:#d58aff;font-size:13px;font-weight:700}
+.blue-text{color:var(--cyan)}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin-bottom:19px}
+.card-title{font-size:18px;font-weight:700;margin-bottom:18px}
+.keybox{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ background:#071126;border:1px solid #294d76;border-radius:13px;
+ padding:16px;color:#d5e6ff;overflow-wrap:anywhere;font-size:13px
+}
+.keybox button{background:none;border:0;color:#d58aff;font-size:23px;padding:0}
+.key-status{display:flex;justify-content:space-between;gap:8px;margin-top:14px;font-size:13px}
+.active{color:var(--green);font-weight:700}
+.plan{
+ background:linear-gradient(120deg,#08244a,#15102e,#35004e);
+ border:1px solid #963dff;box-shadow:0 0 15px #7800ff25
+}
+.plan h1{font-size:29px;margin:8px 0}
+.plan p{color:#c3cde1;font-size:13px}
+.action{
+ border:0;border-radius:11px;padding:12px 19px;color:white;
+ font-weight:700;background:linear-gradient(100deg,#008cff,#9700ff);
+ box-shadow:0 0 13px #008cff55
+}
+.action:hover{filter:brightness(1.2)}
+.plan-art{float:right;font-size:65px;color:var(--cyan);text-shadow:0 0 20px var(--blue)}
+.docs{
+ display:flex;justify-content:space-between;align-items:center;gap:15px;
+ padding:20px 25px;margin-bottom:19px;
+ background:linear-gradient(100deg,#09294b,#10132e,#300044);
+ border:1px solid var(--cyan);border-right:2px solid var(--purple);
+ box-shadow:0 0 17px #008cff55
+}
+.docs h2{font-size:19px;margin:0 0 7px}
+.docs p{color:var(--muted);font-size:13px;margin:0 0 12px}
+.code-icon{font-size:58px;color:var(--cyan);text-shadow:0 0 20px var(--blue)}
+.bottom-grid{display:grid;grid-template-columns:1.2fr .9fr;gap:17px}
+.usage{display:flex;align-items:center;gap:25px}
+.circle{
+ width:125px;height:125px;flex-shrink:0;border-radius:50%;
+ display:grid;place-items:center;
+ background:conic-gradient(var(--cyan) 68%,#243453 0);
+ position:relative;box-shadow:0 0 16px #008cff33
+}
+.circle:before{content:"";position:absolute;width:96px;height:96px;border-radius:50%;background:#0b1730}
+.circle strong{z-index:1;font-size:25px}
+.bar{height:10px;background:#243453;border-radius:20px;margin-top:13px;overflow:hidden}
+.bar span{display:block;width:68%;height:100%;background:linear-gradient(90deg,var(--blue),var(--purple))}
+.quick a{
+ display:flex;justify-content:space-between;align-items:center;
+ padding:11px 2px;border-bottom:1px solid #253653;
+ color:#dce8ff;text-decoration:none;font-size:13px
+}
+.quick a:last-child{border:0}
+footer{text-align:center;color:var(--muted);padding:28px 10px 15px;font-size:13px}
+footer b{color:var(--cyan)}
+.bottom-nav{
+ position:fixed;bottom:0;left:0;width:100%;z-index:150;
+ display:flex;justify-content:space-around;align-items:center;
+ background:#070d20f5;border-top:1px solid #21446c;padding:10px 3px;
+ backdrop-filter:blur(15px)
+}
+.bottom-nav a{text-decoration:none;color:#aebbd4;text-align:center;font-size:11px;min-width:50px}
+.bottom-nav a span{display:block;font-size:22px;margin-bottom:3px}
+.bottom-nav a:first-child{color:#d14dff;text-shadow:0 0 12px #a100ff}
+.modal-overlay{
+ display:none;position:fixed;inset:0;background:#000e;z-index:9999;
+ align-items:center;justify-content:center;padding:15px
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+ width:100%;max-width:410px;max-height:92vh;overflow:auto;
+ background:#091329;border:1px solid var(--cyan);border-radius:18px;
+ padding:22px;box-shadow:0 0 25px #008cff66;color:white
+}
+.modal-box h2{font-family:Orbitron;color:var(--cyan);font-size:17px}
+.modal-box p{color:var(--muted);font-size:12px;line-height:1.7}
+.modal-box label{display:block;font-size:11px;color:var(--muted)}
+.modal-box input{
+ width:100%;padding:13px;margin:8px 0 13px;background:#030b1c;
+ border:1px solid #087fc9;border-radius:10px;color:white;font-size:14px
+}
+.pair-code{
+ display:none;background:white;color:#07111c;padding:17px;border-radius:10px;
+ font-family:Orbitron;font-size:25px;font-weight:900;letter-spacing:5px;
+ text-align:center;margin:13px 0;overflow-wrap:anywhere
+}
+.status{font-size:12px;line-height:1.7;color:var(--muted);margin:10px 0;overflow-wrap:anywhere}
+.status.good{color:var(--green)}.status.error{color:#ff6688}
+#botKeyBox{margin:14px 0;padding:13px;border:1px solid var(--cyan);border-radius:12px;background:#008cff12}
+#botKeyValue{word-break:break-all;margin:10px 0;font-size:12px}
+#toast{
+ position:fixed;top:90px;left:50%;transform:translateX(-50%);
+ background:#091329;border:1px solid var(--cyan);border-radius:10px;
+ padding:11px 16px;font-size:12px;z-index:10001;display:none
+}
+@media(max-width:800px){
+ header{height:70px;padding:0 13px}
+ .brand h2{font-size:14px}.brand small{font-size:10px}
+ .logo{width:43px;height:43px}.profile{padding:5px 7px}
+ .profile b{font-size:10px}.premium{font-size:10px;padding:8px}
+ main{padding:15px 12px}
+ .welcome{padding:18px;min-height:105px}
+ .welcome-left{gap:12px}.crown{font-size:35px}
+ .welcome h1{font-size:17px}.welcome p{font-size:11px}
+ .portal{font-size:12px}.portal small{font-size:9px}
+ .stats{grid-template-columns:1fr 1fr;gap:10px}
+ .card{padding:14px}.stat{min-height:105px;gap:9px}
+ .stat-icon{font-size:26px}.stat h2{font-size:21px}
+ .columns,.bottom-grid{grid-template-columns:1fr;gap:12px}
+ .docs{padding:17px}.docs h2{font-size:16px}
+ .code-icon{font-size:40px}.usage{gap:17px}
+ .circle{width:105px;height:105px}.circle:before{width:80px;height:80px}
+}
+@media(max-width:390px){
+ .premium{display:none}.welcome{padding:14px}
+ .portal{display:none}.welcome h1{font-size:15px}
+ .stat{gap:7px}.stat h2{font-size:19px}
 }
 </style>
 </head>
 <body>
+<header>
+ <div class="brand">
+  <div class="logo">👑</div>
+  <div><h2>SHAN <span>MINI BOT</span></h2><small>Developer Portal</small></div>
+ </div>
+ <div class="header-right">
+  <div class="premium">👑 Premium</div>
+  <div class="profile"><div class="avatar">👤</div><div><b>Shan</b><small>Developer</small></div></div>
+ </div>
+</header>
 
-<div id="auth" class="auth-wrap">
-  <div class="auth-box">
-    <div class="logo">SHAN <span>API</span></div>
-    <div class="sub">Developer Portal · Manage your API access</div>
-
-    <div id="registerFields" class="hidden">
-      <div class="field">
-        <label>Your Name</label>
-        <input id="name" placeholder="Your name" autocomplete="name">
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Email Address</label>
-      <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
-    </div>
-    <div class="field">
-      <label>Password</label>
-      <input id="password" type="password" placeholder="Minimum 10 characters" autocomplete="current-password">
-    </div>
-
-    <button id="submitBtn" class="primary" onclick="submitAuth()">LOGIN</button>
-    <div id="authMessage" class="message"></div>
-    <div class="switch">
-      <span id="switchText">Don't have an account?</span>
-      <a onclick="toggleAuth()" id="switchLink">Create account</a>
-    </div>
+<main id="home">
+ <section class="welcome glow">
+  <div class="welcome-left">
+   <div class="crown">♕</div>
+   <div><h1>Welcome Back, Shan! 👋</h1><p>Manage your bot, get API keys and track usage easily.</p></div>
   </div>
-</div>
+  <div class="portal">♛ Developer Portal<small>Build · Connect · Grow</small></div>
+  <button class="action" id="deployBtn" type="button" onclick="openPair()">🚀 DEPLOY YOUR BOT · GENERATE PAIR CODE</button>
+ </section>
 
-<div id="app" class="app hidden">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo">SHAN <span>API</span></div>
-      <small>DEVELOPER CONSOLE</small>
+ <section class="stats">
+  <div class="card stat"><div class="stat-icon">🚀</div><div><small>Total Requests</small><h2>12.4K</h2><span class="green">↑ +12%</span></div></div>
+  <div class="card stat"><div class="stat-icon">🔑</div><div><small>API Keys</small><h2>1</h2><span class="green">● Active</span></div></div>
+  <div class="card stat"><div class="stat-icon">◷</div><div><small>This Month</small><h2>8.7K</h2><span class="green">↑ +18%</span></div></div>
+  <div class="card stat" style="border-color:#7133a0"><div class="stat-icon" style="color:#ffd65a">☆</div><div><small>Plan</small><h2>Free</h2><span class="purple-text">♛ Upgrade</span></div></div>
+ </section>
+
+ <section class="columns">
+  <div class="card glow" id="keys">
+   <div class="card-title">🔑 Your API Keys</div>
+   <div class="keybox"><span>sk_live_••••••••••••••••</span><button type="button" onclick="toast('API key section will be connected later')">▣</button></div>
+   <div class="key-status"><span class="active">🟢 Status: Active</span><span>Expires: Never</span></div>
+   <button class="action" type="button" onclick="toast('API key generation will be connected later')">＋ Generate New</button>
+  </div>
+  <div class="card plan glow">
+   <div class="plan-art">♛</div><div class="card-title">👑 Your Plan</div>
+   <h1>Free Plan</h1><p>50 Requests Total</p>
+   <button class="action" type="button" onclick="toast('Premium upgrade will be connected later')">Upgrade Now</button>
+  </div>
+ </section>
+
+ <section class="docs glow" id="docs">
+  <div><h2>📘 API Documentation</h2><p>Learn how to use our APIs and integrate with your projects.</p>
+   <button class="action" type="button" onclick="toast('Documentation will be connected later')">View Docs →</button>
+  </div>
+  <div class="code-icon">‹ / ›</div>
+ </section>
+
+ <section class="bottom-grid">
+  <div class="card glow" id="usage">
+   <div class="card-title">📊 Usage Statistics</div>
+   <div class="usage"><div class="circle"><strong>68%</strong></div>
+    <div><h2 style="font-size:22px;margin:0">8.7K / 12.4K</h2><p style="color:var(--muted);font-size:13px">Requests Used</p>
+     <div class="bar"><span></span></div>
     </div>
-    <div class="nav-label">WORKSPACE</div>
-    <nav class="nav">
-      <button class="active" onclick="showPage('dashboard',this)"><span>⌂</span>Dashboard</button>
-      <button onclick="showPage('keys',this)"><span>⚿</span>API Keys</button>
-      <button onclick="showPage('docs',this)"><span>▤</span>API Docs</button>
-      <button onclick="showPage('usage',this)"><span>▥</span>Usage</button>
-      <button onclick="showPage('premium',this)"><span>✦</span>Premium</button>
-      <button id="adminNav" class="hidden" onclick="showPage('admin',this)"><span>⚙</span>Admin Panel</button>
-    </nav>
-    <div class="side-bottom">
-      <div class="user-mini">
-        <strong id="sideName">Developer</strong>
-        <small id="sideEmail"></small>
-      </div>
-      <button class="logout" onclick="logout()">Log out</button>
-    </div>
-  </aside>
+   </div>
+  </div>
+  <div class="card quick glow">
+   <div class="card-title">🔗 Quick Links</div>
+   <a href="#home">♧ Bot Features <span>›</span></a>
+   <a href="#docs">♧ Developer Guide <span>›</span></a>
+   <a href="#support">✉ Contact Support <span>›</span></a>
+   <a href="/dashboard" style="color:#d58aff">👑 Coins Dashboard <span>›</span></a>
+  </div>
+ </section>
 
-  <main class="main">
-    <div class="top">
-      <div>
-        <h1 id="pageTitle">Dashboard</h1>
-        <p id="greeting">Welcome to your developer workspace.</p>
-      </div>
-      <div class="pill" id="planBadge">FREE PLAN</div>
-    </div>
+ <footer>👑 <b>SHAN MINI BOT</b><br><br>Powered by SHAN MD | Kingdom Of Devil</footer>
+</main>
 
-    <section id="dashboard" class="page active">
-      <div class="grid">
-        <div class="card"><div class="stat-label">Available APIs</div><div class="stat" id="apiCount">—</div><div class="stat-note">Assigned to your account</div></div>
-        <div class="card"><div class="stat-label">API Requests</div><div class="stat" id="requestCount">—</div><div class="stat-note">Usage information</div></div>
-        <div class="card"><div class="stat-label">Account Plan</div><div class="stat" id="planStat">FREE</div><div class="stat-note">Your current access level</div></div>
-        <div class="card"><div class="stat-label">Account Status</div><div class="stat" style="color:var(--green)">ACTIVE</div><div class="stat-note">Developer account</div></div>
-      </div>
+<nav class="bottom-nav">
+ <a href="#home"><span>⌂</span>Home</a>
+ <a href="#keys"><span>⚿</span>API Keys</a>
+ <a href="#docs"><span>▣</span>Docs</a>
+ <a href="#usage"><span>▥</span>Stats</a>
+ <a href="/dashboard"><span>⚙</span>Dashboard</a>
+</nav>
 
-      <div class="section two">
-        <div class="welcome">
-          <h2>Welcome to SHAN API 🚀</h2>
-          <p>Manage your API access, view documentation and monitor your usage from one place.</p>
-          <button class="action" onclick="showPage('docs')">Explore API Docs →</button>
-        </div>
-        <div class="card">
-          <h3 class="section-title">Account Information</h3>
-          <div class="item">Developer<small id="profileName">—</small></div>
-          <div class="item">Email<small id="profileEmail">—</small></div>
-          <div class="item">Account type<small id="profileRole">User</small></div>
-        </div>
-      </div>
+<div id="toast" role="status" aria-live="polite"></div>
 
-      <div class="section card">
-        <h3 class="section-title">Quick Start</h3>
-        <p class="stat-note">Your API keys and endpoint access will appear here when assigned by the administrator.</p>
-        <div class="code">GET /api/v1/status
-Content-Type: application/json</div>
-      </div>
-    </section>
-
-    <section id="keys" class="page">
-      <div class="card">
-        <h3 class="section-title">Your API Keys</h3>
-        <p class="stat-note">Keys assigned to your account by the administrator.</p>
-        <div id="keysContent" class="notice">Loading your API keys...</div>
-      </div>
-    </section>
-
-    <section id="docs" class="page">
-      <div class="card">
-        <h3 class="section-title">API Documentation</h3>
-        <p class="stat-note">Available APIs and documentation for your account.</p>
-        <div id="docsContent" class="notice">Loading API catalogue...</div>
-      </div>
-    </section>
-
-    <section id="usage" class="page">
-      <div class="card">
-        <h3 class="section-title">API Usage</h3>
-        <p class="stat-note">Your request history and limits will appear here.</p>
-        <div id="usageContent" class="notice">Loading usage...</div>
-      </div>
-    </section>
-
-    <section id="premium" class="page">
-      <div class="welcome">
-        <h2>SHAN API Premium ✦</h2>
-        <p>Premium access is assigned by the administrator. Contact the administrator to request an upgrade.</p>
-        <div class="pill" id="premiumStatus">FREE PLAN</div>
-      </div>
-    </section>
-
-    <section id="admin" class="page">
-      <div class="card">
-        <h3 class="section-title">API Catalogue Management</h3>
-        <p class="stat-note">Add and manage APIs available to developers.</p>
-        <div class="field"><label>API Name</label><input id="apiName" placeholder="Example: Movie Search API"></div>
-        <div class="field"><label>API Slug (unique)</label><input id="apiSlug" placeholder="movie-search"></div>
-        <div class="field"><label>Base URL</label><input id="apiBase" placeholder="https://api.example.com"></div>
-        <div class="field"><label>Description</label><input id="apiDescription" placeholder="What does this API do?"></div>
-        <div class="field"><label>Documentation</label><textarea id="apiDocs" style="width:100%;min-height:100px;padding:12px;background:#091323;border:1px solid var(--line);border-radius:10px;color:white"></textarea></div>
-        <div class="field"><label>JSON Example</label><textarea id="apiExample" style="width:100%;min-height:90px;padding:12px;background:#091323;border:1px solid var(--line);border-radius:10px;color:white" placeholder='{"success":true}'></textarea></div>
-        <div class="field"><label>API Type</label>
-          <select id="apiType" style="padding:12px;background:#091323;border:1px solid var(--line);border-radius:10px;color:white">
-            <option value="local">Local API</option>
-            <option value="external">External API</option>
-          </select>
-        </div>
-        <div class="field"><label>Required Plan</label>
-          <select id="apiPlan" style="padding:12px;background:#091323;border:1px solid var(--line);border-radius:10px;color:white">
-            <option value="free">Free</option><option value="premium">Premium</option>
-          </select>
-        </div>
-        <button class="action" onclick="saveApi()">Save API</button>
-        <button class="action" onclick="resetApiForm()">Clear</button>
-        <p id="adminMessage" class="message"></p>
-      </div>
-      <div class="section card">
-        <h3 class="section-title">Assign API Key to Developer</h3>
-        <div class="field"><label>Developer Email</label><input id="keyEmail" type="email" placeholder="user@example.com"></div>
-        <div class="field"><label>Key Label</label><input id="keyLabel" placeholder="Movie API Key"></div>
-        <div class="field"><label>API Slug (optional)</label><input id="keySlug" placeholder="movie-search"></div>
-        <div class="field"><label>API Key</label><input id="keyValue" type="password" placeholder="Paste the API key here"></div>
-        <button class="action" onclick="assignApiKey()">Assign Key</button>
-        <p id="keyAdminMessage" class="message"></p>
-      </div>
-      <div class="section card">
-        <h3 class="section-title">Assigned API Keys</h3>
-        <button class="action" onclick="loadAdminKeys()">Refresh Keys</button>
-        <div id="adminKeyList" class="notice">Click Refresh Keys to load assigned keys.</div>
-      </div>
-
-
-      <div class="section card">
-        <h3 class="section-title">Premium Management</h3>
-        <div class="field">
-          <label>Developer Email</label>
-          <input id="premiumEmail" type="email" placeholder="user@example.com">
-        </div>
-        <div class="field">
-          <label>Premium Expiry (optional)</label>
-          <input id="premiumExpiry" type="datetime-local">
-        </div>
-        <button class="action" onclick="managePremium('grant')">Grant Premium</button>
-        <button class="action" onclick="managePremium('revoke')">Revoke Premium</button>
-        <p id="premiumAdminMessage" class="message"></p>
-      </div>
-
-      <div class="section card">
-        <h3 class="section-title">Managed APIs</h3>
-        <div id="adminApiList" class="notice">Loading API catalogue...</div>
-      </div>
-    </section>
-  </main>
+<!-- WHATSAPP PAIRING MODAL -->
+<div id="pairingModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pairTitle">
+ <div class="modal-box">
+  <h2 id="pairTitle">BOT PAIRING & CODE</h2>
+  <p>Enter your WhatsApp number with country code, without + or leading 0. Example: 94771234567.</p>
+  <label for="pairPhone">WHATSAPP PHONE NUMBER</label>
+  <input id="pairPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="947XXXXXXXX">
+  <button class="action" id="pairGo" type="button">GENERATE PAIRING CODE</button>
+  <div id="pairCode" class="pair-code" aria-live="polite">----</div>
+  <button class="action" id="copyCode" type="button" style="display:none">COPY PAIR CODE</button>
+  <p id="pairHelp">Open WhatsApp → Settings → Linked devices → Link with phone number instead.</p>
+  <p id="pairStatus" class="status" role="status" aria-live="polite"></p>
+  <div id="botKeyBox" hidden>
+   <b>Your new Bot Key</b><div id="botKeyValue"></div>
+   <button class="action" id="copyBotKey" type="button">COPY BOT KEY</button>
+   <small style="display:block;margin-top:8px;color:var(--muted)">Keep this key private.</small>
+  </div>
+  <button class="action" id="pairClose" type="button" style="background:#172640">CLOSE</button>
+ </div>
 </div>
 
 <script>
-let registerMode = false;
-let currentUser = null;
+'use strict';
+const $=id=>document.getElementById(id);
+let pairController=null,pairDone=false,pairLinked=false,timerId=null;
 
-function toggleAuth(){
-  registerMode = !registerMode;
-  document.getElementById('registerFields').classList.toggle('hidden',!registerMode);
-  document.getElementById('submitBtn').textContent = registerMode ? 'CREATE ACCOUNT' : 'LOGIN';
-  document.getElementById('switchText').textContent = registerMode ? 'Already have an account?' : "Don't have an account?";
-  document.getElementById('switchLink').textContent = registerMode ? 'Login' : 'Create account';
-  document.getElementById('authMessage').textContent = '';
+function toast(msg){
+ const t=$('toast');t.textContent=msg;t.style.display='block';
+ clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.display='none',3000);
 }
 
-async function submitAuth(){
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const name = document.getElementById('name').value.trim();
-  const message = document.getElementById('authMessage');
-  const btn = document.getElementById('submitBtn');
-
-  message.textContent = '';
-  if(!email || !password || (registerMode && !name)){
-    message.textContent = 'Please complete all required fields.';
-    return;
-  }
-  if(registerMode && password.length < 10){
-    message.textContent = 'Password must contain at least 10 characters.';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'PLEASE WAIT...';
-
-  try{
-    const response = await fetch(registerMode ? '/api/developer/register' : '/api/developer/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      credentials:'same-origin',
-      body:JSON.stringify(registerMode ? {name,email,password} : {email,password})
-    });
-    const data = await response.json();
-    if(!response.ok || data.error){
-      throw new Error(data.error || data.message || 'Authentication failed.');
-    }
-    await loadUser();
-    await loadDashboardStats();
-  }catch(error){
-    message.textContent = error.message || 'Connection failed.';
-  }finally{
-    btn.disabled = false;
-    btn.textContent = registerMode ? 'CREATE ACCOUNT' : 'LOGIN';
-  }
+/* Pairing modal */
+function openPair(){
+ resetPair();$('pairingModal').classList.add('open');
+ setTimeout(()=>$('pairPhone').focus(),80);
 }
-
-async function loadUser(){
-  const response = await fetch('/api/developer/me',{credentials:'same-origin'});
-  if(!response.ok) throw new Error('Please log in again.');
-  const data = await response.json();
-  currentUser = data.user || data;
-  if(!currentUser || !currentUser.email) throw new Error('Unable to load account.');
-  renderApp();
+function closePair(){
+ if(pairController){try{pairController.abort()}catch{}}
+ clearInterval(timerId);$('pairingModal').classList.remove('open');
 }
-
-function renderApp(){
-  const name = currentUser.name || currentUser.email;
-  const plan = String(currentUser.plan || 'free').toUpperCase();
-  document.getElementById('auth').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.getElementById('sideName').textContent = name;
-  document.getElementById('sideEmail').textContent = currentUser.email;
-  document.getElementById('profileName').textContent = name;
-  document.getElementById('profileEmail').textContent = currentUser.email;
-  document.getElementById('profileRole').textContent = currentUser.role || 'user';
-  document.getElementById('greeting').textContent = 'Welcome back, ' + name + '.';
-  document.getElementById('planBadge').textContent = plan + ' PLAN';
-  document.getElementById('planStat').textContent = plan;
-  document.getElementById('premiumStatus').textContent = plan + ' PLAN';
-  if(String(currentUser.role).toLowerCase() === 'admin'){
-    document.getElementById('adminNav').classList.remove('hidden');
-  }
+function resetPair(){
+ if(pairController){try{pairController.abort()}catch{}}
+ pairController=null;clearInterval(timerId);pairDone=false;pairLinked=false;
+ $('pairCode').style.display='none';$('pairCode').textContent='----';
+ $('pairCode').style.opacity='1';$('copyCode').style.display='none';
+ $('pairGo').disabled=false;$('pairGo').textContent='GENERATE PAIRING CODE';
+ $('pairStatus').className='status';$('pairStatus').textContent='';
+ $('botKeyBox').hidden=true;$('botKeyValue').textContent='';
+ $('pairHelp').textContent='Open WhatsApp → Settings → Linked devices → Link with phone number instead.';
 }
+$('pairPhone').addEventListener('input',e=>e.target.value=e.target.value.replace(/[^\d+]/g,''));
+$('pairPhone').addEventListener('keydown',e=>{if(e.key==='Enter')startPairing()});
+$('pairClose').addEventListener('click',closePair);
+$('pairGo').addEventListener('click',startPairing);
+$('copyCode').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText($('pairCode').textContent.replace(/\s/g,''));toast('Pair code copied')}
+ catch{toast('Select the code and copy it manually')}
+});
+$('copyBotKey').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText($('botKeyValue').textContent);toast('Bot Key copied')}
+ catch{toast('Select and copy the key manually')}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePair()});
 
-function showPage(id,button){
-  if(id === 'dashboard') loadDashboardStats();
-  if(id === 'admin') loadAdminApis();
-  if(id === 'keys') loadUserKeys();
-  if(id === 'usage') loadUsagePage();
-  if(id === 'premium') loadPremiumPage();
-  if(id === 'docs') loadDeveloperDocs();
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-  if(button) button.classList.add('active');
-  const titles = {dashboard:'Dashboard',keys:'API Keys',docs:'API Documentation',usage:'Usage',premium:'Premium',admin:'Admin Panel'};
-  document.getElementById('pageTitle').textContent = titles[id] || 'Dashboard';
-}
-
-
-
-
-
-async function loadDashboardStats(){
-  try {
-    const [catalogRes, usageRes] = await Promise.all([
-      fetch('/api/developer/catalog', {credentials:'same-origin', cache:'no-store'}),
-      fetch('/api/developer/usage', {credentials:'same-origin', cache:'no-store'})
-    ]);
-
-    const catalog = await catalogRes.json();
-    const usage = await usageRes.json();
-
-    if(!catalogRes.ok) throw new Error(catalog.error || 'API catalogue failed');
-    if(!usageRes.ok) throw new Error(usage.error || 'Usage loading failed');
-
-    document.getElementById('apiCount').textContent =
-      (catalog.apis || []).length;
-
-    document.getElementById('requestCount').textContent =
-      Number(usage.totalRequests || 0).toLocaleString();
-
-    const plan = String(currentUser?.plan || 'free').toUpperCase();
-    document.getElementById('planStat').textContent = plan;
-    document.getElementById('planBadge').textContent = plan + ' PLAN';
-    document.getElementById('premiumStatus').textContent = plan + ' PLAN';
-  } catch(error) {
-    console.error('Dashboard stats:', error.message);
-  }
-}
-
-
-async function loadUsagePage(){
-  const box = document.getElementById('usageContent');
-  if(!box) return;
-
-  box.textContent = 'Loading usage...';
-
-  try {
-    const response = await fetch('/api/developer/usage', {
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-    const data = await response.json();
-
-    if(!response.ok) throw new Error(data.error || 'Usage loading failed');
-
-    const history = data.history || [];
-
-    box.innerHTML = `
-      <div class="grid">
-        <div class="card">
-          <div class="stat-label">Total Requests</div>
-          <div class="stat">${Number(data.totalRequests || 0).toLocaleString()}</div>
-        </div>
-        <div class="card">
-          <div class="stat-label">Last 7 Days</div>
-          <div class="stat">${Number(data.last7Days || 0).toLocaleString()}</div>
-        </div>
-      </div>
-      <h3 class="section-title">Recent Requests</h3>
-      ${history.length ? history.map(item => `
-        <div class="item">
-          <strong>${escapeHtml(item.apiSlug || 'API')}</strong>
-          <small>${escapeHtml(item.method || 'GET')} · HTTP ${Number(item.status || 0)}</small>
-          <small>${escapeHtml(item.createdAt ? new Date(item.createdAt).toLocaleString() : '')}</small>
-        </div>
-      `).join('') : '<div class="notice">No API usage recorded yet.</div>'}
-    `;
-  } catch(error) {
-    box.textContent = error.message;
-  }
-}
-
-
-async function loadPremiumPage(){
-  const box = document.getElementById('premiumStatus');
-  if (!box) return;
-
-  box.textContent = 'Loading...';
-
-  try {
-    const response = await fetch('/api/developer/premium', {
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Unable to load Premium status');
-
-    const plan = String(data.plan || 'free').toUpperCase();
-    const expiry = data.premiumUntil
-      ? new Date(data.premiumUntil).toLocaleString()
-      : 'No expiry date set';
-
-    box.textContent = plan === 'PREMIUM'
-      ? 'PREMIUM — Expires: ' + expiry
-      : 'FREE PLAN';
-  } catch (error) {
-    box.textContent = error.message;
-  }
-}
-
-async function loadDeveloperDocs(){
-  const box = document.getElementById('docsContent');
-  if(!box) return;
-
-  try{
-    const response = await fetch('/api/developer/catalog', {
-      credentials:'same-origin'
-    });
-    const data = await response.json();
-    if(!response.ok) throw new Error(data.error || 'Unable to load APIs');
-
-    const apis = data.apis || [];
-    if(!apis.length){
-      box.textContent = 'No APIs are currently available for your account.';
-      return;
-    }
-
-    box.innerHTML = apis.map(api => `
-      <div class="item">
-        <strong>${escapeHtml(api.name)}</strong>
-        <small>${escapeHtml(api.slug)} · ${escapeHtml(api.minPlan)} plan</small>
-        <p>${escapeHtml(api.description || 'No description provided.')}</p>
-        <div class="code">${escapeHtml(api.baseUrl)}</div>
-        <h4>Documentation</h4>
-        <div class="code">${escapeHtml(api.docs || 'Documentation not added yet.')}</div>
-        <h4>JSON Example</h4>
-        <div class="code">${escapeHtml(api.example || 'Example not added yet.')}</div>
-        <button class="action" onclick="copyText('${escapeJs(api.baseUrl)}')">Copy Base URL</button>
-      </div>
-    `).join('');
-  }catch(error){
-    box.textContent = error.message;
-  }
-}
-
-async function copyText(value){
-  try{
-    await navigator.clipboard.writeText(value);
-    alert('Copied.');
-  }catch(error){
-    alert('Clipboard access unavailable.');
-  }
-}
-
-async function loadUserKeys(){
-  const box = document.getElementById('keysContent');
-  if(!box) return;
-  try{
-    const response = await fetch('/api/developer/keys', {credentials:'same-origin'});
-    const data = await response.json();
-    if(!response.ok) throw new Error(data.error || 'Unable to load keys');
-    const keys = data.keys || [];
-    if(!keys.length){
-      box.textContent = 'No API keys have been assigned to your account yet.';
-      return;
-    }
-    box.innerHTML = keys.map(k => `
-      <div class="item">
-        <strong>${escapeHtml(k.label || 'API Key')}</strong>
-        <small>${escapeHtml(k.apiSlug || 'General')} · ${escapeHtml(k.createdAt || '')}</small>
-        <input id="key-${escapeHtml(k.id)}" type="password" readonly
-          value="${escapeHtml(k.apiKey)}"
-          style="width:100%;margin-top:10px;padding:12px;background:#07101e;color:#9fc7ff;border:1px solid var(--line);border-radius:8px">
-        <button class="action" style="margin-top:9px" onclick="toggleKey('${escapeJs(k.id)}')">Show / Hide</button>
-        <button class="action" style="margin-top:9px" onclick="copyKey('${escapeJs(k.id)}')">Copy</button>
-      </div>`).join('');
-  }catch(error){
-    box.textContent = error.message;
-  }
-}
-
-function toggleKey(id){
-  const input = document.getElementById('key-' + id);
-  if(input) input.type = input.type === 'password' ? 'text' : 'password';
-}
-
-async function copyKey(id){
-  const input = document.getElementById('key-' + id);
-  if(!input) return;
-  try{
-    await navigator.clipboard.writeText(input.value);
-    alert('API key copied.');
-  }catch(error){
-    input.type = 'text';
-    input.select();
-    document.execCommand('copy');
-    input.type = 'password';
-    alert('Copy attempted. Check clipboard.');
-  }
-}
-
-async function assignApiKey(){
-  const message = document.getElementById('keyAdminMessage');
-  const body = {
-    email: document.getElementById('keyEmail').value.trim(),
-    label: document.getElementById('keyLabel').value.trim(),
-    apiSlug: document.getElementById('keySlug').value.trim(),
-    apiKey: document.getElementById('keyValue').value
-  };
-  try{
-    const response = await fetch('/api/developer/keys', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      credentials:'same-origin',
-      body:JSON.stringify(body)
-    });
-    const data = await response.json();
-    if(!response.ok) throw new Error(data.error || 'Key assignment failed');
-    message.textContent = 'API key assigned successfully.';
-    document.getElementById('keyValue').value = '';
-    document.getElementById('keyEmail').value = '';
-    document.getElementById('keyLabel').value = '';
-    document.getElementById('keySlug').value = '';
-  }catch(error){
-    message.textContent = error.message;
-  }
-}
-
-let editingApiSlug = "";
-
-async function adminApiRequest(method, body){
-  const response = await fetch('/api/developer/catalog', {
-    method,
-    headers: {'Content-Type':'application/json'},
-    credentials: 'same-origin',
-    body: body ? JSON.stringify(body) : undefined
+async function startPairing(){
+ resetPair();
+ const number=$('pairPhone').value.trim().replace(/\D/g,'');
+ if(!/^[1-9]\d{7,14}$/.test(number)){
+  $('pairStatus').className='status error';
+  $('pairStatus').textContent='Invalid number. Enter country code without + or 0.';
+  return;
+ }
+ $('pairGo').disabled=true;$('pairGo').textContent='GENERATING…';
+ $('pairStatus').textContent='Contacting pairing server. Keep this window open…';
+ pairController=new AbortController();
+ try{
+  const response=await fetch('/api/pair',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({number}),signal:pairController.signal
   });
-  const data = await response.json();
-  if(!response.ok) throw new Error(data.error || 'API request failed');
-  return data;
-}
-
-async function loadAdminApis(){
-  const box = document.getElementById('adminApiList');
-  if(!box) return;
-  try{
-    const data = await adminApiRequest('GET');
-    const apis = data.apis || [];
-    if(!apis.length){
-      box.textContent = 'No APIs have been added yet.';
-      return;
-    }
-    box.innerHTML = apis.map(api => `
-      <div class="item">
-        <strong>${escapeHtml(api.name)}</strong>
-        <small>${escapeHtml(api.slug)} · ${escapeHtml(api.minPlan)} · ${api.active ? 'Active' : 'Inactive'}</small>
-        <small>${api.type === 'external' ? '🌐 EXTERNAL API' : '⚙️ LOCAL API'}</small>
-        <small>${escapeHtml(api.baseUrl)}</small>
-        <button class="action" style="margin-top:10px" onclick="editApi('${escapeJs(api.slug)}')">Edit</button>
-        <button class="action" style="margin-top:10px" onclick="deleteApi('${escapeJs(api.slug)}')">Delete</button>
-      </div>`).join('');
-  }catch(error){
-    box.textContent = error.message;
+  if(!response.ok){
+   let err={};try{err=await response.json()}catch{}
+   throw new Error(err.error||'Pair request failed. Please try again.');
   }
-}
-
-function escapeHtml(value){
-  return String(value ?? '').replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
-}
-function escapeJs(value){
-  return String(value ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-}
-
-async function saveApi(){
-  const message = document.getElementById('adminMessage');
-  const body = {
-    name: document.getElementById('apiName').value,
-    slug: document.getElementById('apiSlug').value,
-    baseUrl: document.getElementById('apiBase').value,
-    description: document.getElementById('apiDescription').value,
-    docs: document.getElementById('apiDocs').value,
-    example: document.getElementById('apiExample').value,
-    minPlan: document.getElementById('apiPlan').value,
-    type: document.getElementById('apiType').value
-  };
-  try{
-    const method = editingApiSlug ? 'PATCH' : 'POST';
-    if(editingApiSlug) body.slug = editingApiSlug;
-    await adminApiRequest(method, body);
-    message.textContent = editingApiSlug ? 'API updated.' : 'API added.';
-    resetApiForm();
-    await loadAdminApis();
-  }catch(error){
-    message.textContent = error.message;
+  if(!response.body)throw new Error('Streaming response is not supported.');
+  const reader=response.body.getReader(),decoder=new TextDecoder();
+  let buffer='';
+  while(true){
+   const {value,done}=await reader.read();if(done)break;
+   buffer+=decoder.decode(value,{stream:true});let pos;
+   while((pos=buffer.indexOf('\n'))>=0){
+    const line=buffer.slice(0,pos).trim();buffer=buffer.slice(pos+1);
+    if(!line)continue;
+    try{handlePairEvent(JSON.parse(line))}catch{}
+   }
   }
-}
-
-async function editApi(slug){
-  try{
-    const data = await adminApiRequest('GET');
-    const api = (data.apis || []).find(x => x.slug === slug);
-    if(!api) throw new Error('API not found');
-    editingApiSlug = slug;
-    document.getElementById('apiName').value = api.name || '';
-    document.getElementById('apiSlug').value = api.slug || '';
-    document.getElementById('apiSlug').disabled = true;
-    document.getElementById('apiBase').value = api.baseUrl || '';
-    document.getElementById('apiDescription').value = api.description || '';
-    document.getElementById('apiDocs').value = api.docs || '';
-    document.getElementById('apiExample').value = api.example || '';
-    document.getElementById('apiPlan').value = api.minPlan || 'free';
-    document.getElementById('apiType').value = api.type || 'local';
-    document.getElementById('adminMessage').textContent = 'Editing ' + slug;
-    document.getElementById('admin').scrollIntoView({behavior:'smooth'});
-  }catch(error){
-    document.getElementById('adminMessage').textContent = error.message;
+  if(!pairDone){
+   $('pairGo').disabled=false;$('pairGo').textContent='TRY AGAIN';
+   if(pairLinked){
+    $('pairStatus').className='status good';
+    $('pairStatus').textContent='WhatsApp linked. Bot activation is being checked.';
+   }
   }
+ }catch(e){
+  if(e.name==='AbortError')return;
+  $('pairStatus').className='status error';
+  $('pairStatus').textContent=e.message||'Could not generate pairing code.';
+  $('pairGo').disabled=false;$('pairGo').textContent='TRY AGAIN';
+ }
 }
 
-async function deleteApi(slug){
-  if(!confirm('Delete API ' + slug + '?')) return;
-  try{
-    await adminApiRequest('DELETE', {slug});
-    document.getElementById('adminMessage').textContent = 'API deleted.';
-    await loadAdminApis();
-  }catch(error){
-    document.getElementById('adminMessage').textContent = error.message;
+function handlePairEvent(ev){
+ if(ev.type==='code'){
+  $('pairCode').textContent=ev.code;$('pairCode').style.display='block';
+  $('copyCode').style.display='block';
+  $('pairStatus').className='status good';
+  $('pairStatus').textContent='Pair code generated. Enter it in WhatsApp before it expires.';
+  let left=Number(ev.expiresIn)||180;clearInterval(timerId);
+  timerId=setInterval(()=>{
+   left--;
+   if(left<=0){
+    clearInterval(timerId);$('pairStatus').className='status error';
+    $('pairStatus').textContent='Pair code expired. Request a new code.';
+    $('pairCode').style.opacity='.45';$('pairGo').disabled=false;
+    $('pairGo').textContent='GENERATE NEW CODE';
+   }else{
+    $('pairHelp').textContent='Enter code in WhatsApp. Expires in '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+   }
+  },1000);
+ }else if(ev.type==='key'){
+  $('botKeyValue').textContent=ev.key;$('botKeyBox').hidden=false;
+  $('pairStatus').className='status good';
+  $('pairStatus').textContent='Your Bot Key is ready. Copy it and keep it private.';
+ }else if(ev.type==='status'){
+  if(ev.status==='linking')$('pairStatus').textContent='WhatsApp is linking…';
+  if(ev.status==='linked'){
+   pairLinked=true;$('pairStatus').className='status good';
+   $('pairStatus').textContent='WhatsApp linked! Bot setup is finishing…';
   }
-}
-
-function resetApiForm(){
-  editingApiSlug = "";
-  ['apiName','apiSlug','apiBase','apiDescription','apiDocs','apiExample'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('apiSlug').disabled = false;
-  document.getElementById('apiPlan').value = 'free';
-  document.getElementById('apiType').value = 'local';
-}
-
-
-async function loadAdminKeys(){
-  const box = document.getElementById('adminKeyList');
-  box.textContent = 'Loading keys...';
-
-  try {
-    const response = await fetch('/api/developer/keys', {
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-    const data = await response.json();
-
-    if(!response.ok) throw new Error(data.error || 'Unable to load keys');
-
-    const keys = data.keys || [];
-    if(!keys.length){
-      box.textContent = 'No assigned keys found.';
-      return;
-    }
-
-    box.innerHTML = keys.map(k => `
-      <div class="item">
-        <strong>${escapeHtml(k.label || 'API Key')}</strong>
-        <small>${escapeHtml(k.userEmail)} · ${escapeHtml(k.apiSlug)}</small>
-        <small>${k.revoked ? 'REVOKED' : 'ACTIVE'}</small>
-        ${k.revoked ? '' : `<button class="action" onclick="revokeAdminKey('${escapeJs(k.id)}')">Revoke</button>`}
-      </div>
-    `).join('');
-  } catch(error) {
-    box.textContent = error.message;
+  if(ev.status==='key_ready'){
+   $('pairStatus').className='status good';
+   $('pairStatus').textContent='Your new Bot Key is ready.';
   }
-}
-
-async function revokeAdminKey(id){
-  if(!confirm('Revoke this API key?')) return;
-
-  try {
-    const response = await fetch('/api/developer/keys', {
-      method: 'DELETE',
-      credentials: 'same-origin',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({id})
-    });
-
-    const data = await response.json();
-    if(!response.ok) throw new Error(data.error || 'Revoke failed');
-
-    await loadAdminKeys();
-  } catch(error) {
-    document.getElementById('adminKeyList').textContent = error.message;
+  if(ev.status==='active'){
+   pairDone=true;$('pairStatus').className='status good';
+   $('pairStatus').textContent='Bot is active! Copy your Bot Key.';
+   $('pairGo').disabled=false;$('pairGo').textContent='GENERATE ANOTHER CODE';
+   clearInterval(timerId);
   }
+ }else if(ev.type==='error'){
+  pairDone=true;$('pairStatus').className='status error';
+  $('pairStatus').textContent=ev.reason==='expired'?'Pairing code expired. Request a new one.':ev.reason==='aborted'?'Pairing cancelled.':'Pairing did not finish. Please try again.';
+  $('pairGo').disabled=false;$('pairGo').textContent='TRY AGAIN';
+  clearInterval(timerId);
+ }
 }
-
-
-async function managePremium(action){
-  const message = document.getElementById('premiumAdminMessage');
-  const email = document.getElementById('premiumEmail').value.trim();
-  const expiry = document.getElementById('premiumExpiry').value;
-
-  message.textContent = 'Please wait...';
-
-  try {
-    const response = await fetch('/api/developer/premium', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        email,
-        action,
-        premiumUntil: action === 'grant' && expiry
-          ? new Date(expiry).toISOString()
-          : null
-      })
-    });
-
-    const data = await response.json();
-    if(!response.ok) throw new Error(data.error || 'Premium update failed');
-
-    message.textContent = data.message || 'Premium updated.';
-  } catch(error) {
-    message.textContent = error.message;
-  }
-}
-
-async function logout(){
-  try{
-    await fetch('/api/developer/logout',{method:'POST',credentials:'same-origin'});
-  }finally{
-    currentUser = null;
-    document.getElementById('app').classList.add('hidden');
-    document.getElementById('auth').classList.remove('hidden');
-    document.getElementById('password').value = '';
-  }
-}
-
-(async()=>{
-  try{ await loadUser(); }
-  catch(error){ /* Not logged in: show login form */ }
-})();
 </script>
 </body>
 </html>
+
