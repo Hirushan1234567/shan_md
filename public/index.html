@@ -245,6 +245,83 @@ footer b{color:var(--cyan)}
   </div>
  </section>
 
+
+
+<section class="card glow" id="shanPlayground" style="margin:22px 0;padding:22px">
+ <div class="card-title">⚡ SHAN API PLAYGROUND</div>
+ <p style="color:var(--muted)">Test endpoints live and view real JSON responses.</p>
+
+ <details id="shanEndpointDocs" style="margin:18px 0;padding:15px;background:#0b172b;border:1px solid #344766;border-radius:12px">
+  <summary style="cursor:pointer;color:#a9caff;font-weight:bold">📘 API ENDPOINT DOCUMENTATION</summary>
+  <p style="color:var(--muted);font-size:13px">All endpoints use GET and require the x-api-key header.</p>
+  <div style="overflow-x:auto">
+   <table style="width:100%;border-collapse:collapse;text-align:left;font-size:13px">
+    <thead><tr><th style="padding:9px">Endpoint</th><th>Parameter</th><th>Purpose</th></tr></thead>
+    <tbody>
+     <tr><td style="padding:9px">/api/v1/search</td><td>q</td><td>Search movies by title</td></tr>
+     <tr><td style="padding:9px">/api/v1/movies</td><td>None</td><td>Get movie list</td></tr>
+     <tr><td style="padding:9px">/api/v1/latest</td><td>None</td><td>Get latest movies</td></tr>
+     <tr><td style="padding:9px">/api/v1/movie/:id</td><td>id</td><td>Get movie details</td></tr>
+     <tr><td style="padding:9px">/api/v1/subtitle/:filename</td><td>filename</td><td>Get subtitle file</td></tr>
+    </tbody>
+   </table>
+  </div>
+  <p style="color:var(--muted);font-size:12px;margin-top:12px">Header: <code>x-api-key: YOUR_API_KEY</code></p>
+ </details>
+
+
+ <label>API BASE URL</label>
+ <input id="shanApiUrl" type="url" value="https://complimentary-eco-judicial-remarks.trycloudflare.com" style="width:100%;box-sizing:border-box;margin:8px 0 14px;padding:13px;border-radius:10px;background:#0b172b;color:white;border:1px solid #344766">
+
+ <label>API KEY</label>
+ <input id="shanApiKey" type="password" autocomplete="off" placeholder="Enter your SHAN API key" style="width:100%;box-sizing:border-box;margin:8px 0 14px;padding:13px;border-radius:10px;background:#0b172b;color:white;border:1px solid #344766">
+
+ <label>SELECT ENDPOINT</label>
+ <select id="shanEndpoint" style="width:100%;box-sizing:border-box;margin:8px 0 14px;padding:13px;border-radius:10px;background:#0b172b;color:white;border:1px solid #344766">
+  <option value="search">GET /api/v1/search</option>
+  <option value="movies">GET /api/v1/movies</option>
+  <option value="latest">GET /api/v1/latest</option>
+  <option value="movie">GET /api/v1/movie/:id</option>
+  <option value="subtitle">GET /api/v1/subtitle/:filename</option>
+ </select>
+
+ <div id="shanParams">
+  <label id="shanParamLabel">SEARCH QUERY</label>
+  <input id="shanParam" maxlength="100" placeholder="Enter movie name..." style="width:100%;box-sizing:border-box;margin:8px 0 14px;padding:13px;border-radius:10px;background:#0b172b;color:white;border:1px solid #344766">
+ </div>
+
+ <button class="action" id="shanSend" type="button">▶ SEND REQUEST</button>
+
+ <div style="display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px">
+  <b>Response</b><span id="shanResponseMeta" style="color:var(--muted);font-size:12px"></span>
+ </div>
+
+ <div id="shanEmpty" style="text-align:center;padding:35px 12px;border:1px dashed #344766;border-radius:12px;color:var(--muted)">
+  <div style="font-size:32px">‹/›</div>
+  <b style="color:white">No Response Data</b>
+  <p style="font-size:13px">Enter a parameter and click Send Request to test this endpoint live.</p>
+ </div>
+
+ <pre id="shanResponse" hidden style="white-space:pre-wrap;overflow-wrap:anywhere;background:#071222;border:1px solid #263b59;border-radius:12px;padding:15px;color:#a9e7ff;max-height:420px;overflow:auto"></pre>
+ <button class="action" id="shanCopyResponse" type="button" hidden>▣ COPY JSON</button>
+
+ <div style="margin-top:24px"><b>Code Examples</b></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+  <button class="action shan-tab" data-tab="curl" type="button">cURL</button>
+  <button class="action shan-tab" data-tab="node" type="button">Node.js</button>
+  <button class="action shan-tab" data-tab="python" type="button">Python</button>
+ </div>
+ <pre id="shanCode" style="white-space:pre-wrap;overflow-wrap:anywhere;background:#071222;border:1px solid #263b59;border-radius:12px;padding:15px;color:#c9d5ef;overflow:auto"></pre>
+ <button class="action" id="shanCopyCode" type="button">▣ COPY CODE</button>
+ <div style="margin-top:24px">
+  <b>🕘 Recent API Requests</b>
+  <div id="shanHistory" style="margin-top:12px">
+   <p style="color:var(--muted);font-size:13px">No requests yet.</p>
+  </div>
+ </div>
+</section>
+
+
  <section class="docs glow" id="docs">
   <div><h2>📘 API Documentation</h2><p>Learn how to use our APIs and integrate with your projects.</p>
    <button class="action" type="button" onclick="toast('Documentation will be connected later')">View Docs →</button>
@@ -264,6 +341,7 @@ footer b{color:var(--cyan)}
   <div class="card quick glow">
    <div class="card-title">🔗 Quick Links</div>
    <a href="#home">♧ Bot Features <span>›</span></a>
+   <a href="#shanPlayground">⚡ SHAN API Playground <span>›</span></a>
    <a href="#docs">♧ Developer Guide <span>›</span></a>
    <a href="#support">✉ Contact Support <span>›</span></a>
    <a href="/dashboard" style="color:#d58aff">👑 Coins Dashboard <span>›</span></a>
@@ -276,6 +354,7 @@ footer b{color:var(--cyan)}
 <nav class="bottom-nav">
  <a href="#home"><span>⌂</span>Home</a>
  <a href="#keys"><span>⚿</span>API Keys</a>
+ <a href="#shanPlayground"><span>⚡</span>API</a>
  <a href="#docs"><span>▣</span>Docs</a>
  <a href="#usage"><span>▥</span>Stats</a>
  <a href="/dashboard"><span>⚙</span>Dashboard</a>
@@ -439,6 +518,173 @@ function handlePairEvent(ev){
   clearInterval(timerId);
  }
 }
+
+
+/* SHAN API Playground */
+(()=>{
+ const $ = id => document.getElementById(id);
+ const base = () => $('shanApiUrl').value.trim().replace(/\/+$/,'');
+ const key = () => $('shanApiKey').value.trim();
+ const endpoint = () => $('shanEndpoint').value;
+ const param = () => $('shanParam').value.trim();
+ let activeTab = 'curl';
+ let lastJson = '';
+
+ const requestHistory = [];
+
+ function renderHistory(){
+  const box=$('shanHistory');
+  if(!requestHistory.length){
+   box.innerHTML='<p style="color:var(--muted);font-size:13px">No requests yet.</p>';
+   return;
+  }
+  box.innerHTML=requestHistory.map(item=>`
+   <div style="padding:12px;margin-bottom:8px;background:#0b172b;border:1px solid #344766;border-radius:10px">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+     <b>${item.endpoint}</b>
+     <span style="color:${item.ok?'#55e6a5':'#ff7777'}">${item.status}</span>
+    </div>
+    <small style="color:var(--muted)">${item.parameter} · ${item.time} · ${item.duration} ms</small>
+   </div>`).join('');
+ }
+
+
+ const configs = {
+  search: {label:'SEARCH QUERY',placeholder:'Enter movie name...',required:true,path:()=>'/api/v1/search?q='+encodeURIComponent(param())},
+  movies: {label:'NO PARAMETERS',placeholder:'No parameter required',required:false,path:()=>'/api/v1/movies'},
+  latest: {label:'NO PARAMETERS',placeholder:'No parameter required',required:false,path:()=>'/api/v1/latest'},
+  movie: {label:'MOVIE ID',placeholder:'Enter movie ID...',required:true,path:()=>'/api/v1/movie/'+encodeURIComponent(param())},
+  subtitle: {label:'SUBTITLE FILENAME',placeholder:'Enter subtitle filename...',required:true,path:()=>'/api/v1/subtitle/'+encodeURIComponent(param())}
+ };
+
+ function requestUrl(){
+  return base()+configs[endpoint()].path();
+ }
+
+ function updateEndpoint(){
+  const c=configs[endpoint()];
+  $('shanParamLabel').textContent=c.label;
+  $('shanParam').placeholder=c.placeholder;
+  $('shanParam').disabled=!c.required;
+  $('shanParam').value='';
+  renderCode();
+ }
+
+ function codeFor(tab){
+  const u=requestUrl() || 'https://your-api-domain/api/v1/search?q=movie';
+  if(tab==='node') return `const response = await fetch("${u}", {\n  headers: { "x-api-key": "YOUR_API_KEY" }\n});\nconst data = await response.json();\nconsole.log(data);`;
+  if(tab==='python') return `import requests\n\nresponse = requests.get("${u}", headers={"x-api-key": "YOUR_API_KEY"})\nprint(response.status_code)\nprint(response.json())`;
+  return `curl -X GET "${u}" \\\n  -H "x-api-key: YOUR_API_KEY"`;
+ }
+
+ function renderCode(){
+  $('shanCode').textContent=codeFor(activeTab);
+ }
+
+ $('shanEndpoint').addEventListener('change',updateEndpoint);
+ $('shanApiUrl').addEventListener('input',renderCode);
+ $('shanParam').addEventListener('input',renderCode);
+
+ $('shanSend').addEventListener('click',async()=>{
+  if(!base() || !key()){
+   toast('Enter API Base URL and API Key');
+   return;
+  }
+  if(configs[endpoint()].required && !param()){
+   toast('Enter the required parameter');
+   return;
+  }
+
+  let parsedUrl;
+  try{parsedUrl=new URL(base())}catch{
+   toast('Invalid API Base URL');
+   return;
+  }
+  if(!['https:','http:'].includes(parsedUrl.protocol)){
+   toast('Use a valid HTTP or HTTPS URL');
+   return;
+  }
+
+  const btn=$('shanSend');
+  btn.disabled=true;
+  btn.textContent='SENDING REQUEST…';
+  $('shanEmpty').hidden=true;
+  $('shanResponse').hidden=true;
+  $('shanCopyResponse').hidden=true;
+  $('shanResponseMeta').textContent='Request running…';
+
+  const started=performance.now();
+
+  try{
+   const response=await fetch(requestUrl(),{
+    method:'GET',
+    headers:{'x-api-key':key()}
+   });
+
+   const text=await response.text();
+   try{parsed=JSON.parse(text)}catch{parsed={raw:text}}
+
+   lastJson=JSON.stringify(parsed,null,2);
+   $('shanResponse').textContent=lastJson;
+   $('shanResponse').hidden=false;
+   $('shanCopyResponse').hidden=false;
+   $('shanResponseMeta').textContent=
+    response.status+' '+response.statusText+' · '+Math.round(performance.now()-started)+' ms';
+
+  }catch(err){
+   lastJson=JSON.stringify({
+    status:false,
+    message:err.message || 'Request failed. Check API URL, tunnel and CORS.'
+   },null,2);
+   $('shanResponse').textContent=lastJson;
+   $('shanResponse').hidden=false;
+   $('shanResponseMeta').textContent='Request error';
+  }finally{
+   requestHistory.unshift({
+    endpoint: endpoint(),
+    parameter: configs[endpoint()].required ? param() : 'No parameter',
+    status: $('shanResponseMeta').textContent,
+    time: new Date().toLocaleTimeString(),
+    duration: Math.round(performance.now()-started),
+    ok: !$('shanResponseMeta').textContent.includes('error')
+   });
+   requestHistory.splice(5);
+   renderHistory();
+   btn.disabled=false;
+   btn.textContent='▶ SEND REQUEST';
+   renderCode();
+  }
+ });
+
+ $('shanParam').addEventListener('keydown',e=>{
+  if(e.key==='Enter') $('shanSend').click();
+ });
+
+ document.querySelectorAll('.shan-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+   activeTab=btn.dataset.tab;
+   renderCode();
+  });
+ });
+
+ $('shanCopyResponse').addEventListener('click',async()=>{
+  try{
+   await navigator.clipboard.writeText(lastJson);
+   toast('JSON copied');
+  }catch{toast('Could not copy JSON');}
+ });
+
+ $('shanCopyCode').addEventListener('click',async()=>{
+  try{
+   await navigator.clipboard.writeText($('shanCode').textContent);
+   toast('Code copied');
+  }catch{toast('Could not copy code');}
+ });
+
+ updateEndpoint();
+})();
+
+
 </script>
 </body>
 </html>
