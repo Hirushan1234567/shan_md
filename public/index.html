@@ -8,7 +8,7 @@
 <div class="portal">
 <header class="portal-header">
  <button id="menuToggle" class="menu-toggle" aria-label="Open menu">☰</button>
- <a class="portal-brand" href="/" aria-label="SHAN MINI BOT home"><span class="brand-avatar">S</span><span><b>SHAN MINI BOT</b><small>Developer Portal</small></span></a>
+ <a class="portal-brand" href="/" aria-label="SHAN MINI BOT home"><span class="brand-avatar">SHAN</span><span><b>SHAN MINI BOT</b><small>Developer Portal</small></span></a>
  <button class="profile-top" id="profileButton"><span class="profile-avatar">S</span><span><b id="topName">Guest</b><small>Developer</small></span><i>⌄</i></button>
  <button id="logoutBtn" class="logout-btn hidden">Logout</button>
 </header>
@@ -26,8 +26,8 @@
  <button data-view="admin" id="drawerAdmin" class="hidden">♛ <span>Admin Panel</span></button>
 </aside>
 <main class="portal-main">
-<section id="publicHome" class="public-home"><div class="public-hero"><div class="public-brand-mark">S</div><div class="eyebrow">KINGDOM OF DEVILL · WHATSAPP BOT</div><div class="online-pill"><i></i> SYSTEM ONLINE · PAIR API</div><h1>SHAN <span>MINI BOT</span></h1><h2>Connect WhatsApp. Unlock 30+ Features.</h2><p>Link your WhatsApp account instantly. No website account or sign-in required.</p><button class="hero-pair-button" data-view="pair">🤖 PAIR YOUR WHATSAPP <b>→</b></button><button class="text-button public-signup" id="createAccountBtn" type="button">Create Developer Account</button><div class="hero-note">FAST PAIR CODE · SECURE CONNECTION · FREE TO START</div></div><div class="public-feature-strip"><article><b>⚡</b><strong>Fast Pairing</strong><small>Get your code in seconds</small></article><article><b>🧩</b><strong>30+ Features</strong><small>Powerful bot modules</small></article><article><b>📡</b><strong>Live Status</strong><small>Service availability</small></article></div><div class="public-links"><button data-view="status">📡 System Status</button><button data-view="support">💬 Support Center</button><button data-view="docs">⌘ API Developer Login</button></div></section><section id="authScreen" class="auth-screen">
- <div class="auth-card"><div class="auth-logo">S</div><div class="eyebrow">DEVELOPER PORTAL</div><h1 id="authTitle">Welcome Back</h1><p id="authDescription">Sign in to manage your bot, API keys and usage.</p>
+<section id="publicHome" class="public-home"><div class="public-hero"><div class="eyebrow">KINGDOM OF DEVILL · WHATSAPP BOT</div><div class="online-pill"><i></i> SYSTEM ONLINE · PAIR API</div><h1>SHAN <span>MINI BOT</span></h1><h2>Connect WhatsApp. Unlock 30+ Features.</h2><p>Link your WhatsApp account instantly. No website account or sign-in required.</p><button class="hero-pair-button" data-view="pair">🤖 PAIR YOUR WHATSAPP <b>→</b></button><button class="text-button public-signup" id="createAccountBtn" type="button">Create Developer Account</button><div class="hero-note">FAST PAIR CODE · SECURE CONNECTION · FREE TO START</div></div><div class="public-feature-strip"><article><b>⚡</b><strong>Fast Pairing</strong><small>Get your code in seconds</small></article><article><b>🧩</b><strong>30+ Features</strong><small>Powerful bot modules</small></article><article><b>📡</b><strong>Live Status</strong><small>Service availability</small></article></div><div class="public-links"><button data-view="status">📡 System Status</button><button data-view="support">💬 Support Center</button><button data-view="docs">⌘ API Developer Login</button></div></section><section id="authScreen" class="auth-screen">
+ <div class="auth-card"><div class="auth-logo">SHAN</div><div class="eyebrow">DEVELOPER PORTAL</div><h1 id="authTitle">Welcome Back</h1><p id="authDescription">Sign in to manage your bot, API keys and usage.</p>
  <form id="authForm"><input id="nameField" name="name" class="hidden" placeholder="Your name" maxlength="60"><input name="email" type="email" placeholder="Email address" required autocomplete="email"><input id="authPassword" name="password" type="password" placeholder="Password" minlength="8" maxlength="128" required autocomplete="current-password"><button id="authSubmit" class="gradient-button">Sign In</button></form>
  <button id="authSwitch" class="text-button">Create a free account</button><small class="secure-note">🔒 Secure email &amp; password authentication</small></div>
 </section>
@@ -44,14 +44,13 @@
   <article class="stat-card"><div class="stat-icon">🚀</div><div><small>Total Requests</small><b id="totalRequests">0</b><strong id="totalTrend">↗ Lifetime</strong></div></article>
   <article class="stat-card"><div class="stat-icon">⚿</div><div><small>API Keys</small><b id="apiKeyCount">0</b><strong class="teal" id="activeKeys">◉ Active</strong></div></article>
   <article class="stat-card"><div class="stat-icon">◷</div><div><small>This Month</small><b id="monthRequests">0</b><strong id="monthTrend">↗ Usage</strong></div></article>
-  <article class="stat-card plan-stat"><div class="stat-icon">☆</div><div><small>Plan</small><b id="planName">Free</b><button data-view="premium">♛ Upgrade</button></div></article>
+  <article class="stat-card plan-stat"><div class="stat-icon">☆</div><div><small>Plan</small><b id="planName">Free</b></div></article>
  </section>
  <section class="middle-grid">
   <article class="panel keys-panel"><div class="panel-heading"><h2><span class="cyan-icon">⚿</span> Your API Keys</h2><button class="gradient-button compact" id="generateKey">＋ Generate New</button></div>
    <div id="keyPreview" class="key-preview"><span class="key-symbol">⚿</span><span class="key-value">No API key generated yet</span><button data-view="keys" class="copy-preview">Manage</button></div>
    <div class="key-meta"><b><i></i><span id="keyStatus">No active keys</span></b><span>Expires: Never</span></div>
   </article>
-  <article class="panel plan-panel"><div class="plan-art"><div class="plan-crown">♛</div><div class="plan-gem">◇</div></div><div class="plan-content"><div class="eyebrow">👑 YOUR PLAN</div><h2 id="planTitle">Free Plan</h2><p id="planQuota">50 Requests Total</p><button class="gradient-button compact" data-view="premium">Upgrade Now</button></div></article>
  </section>
  <section class="docs-banner"><div class="docs-icon">▣</div><div><h2>API Documentation</h2><p>Learn how to use our APIs and integrate with your projects.</p><button class="gradient-button compact" data-view="docs">View Docs&nbsp; →</button></div><div class="code-art">&lt;/&gt;</div></section>
  <section class="bottom-grid">
