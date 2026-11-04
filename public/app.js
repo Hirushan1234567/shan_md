@@ -68,3 +68,7 @@ $("#year")&&($("#year").textContent=new Date().getFullYear());authMode("login");
 
 // Live landing-page clock
 (function(){const el=document.getElementById("liveClock");if(!el)return;const tick=()=>{el.textContent=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date())};tick();setInterval(tick,1000)})();
+
+
+// Live portal pulse clock (client-local time; no fabricated backend metrics)
+(function(){const nodes=[document.getElementById("liveClock"),document.getElementById("pulseTime")].filter(Boolean);if(!nodes.length)return;const tick=()=>{const value=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date());nodes.forEach(node=>node.textContent=value)};tick();setInterval(tick,1000)})();
