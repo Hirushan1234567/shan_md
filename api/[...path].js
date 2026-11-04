@@ -128,45 +128,42 @@ export default async function handler(req, res) {
 
     if (path[0] === "pair" && path[1] === "create" && method === "POST") {
       const input = await body(req);
-      const phoneNumber = String(input.phoneNumber || "").replace(/\\D/g, "");
-      if (!/^\\d{10,15}$/.test(phoneNumber)) return send(res, 400, { error: "Enter a valid phone number with country code" });
-      const base = String(process.env.BOT_API_URL || "").trim().replace(/\\/+$/, "");
+      const phoneNumber = String(input.phoneNumber || "").replace(/\D/g, "");
+      if (!/^\d{10,15}$/.test(phoneNumber)) return send(res, 400, { error: "Enter a valid phone number with country code" });
+      const base = String(process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
       const apiKey = String(process.env.SHAN_API_KEY || "").trim();
       if (!base || !apiKey) return send(res, 503, { error: "WhatsApp pairing service is not configured yet" });
       let upstreamUrl;
       try { upstreamUrl = new URL(base); } catch { return send(res, 500, { error: "Invalid BOT_API_URL configuration" }); }
       if (upstreamUrl.protocol !== "https:") return send(res, 500, { error: "BOT_API_URL must use HTTPS" });
-      const sessionId = crypto.randomUUID();
-      const response = await fetch(base + "/api/session/create", {
+      const response = await fetch(base + "/api/web/pair", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-shan-api-key": apiKey },
-        body: JSON.stringify({ phoneNumber, sessionId }),
+        headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+        body: JSON.stringify({ number: phoneNumber, phoneNumber }),
         signal: AbortSignal.timeout(25000)
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || result.success === false) return send(res, response.status || 502, { error: result.message || "Could not create pairing session" });
-      await d.collection("pairingSessions").insertOne({
-        userId: user._id, sessionId, phoneNumber, createdAt: new Date()
-      });
-      return send(res, 200, { success: true, sessionId, status: result.status || "pending", pairCode: result.pairCode || null });
+      if (!response.ok || result.success === false || result.status === false) return send(res, response.status || 502, { error: result.message || result.error || "Could not create pairing session" });
+      const sessionId = String(result.sessionId || result.session || result.id || phoneNumber);
+      await d.collection("pairingSessions").insertOne({ userId: user._id, sessionId, phoneNumber, createdAt: new Date() });
+      return send(res, 200, { success: true, sessionId, status: result.connection || result.status || "pending", pairCode: result.pairCode || result.code || result.pairingCode || null });
     }
 
     if (path[0] === "pair" && path[1] && method === "GET") {
       if (!user) return send(res, 401, { error: "Sign in required" });
       const record = await d.collection("pairingSessions").findOne({ sessionId: path[1], userId: user._id });
       if (!record) return send(res, 404, { error: "Pairing session not found" });
-      const base = String(process.env.BOT_API_URL || "").trim().replace(/\\/+$/, "");
+      const base = String(process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
       const apiKey = String(process.env.SHAN_API_KEY || "").trim();
       if (!base || !apiKey) return send(res, 503, { error: "WhatsApp pairing service is not configured yet" });
       const upstreamUrl = new URL(base);
       if (upstreamUrl.protocol !== "https:") return send(res, 500, { error: "BOT_API_URL must use HTTPS" });
-      const response = await fetch(base + "/api/session/" + encodeURIComponent(record.sessionId), {
-        headers: { "x-shan-api-key": apiKey },
-        signal: AbortSignal.timeout(15000)
+      const response = await fetch(base + "/api/status/" + encodeURIComponent(record.sessionId), {
+        headers: { "x-api-key": apiKey }, signal: AbortSignal.timeout(15000)
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) return send(res, response.status, { error: result.message || "Could not read pairing status" });
-      return send(res, 200, { success: true, sessionId: record.sessionId, phoneNumber: record.phoneNumber, status: result.status || "pending", pairCode: result.pairCode || null });
+      if (!response.ok) return send(res, response.status, { error: result.message || result.error || "Could not read pairing status" });
+      return send(res, 200, { success: true, sessionId: record.sessionId, phoneNumber: record.phoneNumber, status: result.connection || result.status || "pending", pairCode: result.pairCode || result.code || result.pairingCode || null });
     }
 
     if (path[0] === "me") {
