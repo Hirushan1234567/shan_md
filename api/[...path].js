@@ -1,1 +1,208 @@
-import crypto from "node:crypto";import{MongoClient}from"mongodb";let cp;async function db(){if(!cp)cp=new MongoClient(process.env.MONGODB_URI).connect();return(await cp).db(process.env.MONGODB_DB||"shan_api_hub")}const hash=s=>crypto.createHash("sha256").update(s).digest("hex");const out=(r,s,o)=>{r.statusCode=s;r.setHeader("Content-Type","application/json");r.end(JSON.stringify(o))};function cookie(q,n){const x=(q.headers.cookie||"").split(";").map(v=>v.trim()).find(v=>v.startsWith(n+"="));return x?decodeURIComponent(x.slice(n.length+1)):null}async function read(q){const a=[];for await(const c of q)a.push(c);return JSON.parse(Buffer.concat(a).toString()||"{}")}async function who(q,d){const t=cookie(q,"shan_session");if(!t)return null;const s=await d.collection("sessions").findOne({tokenHash:hash(t),expiresAt:{$gt:new Date()}});return s?d.collection("users").findOne({_id:s.userId}):null}const isAdmin=u=>!!u&&u.email===(process.env.ADMIN_EMAIL||"").toLowerCase();export default async function handler(req,res){try{const d=await db(),p=(req.url||"/").split("?")[0].replace(/^\/api\/?/,"").split("/").filter(Boolean),m=req.method;if(p[0]==="health")return out(res,200,{ok:true,name:"SHAN API HUB"});if(p[0]==="auth"&&p[1]==="google"){const st=crypto.randomBytes(24).toString("hex");res.setHeader("Set-Cookie","shan_oauth="+st+"; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=600");const u=new URL("https://accounts.google.com/o/oauth2/v2/auth");for(const[k,v]of Object.entries({client_id:process.env.GOOGLE_CLIENT_ID,redirect_uri:process.env.APP_URL+"/api/auth/callback",response_type:"code",scope:"openid email profile",state:st}))u.searchParams.set(k,v);return res.writeHead(302,{Location:u}).end()}if(p[0]==="auth"&&p[1]==="callback"){const u=new URL(req.url,"https://local"),st=u.searchParams.get("state");if(!st||st!==cookie(req,"shan_oauth"))return out(res,400,{error:"OAuth state invalid"});const tr=await fetch("https://oauth2.googleapis.com/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({code:u.searchParams.get("code"),client_id:process.env.GOOGLE_CLIENT_ID,client_secret:process.env.GOOGLE_CLIENT_SECRET,redirect_uri:process.env.APP_URL+"/api/auth/callback",grant_type:"authorization_code"})}),td=await tr.json();if(!td.access_token)return out(res,401,{error:"Google sign-in failed"});const pr=await(await fetch("https://www.googleapis.com/oauth2/v2/userinfo",{headers:{Authorization:"Bearer "+td.access_token}})).json();if(!pr.email||!pr.verified_email)return out(res,403,{error:"Verified Google email required"});const email=pr.email.toLowerCase(),now=new Date();await d.collection("users").updateOne({email},{$set:{email,name:pr.name||email,updatedAt:now},$setOnInsert:{createdAt:now,plan:"free"}},{upsert:true});const user=await d.collection("users").findOne({email}),raw=crypto.randomBytes(32).toString("hex");await d.collection("sessions").insertOne({userId:user._id,tokenHash:hash(raw),expiresAt:new Date(Date.now()+12096e5)});res.setHeader("Set-Cookie",["shan_session="+raw+"; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=1209600","shan_oauth=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0"]);return res.writeHead(302,{Location:"/"}).end()}if(p[0]==="auth"&&p[1]==="logout"){const t=cookie(req,"shan_session");if(t)await d.collection("sessions").deleteOne({tokenHash:hash(t)});res.setHeader("Set-Cookie","shan_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0");return out(res,200,{ok:true})}if(p[0]==="catalog"&&m==="GET"){const apis=await d.collection("apis").find({active:true},{projection:{sourceUrl:0}}).sort({createdAt:-1}).toArray();return out(res,200,{apis})}const u=await who(req,d);if(p[0]==="me"){if(!u)return out(res,401,{error:"Sign in required"});const ks=await d.collection("keys").find({userId:u._id,revoked:{$ne:true}}).toArray();return out(res,200,{user:{name:u.name,email:u.email,isAdmin:isAdmin(u),plan:u.plan||"free",keyCount:ks.length,used:ks.reduce((n,k)=>n+k.used,0)}})}if(p[0]==="keys"){if(!u)return out(res,401,{error:"Sign in required"});if(m==="GET"){const ks=await d.collection("keys").find({userId:u._id,revoked:{$ne:true}},{projection:{keyHash:0}}).toArray();return out(res,200,{keys:ks})}if(m==="POST"){const count=await d.collection("keys").countDocuments({userId:u._id,revoked:{$ne:true}});if(count>=3)return out(res,403,{error:"Maximum 3 active keys"});const raw="shan_"+crypto.randomBytes(28).toString("hex");await d.collection("keys").insertOne({userId:u._id,label:"My API key",prefix:raw.slice(0,12),keyHash:hash(raw),plan:u.plan||"free",used:0,createdAt:new Date(),revoked:false});return out(res,201,{key:raw})}}if(p[0]==="admin"&&p[1]==="apis"){if(!isAdmin(u))return out(res,403,{error:"Admin access required"});if(m==="POST"){const b=await read(req);let src;try{src=new URL(b.sourceUrl)}catch{return out(res,400,{error:"Invalid source URL"})}if(src.protocol!=="https:"||src.hostname==="localhost"||src.hostname==="127.0.0.1")return out(res,400,{error:"Only public HTTPS upstreams allowed"});const slug=String(b.slug||"").toLowerCase().replace(/[^a-z0-9-]/g,"");if(!slug||!b.name||!b.description)return out(res,400,{error:"Name, slug and description required"});await d.collection("apis").updateOne({slug},{$set:{name:b.name,slug,description:b.description,sourceUrl:src.toString(),plan:b.plan==="premium"?"premium":"free",active:true,updatedAt:new Date()},$setOnInsert:{createdAt:new Date()}},{upsert:true});return out(res,201,{ok:true})}}if(p[0]==="gateway"&&p[1]){const raw=req.headers["x-api-key"];if(!raw)return out(res,401,{error:"x-api-key header required"});const k=await d.collection("keys").findOne({keyHash:hash(String(raw)),revoked:{$ne:true}});if(!k)return out(res,401,{error:"Invalid API key"});const a=await d.collection("apis").findOne({slug:p[1],active:true});if(!a)return out(res,404,{error:"API not found"});if(a.plan==="premium"&&k.plan!=="premium")return out(res,403,{error:"Premium plan required"});if(k.plan!=="premium"&&k.used>=50)return out(res,429,{error:"Free lifetime quota of 50 requests reached"});const target=new URL(a.sourceUrl);if(target.protocol!=="https:")return out(res,400,{error:"Unsafe upstream"});const up=await fetch(target,{headers:{Accept:"application/json"}}),body=await up.text();await d.collection("keys").updateOne({_id:k._id},{$inc:{used:1}});await d.collection("usage").insertOne({keyId:k._id,apiSlug:a.slug,status:up.status,at:new Date()});res.statusCode=up.status;res.setHeader("Content-Type",up.headers.get("content-type")||"application/json");return res.end(body)}return out(res,404,{error:"Route not found"})}catch(e){console.error("SHAN API HUB",e);return out(res,500,{error:"Internal server error"})}}
+import crypto from "node:crypto";
+import { promisify } from "node:util";
+import { MongoClient } from "mongodb";
+
+const scrypt = promisify(crypto.scrypt);
+let clientPromise;
+async function db() {
+  if (!clientPromise) clientPromise = new MongoClient(process.env.MONGODB_URI).connect();
+  return (await clientPromise).db(process.env.MONGODB_DB || "shan_api_hub");
+}
+const sha = value => crypto.createHash("sha256").update(value).digest("hex");
+const send = (res, status, data) => {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(data));
+};
+const adminEmail = () => (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+const safeEqual = (a, b) => {
+  const x = Buffer.from(String(a));
+  const y = Buffer.from(String(b));
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+};
+async function passwordHash(password) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derived = await scrypt(password, salt, 64);
+  return salt + ":" + derived.toString("hex");
+}
+async function passwordMatches(password, stored) {
+  if (!stored || !stored.includes(":")) return false;
+  const [salt, hex] = stored.split(":");
+  const actual = await scrypt(password, salt, 64);
+  return safeEqual(actual.toString("hex"), hex);
+}
+async function body(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+}
+function cookie(req, name) {
+  const part = (req.headers.cookie || "").split(";").map(v => v.trim()).find(v => v.startsWith(name + "="));
+  return part ? decodeURIComponent(part.slice(name.length + 1)) : null;
+}
+async function startSession(req, res, d, user) {
+  const token = crypto.randomBytes(32).toString("hex");
+  await d.collection("sessions").insertOne({
+    userId: user._id, tokenHash: sha(token),
+    expiresAt: new Date(Date.now() + 14 * 86400000)
+  });
+  res.setHeader("Set-Cookie", "shan_session=" + token + "; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=1209600");
+}
+async function currentUser(req, d) {
+  const token = cookie(req, "shan_session");
+  if (!token) return null;
+  const session = await d.collection("sessions").findOne({
+    tokenHash: sha(token), expiresAt: { $gt: new Date() }
+  });
+  return session ? d.collection("users").findOne({ _id: session.userId }) : null;
+}
+const isAdmin = user => !!user && user.email === adminEmail();
+
+export default async function handler(req, res) {
+  try {
+    const d = await db();
+    const path = (req.url || "/").split("?")[0].replace(/^\/api\/?/, "").split("/").filter(Boolean);
+    const method = req.method;
+
+    if (path[0] === "health") return send(res, 200, { ok: true, name: "SHAN API HUB" });
+
+    if (path[0] === "auth" && path[1] === "register" && method === "POST") {
+      const input = await body(req);
+      const email = String(input.email || "").trim().toLowerCase();
+      const name = String(input.name || "").trim().slice(0, 60);
+      const password = String(input.password || "");
+      if (!/^\S+@\S+\.\S+$/.test(email)) return send(res, 400, { error: "Enter a valid email address" });
+      if (password.length < 8 || password.length > 128) return send(res, 400, { error: "Password must be 8–128 characters" });
+      if (email === adminEmail()) return send(res, 403, { error: "This email is reserved for the site administrator" });
+      if (await d.collection("users").findOne({ email })) return send(res, 409, { error: "An account with this email already exists" });
+      const user = {
+        email, name: name || email.split("@")[0],
+        passwordHash: await passwordHash(password),
+        plan: "free", createdAt: new Date(), updatedAt: new Date()
+      };
+      await d.collection("users").insertOne(user);
+      await startSession(req, res, d, user);
+      return send(res, 201, { ok: true });
+    }
+
+    if (path[0] === "auth" && path[1] === "login" && method === "POST") {
+      const input = await body(req);
+      const email = String(input.email || "").trim().toLowerCase();
+      const password = String(input.password || "");
+      if (!email || !password) return send(res, 400, { error: "Email and password are required" });
+      if (email === adminEmail()) {
+        if (!process.env.ADMIN_PASSWORD || !safeEqual(password, process.env.ADMIN_PASSWORD)) {
+          return send(res, 401, { error: "Incorrect email or password" });
+        }
+        let user = await d.collection("users").findOne({ email });
+        if (!user) {
+          const record = { email, name: "SHAN API HUB Admin", plan: "premium", createdAt: new Date(), updatedAt: new Date() };
+          const result = await d.collection("users").insertOne(record);
+          user = { ...record, _id: result.insertedId };
+        }
+        await startSession(req, res, d, user);
+        return send(res, 200, { ok: true });
+      }
+      const user = await d.collection("users").findOne({ email });
+      if (!user || !(await passwordMatches(password, user.passwordHash))) {
+        return send(res, 401, { error: "Incorrect email or password" });
+      }
+      await startSession(req, res, d, user);
+      return send(res, 200, { ok: true });
+    }
+
+    if (path[0] === "auth" && path[1] === "logout") {
+      const token = cookie(req, "shan_session");
+      if (token) await d.collection("sessions").deleteOne({ tokenHash: sha(token) });
+      res.setHeader("Set-Cookie", "shan_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0");
+      return send(res, 200, { ok: true });
+    }
+
+    if (path[0] === "catalog" && method === "GET") {
+      const apis = await d.collection("apis").find({ active: true }, { projection: { sourceUrl: 0 } }).sort({ createdAt: -1 }).toArray();
+      return send(res, 200, { apis });
+    }
+
+    const user = await currentUser(req, d);
+    if (path[0] === "me") {
+      if (!user) return send(res, 401, { error: "Sign in required" });
+      const keys = await d.collection("keys").find({ userId: user._id, revoked: { $ne: true } }).toArray();
+      return send(res, 200, { user: {
+        name: user.name, email: user.email, isAdmin: isAdmin(user),
+        plan: user.plan || "free", keyCount: keys.length,
+        used: keys.reduce((sum, key) => sum + (key.used || 0), 0)
+      }});
+    }
+
+    if (path[0] === "keys") {
+      if (!user) return send(res, 401, { error: "Sign in required" });
+      if (method === "GET") {
+        const keys = await d.collection("keys").find(
+          { userId: user._id, revoked: { $ne: true } },
+          { projection: { keyHash: 0 } }
+        ).toArray();
+        return send(res, 200, { keys });
+      }
+      if (method === "POST") {
+        const count = await d.collection("keys").countDocuments({ userId: user._id, revoked: { $ne: true } });
+        if (count >= 3) return send(res, 403, { error: "Maximum 3 active keys" });
+        const raw = "shan_" + crypto.randomBytes(28).toString("hex");
+        await d.collection("keys").insertOne({
+          userId: user._id, label: "My API key", prefix: raw.slice(0, 12),
+          keyHash: sha(raw), plan: user.plan || "free", used: 0,
+          createdAt: new Date(), revoked: false
+        });
+        return send(res, 201, { key: raw });
+      }
+    }
+
+    if (path[0] === "admin" && path[1] === "apis") {
+      if (!isAdmin(user)) return send(res, 403, { error: "Admin access required" });
+      if (method === "POST") {
+        const input = await body(req);
+        let source;
+        try { source = new URL(input.sourceUrl); } catch { return send(res, 400, { error: "Invalid source URL" }); }
+        if (source.protocol !== "https:" || ["localhost", "127.0.0.1", "::1"].includes(source.hostname)) {
+          return send(res, 400, { error: "Only public HTTPS upstreams allowed" });
+        }
+        const slug = String(input.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+        if (!slug || !input.name || !input.description) return send(res, 400, { error: "Name, slug and description required" });
+        await d.collection("apis").updateOne({ slug }, {
+          $set: {
+            name: String(input.name).slice(0, 100), slug,
+            description: String(input.description).slice(0, 500),
+            sourceUrl: source.toString(), plan: input.plan === "premium" ? "premium" : "free",
+            active: true, updatedAt: new Date()
+          },
+          $setOnInsert: { createdAt: new Date() }
+        }, { upsert: true });
+        return send(res, 201, { ok: true });
+      }
+    }
+
+    if (path[0] === "gateway" && path[1] && method === "GET") {
+      const raw = req.headers["x-api-key"];
+      if (!raw) return send(res, 401, { error: "x-api-key header required" });
+      const key = await d.collection("keys").findOne({ keyHash: sha(String(raw)), revoked: { $ne: true } });
+      if (!key) return send(res, 401, { error: "Invalid API key" });
+      const api = await d.collection("apis").findOne({ slug: path[1], active: true });
+      if (!api) return send(res, 404, { error: "API not found" });
+      if (api.plan === "premium" && key.plan !== "premium") return send(res, 403, { error: "Premium plan required" });
+      if (key.plan !== "premium" && key.used >= 50) return send(res, 429, { error: "Free lifetime quota of 50 requests reached" });
+      const target = new URL(api.sourceUrl);
+      if (target.protocol !== "https:") return send(res, 400, { error: "Unsafe upstream" });
+      const upstream = await fetch(target, { headers: { Accept: "application/json" } });
+      const response = await upstream.text();
+      await d.collection("keys").updateOne({ _id: key._id }, { $inc: { used: 1 } });
+      await d.collection("usage").insertOne({ keyId: key._id, apiSlug: api.slug, status: upstream.status, at: new Date() });
+      res.statusCode = upstream.status;
+      res.setHeader("Content-Type", upstream.headers.get("content-type") || "application/json");
+      return res.end(response);
+    }
+
+    return send(res, 404, { error: "Route not found" });
+  } catch (error) {
+    console.error("SHAN API HUB", error);
+    return send(res, 500, { error: "Internal server error" });
+  }
+}
