@@ -5,7 +5,9 @@ import { MongoClient } from "mongodb";
 const scrypt = promisify(crypto.scrypt);
 let clientPromise;
 async function db() {
-  if (!clientPromise) clientPromise = new MongoClient(process.env.MONGODB_URI).connect();
+  const uri = String(process.env.MONGODB_URI || "").trim();
+  if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) throw new Error("MONGODB_URI is missing or invalid. Set a valid MongoDB connection string in Vercel Environment Variables.");
+  if (!clientPromise) clientPromise = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 }).connect().catch(error => { clientPromise = null; throw error; });
   return (await clientPromise).db(process.env.MONGODB_DB || "shan_api_hub");
 }
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
@@ -34,7 +36,9 @@ async function passwordMatches(password, stored) {
 async function body(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
-  return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+  const raw = Buffer.concat(chunks).toString().trim();
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch { const error = new Error("Invalid JSON request body"); error.statusCode = 400; throw error; }
 }
 function cookie(req, name) {
   const part = (req.headers.cookie || "").split(";").map(v => v.trim()).find(v => v.startsWith(name + "="));
@@ -282,6 +286,6 @@ export default async function handler(req, res) {
     return send(res, 404, { error: "Route not found" });
   } catch (error) {
     console.error("SHAN API HUB", error);
-    return send(res, 500, { error: "Internal server error" });
+    return send(res, error.statusCode || 500, { error: error.message || "Internal server error" });
   }
 }
