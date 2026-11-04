@@ -8,6 +8,8 @@ Vercel + MongoDB API marketplace with email/password accounts.
 - `ADMIN_EMAIL` — reserved administrator email
 - `ADMIN_PASSWORD` — private administrator password
 - `APP_URL` — deployed HTTPS site URL
+- `BOT_API_URL` — your SHAN MINI BOT VPS HTTPS API base URL
+- `SHAN_API_KEY` — private API key used by the server to call the bot API
 
 No Google OAuth credentials or Google Cloud billing are required.
 
@@ -18,5 +20,7 @@ No Google OAuth credentials or Google Cloud billing are required.
 - Developer API keys stored as SHA-256 hashes; raw key shown once
 - Free keys: 50 lifetime requests total
 - API gateway: GET `/api/gateway/:slug` with `x-api-key`
+- SHAN MINI BOT pairing page with authenticated server-side proxy routes
+- Private admin controls restricted to the configured `ADMIN_EMAIL`
 
-The initial release does not yet integrate WhatsApp pairing or the Coins service. See [SETUP.md](SETUP.md) for deployment instructions.
+The Coins service integration is not yet connected. WhatsApp pairing requires the VPS API to expose the configured pairing and status routes. See [SETUP.md](SETUP.md) for deployment instructions.
