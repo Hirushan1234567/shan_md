@@ -21,6 +21,7 @@ else if(name==="analytics")renderAnalytics(v);
 else if(name==="settings")v.innerHTML=head("Account Settings")+'<div class="subpanel"><h2>Developer Profile</h2><p>Email: '+esc(me.email)+'</p><p>Name: '+esc(me.name)+'</p><p>Plan: '+esc(me.plan||"free")+'</p><button class="gradient-button" id="settingsLogout">Sign Out</button></div>';
 else if(name==="premium")v.innerHTML=head("Premium Plan")+'<div class="subpanel"><h2>👑 Upgrade your developer account</h2><p>Premium access can be activated by the administrator.</p><ul><li>Higher API request limits</li><li>Premium API access</li><li>Priority support</li></ul><p class="muted">Contact support to request activation.</p></div>';
 else if(name==="admin")renderAdmin(v);
+else if(name==="status")v.innerHTML=head("System Status")+'<div class="subpanel"><h2>SHAN MINI BOT Status</h2><div class="online-pill"><i></i> WEBSITE ONLINE</div><p class="muted">Website is responding. Live WhatsApp bot and API health checks will be added after their status endpoints are verified.</p></div>';
 else if(name==="support")v.innerHTML=head("Support Center")+'<div class="subpanel"><h2>SHAN MINI BOT Support</h2><p>For account and API support, contact the platform administrator.</p></div>';
 else v.innerHTML=head("Developer Portal")+'<div class="subpanel">Coming soon.</div>';
 }
