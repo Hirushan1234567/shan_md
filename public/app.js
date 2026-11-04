@@ -14,6 +14,8 @@ else if(name==="playground")v.innerHTML=head("API Playground")+'<div class="subp
 else if(name==="analytics")v.innerHTML=head("Usage Analytics")+'<div class="subpanel"><h2>Lifetime usage</h2><p>'+esc(me.used||0)+' total requests recorded across your active keys.</p><p class="muted">Detailed charts will appear as usage records are connected.</p></div>';
 else if(name==="docs")v.innerHTML=head("Documentation")+'<div class="subpanel"><h2>Quick start</h2><pre>curl '+location.origin+'/api/gateway/API_SLUG \\\n -H "x-api-key: YOUR_API_KEY"</pre><p class="muted">Free API keys include 50 requests total for the entire lifetime of each key.</p></div>';
 else if(name==="admin")renderAdmin(v);
+else if(name==="marketplace")v.innerHTML=head("Payment Marketplace")+'<div class="subpanel"><h2>Developer Marketplace</h2><p class="muted">Explore API plans and premium access options.</p><div class="api-grid"><article class="api-card"><small>FREE PLAN</small><h3>Starter Access</h3><p>50 lifetime requests per free API key.</p></article><article class="api-card"><small>PREMIUM PLAN</small><h3>Premium Access</h3><p>Higher limits and premium API access. Contact administrator to activate.</p></article></div></div>';
+else if(name==="settings")v.innerHTML=head("Account Settings")+'<div class="subpanel"><h2>Profile</h2><p>Email: '+esc(me.email)+'</p><p>Account: '+esc(me.name||"Developer")+'</p><p class="muted">Security settings are managed by your account login.</p></div>';
 else if(name==="premium")v.innerHTML=head("Premium Plan")+'<div class="subpanel"><h2>Premium access</h2><p>Premium plan activation is managed by the SHAN API administrator.</p></div>';
 else v.innerHTML=head("Support")+'<div class="subpanel"><p>Support centre is coming soon.</p></div>';
 }
