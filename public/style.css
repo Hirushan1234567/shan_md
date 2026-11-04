@@ -61,3 +61,39 @@ footer{border-top-color:#202849}
  .menu-backdrop.show{display:block;position:fixed;z-index:35;inset:0;background:#02040dcc;backdrop-filter:blur(3px)}
  .main-area{margin:0;width:100%;padding:0 13px}
 }
+
+/* Screenshot-matched SHAN API dashboard layout */
+.reference-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,.9fr);grid-template-areas:"usage status" "quick activity" "quick premium";gap:14px;margin-top:16px;align-items:stretch}
+.usage-card{grid-area:usage;min-width:0}.api-status-card{grid-area:status}.quick-card{grid-area:quick}.activity{grid-area:activity}.premium-card{grid-area:premium}
+.reference-dashboard-grid .dash-card{min-width:0;border-radius:12px;padding:15px;background:linear-gradient(145deg,#101a34 0%,#0b1228 100%);border-color:#26355d}
+.reference-dashboard-grid .card-heading h2{font-size:14px;font-weight:800;letter-spacing:.1px}
+.reference-dashboard-grid .card-heading p{font-size:10px;margin:3px 0 0}
+.range-select{background:#101a35;border:1px solid #2d3b66;border-radius:7px;color:#aebce2;padding:6px 9px;font-size:10px}
+.usage-card .chart{height:175px;margin-top:15px;padding-top:10px}
+.usage-card .chart-bars{align-items:end}
+.usage-card .chart-bars i{border-radius:4px 4px 0 0}
+.usage-card .chart-labels{font-size:9px}
+.api-status-card .status-row{padding:12px 2px;font-size:11px}
+.api-status-card .status-row b{color:#53e5a8;font-size:10px}
+.quick-card .quick-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.quick-card .quick-grid button{min-height:75px;padding:10px 5px;font-size:10px;border-radius:8px}
+.quick-card .quick-grid button b{font-size:21px}
+.activity-list{display:grid;gap:0;margin-top:7px}
+.activity-list>div{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #ffffff0d;min-width:0}
+.activity-list>div:last-child{border:0}
+.activity-list i{width:27px;height:27px;flex:0 0 27px;display:grid;place-items:center;background:#25205a;border-radius:8px;font-style:normal}
+.activity-list span{min-width:0;flex:1}
+.activity-list b,.activity-list small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.activity-list b{font-size:10px;color:#e5eaff}
+.activity-list small,.activity-list time{font-size:9px;color:#8998bd}
+.activity-list time{white-space:nowrap}
+.reference-dashboard-grid .premium-card{background:radial-gradient(circle at 90% 10%,#6a34d866,transparent 46%),linear-gradient(135deg,#26134f,#10162f);border-color:#6844c5}
+.reference-dashboard-grid .premium-card h2{font-size:19px;margin:6px 0}
+.reference-dashboard-grid .premium-card p{margin:0 0 8px}
+.reference-dashboard-grid .premium-card ul{padding-left:17px;margin:8px 0 12px;color:#bfc6e5;font-size:10px;line-height:1.8}
+.reference-dashboard-grid .premium-card button{background:linear-gradient(100deg,#7637ff,#a02cff);border:0;color:#fff;border-radius:7px;padding:8px 15px;font-size:10px;font-weight:800}
+.metric-grid{gap:12px;margin:15px 0}
+.metric{min-height:112px;padding:14px}
+.welcome-banner{min-height:128px;padding:22px 25px}
+@media(max-width:850px){.reference-dashboard-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"usage" "status" "quick" "activity" "premium"}}
+@media(max-width:680px){.reference-dashboard-grid{gap:10px;margin-top:11px}.reference-dashboard-grid .dash-card{padding:13px}.quick-card .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.usage-card .chart{height:145px}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
