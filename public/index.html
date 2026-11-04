@@ -1,99 +1,55 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#080d1b">
-  <title>SHAN API HUB</title>
-  <link rel="stylesheet" href="/style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07091b">
+<title>SHAN API | Developer Platform</title><link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="top">
-    <a class="brand" href="/">SHAN<span>API HUB</span></a>
-    <nav>
-      <a href="#apis">Explore APIs</a>
-      <a href="#docs">Docs</a>
-      <button id="logoutBtn" class="ghost hidden">Logout</button>
-    </nav>
-  </header>
-  <main>
-    <section class="hero">
-      <div class="eyebrow">DEVELOPER PLATFORM</div>
-      <h1>One hub.<br><span>Every API you need.</span></h1>
-      <p>Discover APIs, create secure keys and build faster with SHAN API HUB.</p>
-      <div class="stats">
-        <div><b>50</b><small>Free lifetime requests / key</small></div>
-        <div><b>API</b><small>One developer workspace</small></div>
-        <div><b>24/7</b><small>Usage visibility</small></div>
-      </div>
-    </section>
-
-    <section id="loginArea" class="panel">
-      <div class="sectionhead">
-        <div><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">Welcome back</h2></div>
-      </div>
-      <form id="authForm" class="formgrid" data-mode="login">
-        <input id="nameField" class="hidden" name="name" placeholder="Your name" maxlength="60" autocomplete="name">
-        <input name="email" type="email" placeholder="Email address" required autocomplete="email">
-        <input id="authPassword" name="password" type="password" placeholder="Password (at least 8 characters)" minlength="8" maxlength="128" required autocomplete="current-password">
-        <button id="authSubmit" class="primary" type="submit">Login</button>
-      </form>
-      <button id="authSwitch" class="ghost" type="button">New here? Create an account</button>
-      <p class="muted">Create a free account with your email and password. No Google Cloud setup or billing required.</p>
-    </section>
-
-    <section id="workspace" class="panel hidden">
-      <div class="sectionhead">
-        <div><div class="eyebrow">YOUR WORKSPACE</div><h2 id="welcome">Dashboard</h2></div>
-        <span id="role" class="pill">Developer</span>
-      </div>
-      <div class="tabs">
-        <button class="tab active" data-tab="overview">Overview</button>
-        <button class="tab" data-tab="keys">API Keys</button>
-        <button class="tab" data-tab="coins">Coins</button>
-        <button class="tab hidden" id="adminTab" data-tab="admin">Admin</button>
-      </div>
-      <div id="overview" class="tabpage">
-        <div class="cards">
-          <article><small>Plan</small><h3 id="plan">Free</h3></article>
-          <article><small>Keys</small><h3 id="keyCount">0</h3></article>
-          <article><small>Lifetime requests used</small><h3 id="used">0</h3></article>
-        </div>
-        <h3>Available APIs</h3><div id="catalog" class="api-grid"></div>
-      </div>
-      <div id="keys" class="tabpage hidden">
-        <div class="sectionhead"><h3>Your API keys</h3><button class="primary" id="newKey">Create API key</button></div>
-        <div id="keysList"></div><p class="muted">A new key is displayed only once. Store it safely.</p>
-      </div>
-      <div id="coins" class="tabpage hidden">
-        <h3>Coins Dashboard</h3><p class="muted">WhatsApp pairing and Coins service integration are not configured in this release.</p>
-      </div>
-      <div id="admin" class="tabpage hidden">
-        <h3>Register an API</h3>
-        <form id="apiForm" class="formgrid">
-          <input name="name" placeholder="API name" required>
-          <input name="slug" placeholder="slug (e.g. weather)" required>
-          <input name="description" placeholder="Description" required>
-          <input name="sourceUrl" type="url" placeholder="Upstream HTTPS URL" required>
-          <select name="plan"><option value="free">Free</option><option value="premium">Premium</option></select>
-          <button class="primary">Register API</button>
-        </form>
-        <p class="muted">Only public HTTPS upstreams are accepted.</p>
-      </div>
-    </section>
-
-    <section id="apis" class="catalog-section">
-      <div class="eyebrow">DISCOVER</div><h2>Explore the API catalogue</h2>
-      <div id="publicCatalog" class="api-grid"></div>
-    </section>
-    <section id="docs" class="docs">
-      <div class="eyebrow">QUICK START</div><h2>Simple developer experience</h2>
-      <pre><code>curl https://YOUR_DOMAIN/api/gateway/API_SLUG -H "x-api-key: YOUR_API_KEY"</code></pre>
-      <p class="muted">Free keys include 50 requests total for their entire lifetime.</p>
-    </section>
-  </main>
-  <footer>© <span id="year"></span> SHAN API HUB · Built for developers</footer>
-  <div id="toast" role="status"></div>
-  <script src="/app.js" defer></script>
-</body>
-</html>
+<div class="app-shell">
+<aside class="sidebar">
+ <a class="brand" href="/"><span class="brand-mark">S</span><span>SHAN API<small>Developer Platform</small></span></a>
+ <div class="side-label">WORKSPACE</div>
+ <button class="side-link active" data-view="overview">▦ <span>Dashboard</span></button>
+ <button class="side-link" data-view="catalog">◈ <span>API Categories</span></button>
+ <button class="side-link" data-view="playground">⌘ <span>API Playground</span></button>
+ <button class="side-link" data-view="keys">⚿ <span>My API Keys</span></button>
+ <button class="side-link" data-view="analytics">▥ <span>Usage Analytics</span></button>
+ <button class="side-link" data-view="docs">▤ <span>Documentation</span></button>
+ <button class="side-link" data-view="pair">◉ <span>SHAN MINI BOT</span><em>PAIR</em></button>
+ <button class="side-link" data-view="support">✉ <span>Support Tickets</span></button>
+ <button class="side-link hidden" id="adminNav" data-view="admin">♛ <span>Admin Control</span></button>
+ <div class="side-bottom"><div class="premium-mini"><b>♛ Premium Plan</b><small>Unlock more API power</small><button data-view="premium">Upgrade Now ↗</button></div>
+ <div class="user-mini"><div class="avatar">SD</div><span><b id="sideName">Guest Developer</b><small id="sidePlan">Not signed in</small></span></div></div>
+</aside>
+<main class="main-area">
+<header class="topbar"><button id="menuToggle" class="icon-btn">☰</button><div class="searchbox">⌕ <input id="globalSearch" placeholder="Search APIs, docs..."></div><div class="top-actions"><span class="status-dot">● System Online</span><button class="icon-btn">♧</button><button class="profile-chip"><span class="avatar">SD</span><span id="topName">Guest</span>⌄</button><button id="logoutBtn" class="ghost hidden">Logout</button></div></header>
+<section id="authScreen" class="auth-screen">
+ <div class="auth-card"><div class="brand-mark large">S</div><div class="eyebrow">WELCOME TO SHAN API</div><h1 id="authTitle">Sign in to your workspace</h1><p>Build, connect and manage your APIs in one place.</p>
+ <form id="authForm"><input id="nameField" name="name" class="hidden" placeholder="Your name" maxlength="60"><input name="email" type="email" placeholder="Email address" required autocomplete="email"><input id="authPassword" name="password" type="password" placeholder="Password (8 characters minimum)" minlength="8" maxlength="128" required><button id="authSubmit" class="primary">Sign In</button></form>
+ <button id="authSwitch" class="text-btn">Create a free account</button><small class="muted">Secure email and password authentication</small></div>
+</section>
+<section id="workspace" class="workspace hidden">
+ <div class="welcome-banner"><div><div class="eyebrow">DEVELOPER CONTROL CENTER</div><h1>Welcome Back, <span id="welcomeName">Developer</span> 👋</h1><p>Here's your API platform overview and usage statistics.</p></div><div class="banner-orb">🚀</div><div class="banner-brand">SHAN API <small>Powering Developers</small></div></div>
+ <div class="metric-grid">
+ <article class="metric blue"><div class="metric-icon">♟</div><small>Total API Keys</small><b id="keyCount">0</b><span>↗ Your developer keys</span></article>
+ <article class="metric purple"><div class="metric-icon">⚡</div><small>Total Requests</small><b id="used">0</b><span>Lifetime usage</span></article>
+ <article class="metric green"><div class="metric-icon">◈</div><small>Active APIs</small><b id="apiCount">0</b><span>Available services</span></article>
+ <article class="metric gold"><div class="metric-icon">♛</div><small>Account Plan</small><b id="plan">FREE</b><span id="planHint">Upgrade for more</span></article>
+ </div>
+ <div class="content-grid">
+ <div class="left-column">
+ <section class="dash-card"><div class="card-heading"><div><h2>API Usage Statistics</h2><p>Your recent platform activity</p></div><span class="live-pill">● Live Overview</span></div><div class="chart" aria-label="Usage chart"><div class="chart-y"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div><div class="chart-bars"><i style="height:38%"></i><i style="height:56%"></i><i style="height:45%"></i><i style="height:74%"></i><i style="height:62%"></i><i style="height:88%"></i><i style="height:78%"></i><i style="height:96%"></i><i style="height:83%"></i><i style="height:100%"></i></div></div><div class="chart-labels"><span>Last 10 days</span><span>Usage overview</span></div></section>
+ <section class="dash-card"><div class="card-heading"><div><h2>Quick Actions</h2><p>Jump straight into your tools</p></div></div><div class="quick-grid"><button data-view="keys"><b>⚿</b>Create API Key</button><button data-view="playground"><b>⌘</b>Try API Playground</button><button data-view="pair"><b>◉</b>Connect Mini Bot</button><button data-view="docs"><b>▤</b>API Documentation</button></div></section>
+ <section class="dash-card"><div class="card-heading"><div><h2>API Categories</h2><p>Explore available developer services</p></div><button class="text-btn" data-view="catalog">View all ↗</button></div><div id="catalog" class="api-grid"></div></section>
+ </div>
+ <div class="right-column">
+ <section class="dash-card pair-promo"><div class="promo-icon">◉</div><div class="eyebrow">WHATSAPP CONNECTION</div><h2>SHAN MINI BOT</h2><p>Connect your WhatsApp account and get your pairing code.</p><button class="primary" data-view="pair">Open Pair System →</button><small>Secure session connection</small></section>
+ <section class="dash-card"><div class="card-heading"><h2>API Status</h2><span class="live-pill">All Systems Online</span></div><div class="status-row"><span>◈ API Gateway</span><b>● Online</b></div><div class="status-row"><span>▤ Documentation</span><b>● Online</b></div><div class="status-row"><span>♧ User Accounts</span><b>● Online</b></div><div class="status-row"><span>◉ Pair Service</span><b id="pairStatus">● Ready to connect</b></div></section>
+ <section class="dash-card activity"><h2>Recent Activity</h2><p id="activityText">Welcome to SHAN API HUB. Your activity will appear here.</p></section>
+ <section class="dash-card premium-card"><div class="eyebrow">LEVEL UP YOUR API ACCESS</div><h2>Go Premium! ♛</h2><p>Unlock higher limits and premium API access.</p><button data-view="premium">Explore Premium →</button></section>
+ </div></div>
+</section>
+<section id="subView" class="subview hidden"></section>
+<footer>© <span id="year"></span> SHAN API HUB · Built for developers <span>Made with ♥ by SHAN MD</span></footer>
+</main></div><div id="toast" role="status"></div><script src="/app.js" defer></script>
+</body></html>
