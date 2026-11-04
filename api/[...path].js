@@ -123,6 +123,17 @@ export default async function handler(req, res) {
       return send(res, 200, { apis });
     }
 
+    if (path[0] === "monetization" && path.length === 1 && method === "GET") {
+      const items = await d.collection("monetization").find({ active: true }, { projection: { _id: 0, title: 1, slug: 1, type: 1, description: 1, url: 1, buttonLabel: 1 } }).sort({ createdAt: -1 }).toArray();
+      return send(res, 200, { items });
+    }
+    if (path[0] === "monetization" && path[1] === "inquiry" && method === "POST") {
+      const input = await body(req), name = String(input.name || "").trim().slice(0,80), email = String(input.email || "").trim().toLowerCase().slice(0,160), message = String(input.message || "").trim().slice(0,2000);
+      const type = ["sponsorship","advertising","api-partnership","affiliate"].includes(input.type) ? input.type : "sponsorship";
+      if (!name || !/^\S+@\S+\.\S+$/.test(email) || !message) return send(res,400,{error:"Enter your name, valid email and proposal"});
+      await d.collection("partnerInquiries").insertOne({name,email,company:String(input.company||"").trim().slice(0,120),type,message,createdAt:new Date(),status:"new"});
+      return send(res,201,{ok:true});
+    }
     const user = await currentUser(req, d);
     if (path[0] === "pair" && !user) return send(res, 401, { error: "Sign in required" });
 
@@ -208,6 +219,22 @@ export default async function handler(req, res) {
       }
     }
 
+    if (path[0] === "admin" && path[1] === "monetization") {
+      if (!isAdmin(user)) return send(res,403,{error:"Admin access required"});
+      if (method === "GET") {
+        const [items,inquiries]=await Promise.all([d.collection("monetization").find({}).sort({createdAt:-1}).toArray(),d.collection("partnerInquiries").find({}).sort({createdAt:-1}).limit(100).toArray()]);
+        return send(res,200,{items,inquiries});
+      }
+      if (method === "POST") {
+        const input=await body(req),title=String(input.title||"").trim().slice(0,100),description=String(input.description||"").trim().slice(0,500);let target;
+        try{target=new URL(String(input.url||""))}catch{return send(res,400,{error:"Enter a valid destination URL"})}
+        if(!title||!description||target.protocol!=="https:"||target.username||target.password)return send(res,400,{error:"Title, description and public HTTPS URL are required"});
+        const type=["advertisement","sponsored","affiliate","api-partnership"].includes(input.type)?input.type:"sponsored",slug=title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+crypto.randomBytes(3).toString("hex");
+        await d.collection("monetization").insertOne({title,description,url:target.toString(),type,slug,buttonLabel:String(input.buttonLabel||"Visit Offer").slice(0,40),active:true,createdAt:new Date()});
+        return send(res,201,{ok:true,slug});
+      }
+      if(method==="DELETE"&&path[2]){const result=await d.collection("monetization").deleteOne({slug:path[2]});return send(res,result.deletedCount?200:404,result.deletedCount?{ok:true}:{error:"Offer not found"})}
+    }
     if (path[0] === "admin" && path[1] === "apis") {
       if (!isAdmin(user)) return send(res, 403, { error: "Admin access required" });
       if (method === "POST") {
