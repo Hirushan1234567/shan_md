@@ -1,5 +1,6 @@
 import { $, $$, api, esc, fmtN, fmtDate, ago, icon, spark, areaChart, toast, copy, busy, modal, confirmBox, formModal, loading, errBox, setAuthFail, brandHtml, footHtml, colorJson, prettyJson, sendRequest, store, lstore } from "./core.js";
 import { S, HINTS, genCode, statusClass, leave } from "./state.js";
+import { dashboard } from "./dash.js";
 import { analytics, docs, tickets, marketplace, changelog, settings, monitoring } from "./pages2.js";
 
 const NAV = [
@@ -14,7 +15,7 @@ setAuthFail(() => { if (S.user) location.replace("/dev/login"); });
 
 function shell() {
   $("#side").innerHTML = `${brandHtml()}<nav class="nav" aria-label="Main">${NAV.map(([id, l, ic]) => `<a href="#/${id}" data-p="${id}">${icon(ic)}<span>${l}</span></a>`).join("")}</nav>
-  <div class="side-foot"><div class="mini" id="planMini"></div><a class="mini" href="/" style="text-decoration:none;color:var(--text)"><b>SHAN MINI BOT</b><br><span class="dim">Official partner · open site</span></a></div>`;
+  <div class="side-foot"><div class="mini" id="planMini"></div><a class="mini partner" href="/"><span class="wa">✆</span><span><b>SHAN MINI BOT</b><span class="dim">Official Partner</span></span></a></div>`;
   $("#burger").innerHTML = icon("menu"); $("#sIc").innerHTML = icon("search"); $("#bell").innerHTML = icon("bell");
   $("#footer").innerHTML = footHtml();
   const u = S.user;
@@ -65,36 +66,6 @@ async function boot() {
   shell(); window.addEventListener("hashchange", route); route();
 }
 boot();
-
-/* ================= Dashboard ================= */
-async function dashboard(el) {
-  const d = await api("GET", "/dashboard"), u = d.profile, s = d.stats;
-  S.user = u;
-  const q = u.quota, rem = q.unlimited ? "Unlimited" : fmtN(q.remaining);
-  const vals = d.daily.map(x => x.total);
-  el.innerHTML = `<div class="page">
-  <div class="hero"><div><h2>Welcome Back, ${esc(u.username)}! 👋</h2><p>Here's your API platform overview and usage statistics.</p></div><div class="tag">SHAN API<small>Powering Developers</small></div></div>
-  <div class="grid g4 mt">
-    <div class="card stat c-blue">${spark(vals, "#2f7bff")}<span class="ic">${icon("chart")}</span><small>Total API Requests</small><b>${fmtN(s.totalRequests)}</b><span class="sub">${fmtN(s.last30)} in the last 30 days</span></div>
-    <div class="card stat c-purple">${spark(vals.map((_, i) => i), "#9b4dff")}<span class="ic">${icon("send")}</span><small>Remaining Requests</small><b>${rem}</b><span class="sub">${u.plan === "free" ? "free keys · lifetime pool" : "premium account pool"}</span></div>
-    <div class="card stat c-green">${spark(vals.map(x => x % 7), "#22e08a")}<span class="ic">${icon("key")}</span><small>Active API Keys</small><b>${fmtN(s.activeKeys)}</b><span class="sub">${s.errors30} errors in 30 days</span></div>
-    <div class="card stat c-gold">${spark([1, 2, 2, 3, 3, 4], "#ffbf3c")}<span class="ic">${icon("crown")}</span><small>Premium Plan</small><b style="font-size:19px">${esc(u.planName)}</b><span class="sub">${u.plan === "free" ? "No expiry · upgrade available" : u.planExpires ? "Expires " + fmtDate(u.planExpires) : "No expiry"}</span></div>
-  </div>
-  <div class="grid gmain mt">
-    <div class="card"><h3>API Usage Statistics <span class="pill info">Last 30 days</span></h3>${s.totalRequests ? areaChart(d.daily.map(x => ({ label: x.date.slice(5), value: x.total, value2: x.errors }))) : `<div class="empty">No requests yet. Create an API key and make your first call from the Playground.</div>`}</div>
-    <div class="card"><h3>API Status <a class="sm" href="#/monitoring">Monitor →</a></h3><div class="list">${d.apis.map(a => `<div class="item"><span class="dotc" style="--c:${a.status === "online" ? "var(--green)" : a.status === "offline" ? "var(--red)" : "var(--gold)"}"></span><div class="grow ellipsis">${esc(a.name)}</div><span class="pill ${esc(a.status)}">${esc(a.status.replace("_", " "))}</span><small style="min-width:46px;text-align:right">${a.latency != null ? a.latency + " ms" : "–"}</small></div>`).join("")}</div></div>
-  </div>
-  <div class="grid g3 mt">
-    <div class="card"><h3>Quick Actions</h3><div class="qa">
-      <a href="#/keys/new" style="background:var(--grad2)">${icon("key")}Generate API Key</a><a href="#/playground" style="background:linear-gradient(135deg,#2f7bff,#1f4fd0)">${icon("code")}Try API Playground</a>
-      <a href="#/docs" style="background:linear-gradient(135deg,#16a765,#0d7a4a)">${icon("book")}Read Documentation</a><a href="#/tickets/new" style="background:linear-gradient(135deg,#ff8a3d,#d4561a)">${icon("chat")}Create Support Ticket</a></div></div>
-    <div class="card"><h3>Recent Activity</h3><div class="list">${d.activity.length ? d.activity.map(a => `<div class="item"><div class="grow"><b class="sm">${esc(a.msg)}</b><small>${esc(a.type.replace("_", " "))}</small></div><small>${ago(a.t)}</small></div>`).join("") : `<div class="empty">No activity yet.</div>`}</div></div>
-    <div class="card premium"><h3>${icon("crown").replace("<svg", '<svg width="18" style="color:var(--gold)"')} ${u.plan === "free" ? "Go Premium!" : esc(u.planName)}</h3>
-      ${u.plan === "free" ? `<p class="muted sm">Unlock more requests and premium categories.</p><ul><li>Admin-configured request limits</li><li>Premium categories (TV Series, Subtitles, Downloads)</li><li>Higher rate limits &amp; more API keys</li><li>Priority support</li></ul><p class="sm dim" style="margin-bottom:10px">Premium plans are assigned by the platform admin.</p><a class="btn" href="#/tickets/new">Request upgrade</a>`
-      : `<ul><li>${q.unlimited ? "Unlimited requests" : fmtN(q.remaining) + " requests remaining"}</li><li>${u.limits.rpm} requests / minute</li><li>Up to ${u.limits.maxKeys} API keys</li></ul><p class="sm muted">${u.planExpires ? "Expires " + fmtDate(u.planExpires) : "No expiry"}</p>`}</div>
-  </div>
-  <div class="card mt"><h3>Recent API Requests <a class="sm" href="#/analytics">View all →</a></h3>${d.recentRequests.length ? `<div class="scroll"><table class="table"><tr><th>Time</th><th>Endpoint</th><th>Status</th><th>Latency</th></tr>${d.recentRequests.map(r => `<tr><td>${ago(r.t)}</td><td class="mono">${esc(r.slug)}</td><td><span class="pill ${statusClass(r.status)}">${r.status}</span></td><td>${r.ms} ms</td></tr>`).join("")}</table></div>` : `<div class="empty">No API requests yet.</div>`}</div></div>`;
-}
 
 /* ================= API Categories ================= */
 export function readJsonModal(cat, presetKey) {
