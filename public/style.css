@@ -49,3 +49,20 @@
  .bottom-grid{grid-template-columns:1fr;gap:10px}.usage-panel,.quick-panel{min-height:0;padding:13px}.usage-content{justify-content:center;gap:25px}.donut{width:112px;height:112px;flex-basis:112px}.quick-panel>button{font-size:13px;padding:8px 0}.quick-panel>button span{width:28px}
 }
 @media(min-width:761px){.bottom-nav{display:none}}
+
+/* Primary entry cards: bot linking and coins dashboard */
+.primary-actions{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 20px}
+.primary-action{display:flex;align-items:center;gap:17px;min-width:0;min-height:104px;padding:17px 21px;text-align:left;border-radius:18px;color:#fff;background:#081a36;border:1px solid #078fe7;box-shadow:0 0 16px #008cff55,inset 0 0 20px #0a3b6b55;position:relative;overflow:hidden}
+.primary-action:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,#073e7a66,transparent 62%);pointer-events:none}
+.primary-action>*{position:relative;z-index:1}
+.primary-action .action-symbol{font-size:37px;filter:drop-shadow(0 0 10px #00baff)}
+.action-copy{display:block;min-width:0;flex:1}
+.action-copy b{display:block;font-size:17px;letter-spacing:.3px;font-weight:900}
+.action-copy small{display:block;color:#b7c9e9;font-size:12px;margin-top:4px}
+.action-arrow{font-size:27px;color:#6bdcff}
+.coins-action{border-color:#9635ec;background:linear-gradient(115deg,#1c1042,#0c1432 65%,#211047);box-shadow:0 0 17px #a02cff55,inset 0 0 20px #52227b55}
+.coins-action:before{background:linear-gradient(110deg,#54218b66,transparent 65%)}
+.coins-action .action-symbol{filter:drop-shadow(0 0 10px #b44dff)}
+.coins-action .action-arrow{color:#e0a1ff}
+@media(max-width:760px){.primary-actions{gap:12px;margin-bottom:17px}.primary-action{min-height:95px;padding:14px;gap:11px}.primary-action .action-symbol{font-size:30px}.action-copy b{font-size:13px}.action-copy small{font-size:10px}.action-arrow{font-size:22px}}
+@media(max-width:520px){.primary-actions{grid-template-columns:1fr;gap:10px}.primary-action{min-height:82px;padding:12px 15px}.action-copy b{font-size:14px}.action-copy small{font-size:11px}}
