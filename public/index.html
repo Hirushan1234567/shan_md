@@ -1,1 +1,99 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080d1b"><title>SHAN API HUB</title><link rel="stylesheet" href="/style.css"></head><body><header class="top"><a class="brand" href="/">SHAN<span>API HUB</span></a><nav><a href="#apis">Explore APIs</a><a href="#docs">Docs</a><button id="loginBtn" class="primary">Continue with Google</button><button id="logoutBtn" class="ghost hidden">Logout</button></nav></header><main><section class="hero"><div class="eyebrow">DEVELOPER PLATFORM</div><h1>One hub.<br><span>Every API you need.</span></h1><p>Discover APIs, create secure keys and build faster with SHAN API HUB.</p><div class="actions"><button class="primary" id="heroLogin">Get started with Google</button><a class="ghost linkbtn" href="#apis">Browse APIs</a></div><div class="stats"><div><b>50</b><small>Free lifetime requests / key</small></div><div><b>API</b><small>One developer workspace</small></div><div><b>24/7</b><small>Usage visibility</small></div></div></section><section id="workspace" class="panel hidden"><div class="sectionhead"><div><div class="eyebrow">YOUR WORKSPACE</div><h2 id="welcome">Dashboard</h2></div><span id="role" class="pill">Developer</span></div><div class="tabs"><button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="keys">API Keys</button><button class="tab" data-tab="coins">Coins</button><button class="tab hidden" id="adminTab" data-tab="admin">Admin</button></div><div id="overview" class="tabpage"><div class="cards"><article><small>Plan</small><h3 id="plan">Free</h3></article><article><small>Keys</small><h3 id="keyCount">0</h3></article><article><small>Lifetime requests used</small><h3 id="used">0</h3></article></div><h3>Available APIs</h3><div id="catalog" class="api-grid"></div></div><div id="keys" class="tabpage hidden"><div class="sectionhead"><h3>Your API keys</h3><button class="primary" id="newKey">Create API key</button></div><div id="keysList"></div><p class="muted">A new key is displayed only once. Store it safely.</p></div><div id="coins" class="tabpage hidden"><h3>Coins Dashboard</h3><p class="muted">WhatsApp pairing and Coins service integration are not configured in this release.</p></div><div id="admin" class="tabpage hidden"><h3>Register an API</h3><form id="apiForm" class="formgrid"><input name="name" placeholder="API name" required><input name="slug" placeholder="slug (e.g. weather)" required><input name="description" placeholder="Description" required><input name="sourceUrl" type="url" placeholder="Upstream HTTPS URL" required><select name="plan"><option value="free">Free</option><option value="premium">Premium</option></select><button class="primary">Register API</button></form><p class="muted">Only public HTTPS upstreams are accepted.</p></div></section><section id="apis" class="catalog-section"><div class="eyebrow">DISCOVER</div><h2>Explore the API catalogue</h2><div id="publicCatalog" class="api-grid"></div></section><section id="docs" class="docs"><div class="eyebrow">QUICK START</div><h2>Simple developer experience</h2><pre><code>curl https://YOUR_DOMAIN/api/gateway/API_SLUG -H "x-api-key: YOUR_API_KEY"</code></pre><p class="muted">Free keys include 50 requests total for their entire lifetime.</p></section></main><footer>© <span id="year"></span> SHAN API HUB · Built for developers</footer><div id="toast" role="status"></div><script src="/app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080d1b">
+  <title>SHAN API HUB</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">SHAN<span>API HUB</span></a>
+    <nav>
+      <a href="#apis">Explore APIs</a>
+      <a href="#docs">Docs</a>
+      <button id="logoutBtn" class="ghost hidden">Logout</button>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">DEVELOPER PLATFORM</div>
+      <h1>One hub.<br><span>Every API you need.</span></h1>
+      <p>Discover APIs, create secure keys and build faster with SHAN API HUB.</p>
+      <div class="stats">
+        <div><b>50</b><small>Free lifetime requests / key</small></div>
+        <div><b>API</b><small>One developer workspace</small></div>
+        <div><b>24/7</b><small>Usage visibility</small></div>
+      </div>
+    </section>
+
+    <section id="loginArea" class="panel">
+      <div class="sectionhead">
+        <div><div class="eyebrow">ACCOUNT</div><h2 id="authTitle">Welcome back</h2></div>
+      </div>
+      <form id="authForm" class="formgrid" data-mode="login">
+        <input id="nameField" class="hidden" name="name" placeholder="Your name" maxlength="60" autocomplete="name">
+        <input name="email" type="email" placeholder="Email address" required autocomplete="email">
+        <input id="authPassword" name="password" type="password" placeholder="Password (at least 8 characters)" minlength="8" maxlength="128" required autocomplete="current-password">
+        <button id="authSubmit" class="primary" type="submit">Login</button>
+      </form>
+      <button id="authSwitch" class="ghost" type="button">New here? Create an account</button>
+      <p class="muted">Create a free account with your email and password. No Google Cloud setup or billing required.</p>
+    </section>
+
+    <section id="workspace" class="panel hidden">
+      <div class="sectionhead">
+        <div><div class="eyebrow">YOUR WORKSPACE</div><h2 id="welcome">Dashboard</h2></div>
+        <span id="role" class="pill">Developer</span>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="keys">API Keys</button>
+        <button class="tab" data-tab="coins">Coins</button>
+        <button class="tab hidden" id="adminTab" data-tab="admin">Admin</button>
+      </div>
+      <div id="overview" class="tabpage">
+        <div class="cards">
+          <article><small>Plan</small><h3 id="plan">Free</h3></article>
+          <article><small>Keys</small><h3 id="keyCount">0</h3></article>
+          <article><small>Lifetime requests used</small><h3 id="used">0</h3></article>
+        </div>
+        <h3>Available APIs</h3><div id="catalog" class="api-grid"></div>
+      </div>
+      <div id="keys" class="tabpage hidden">
+        <div class="sectionhead"><h3>Your API keys</h3><button class="primary" id="newKey">Create API key</button></div>
+        <div id="keysList"></div><p class="muted">A new key is displayed only once. Store it safely.</p>
+      </div>
+      <div id="coins" class="tabpage hidden">
+        <h3>Coins Dashboard</h3><p class="muted">WhatsApp pairing and Coins service integration are not configured in this release.</p>
+      </div>
+      <div id="admin" class="tabpage hidden">
+        <h3>Register an API</h3>
+        <form id="apiForm" class="formgrid">
+          <input name="name" placeholder="API name" required>
+          <input name="slug" placeholder="slug (e.g. weather)" required>
+          <input name="description" placeholder="Description" required>
+          <input name="sourceUrl" type="url" placeholder="Upstream HTTPS URL" required>
+          <select name="plan"><option value="free">Free</option><option value="premium">Premium</option></select>
+          <button class="primary">Register API</button>
+        </form>
+        <p class="muted">Only public HTTPS upstreams are accepted.</p>
+      </div>
+    </section>
+
+    <section id="apis" class="catalog-section">
+      <div class="eyebrow">DISCOVER</div><h2>Explore the API catalogue</h2>
+      <div id="publicCatalog" class="api-grid"></div>
+    </section>
+    <section id="docs" class="docs">
+      <div class="eyebrow">QUICK START</div><h2>Simple developer experience</h2>
+      <pre><code>curl https://YOUR_DOMAIN/api/gateway/API_SLUG -H "x-api-key: YOUR_API_KEY"</code></pre>
+      <p class="muted">Free keys include 50 requests total for their entire lifetime.</p>
+    </section>
+  </main>
+  <footer>© <span id="year"></span> SHAN API HUB · Built for developers</footer>
+  <div id="toast" role="status"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
