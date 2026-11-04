@@ -135,7 +135,6 @@ export default async function handler(req, res) {
       return send(res,201,{ok:true});
     }
     const user = await currentUser(req, d);
-    if (path[0] === "pair" && !user) return send(res, 401, { error: "Sign in required" });
 
     if (path[0] === "pair" && path[1] === "create" && method === "POST") {
       const input = await body(req);
@@ -155,14 +154,15 @@ export default async function handler(req, res) {
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.success === false || result.status === false) return send(res, response.status || 502, { error: result.message || result.error || "Could not create pairing session" });
-      const sessionId = String(result.sessionId || result.session || result.id || phoneNumber);
-      await d.collection("pairingSessions").insertOne({ userId: user._id, sessionId, phoneNumber, createdAt: new Date() });
-      return send(res, 200, { success: true, sessionId, status: result.connection || result.status || "pending", pairCode: result.pairCode || result.code || result.pairingCode || null });
+      const sessionId = String(result.sessionId || result.session || result.id || "");
+      if (!sessionId) return send(res, 502, { error: "Pairing service did not return a session ID" });
+      const publicId = crypto.randomBytes(24).toString("hex");
+      await d.collection("pairingSessions").insertOne({ publicId, sessionId, phoneNumber, createdAt: new Date(), expiresAt: new Date(Date.now() + 30 * 60000) });
+      return send(res, 200, { success: true, sessionId: publicId, status: result.connection || result.status || "pending", pairCode: result.pairCode || result.code || result.pairingCode || null });
     }
 
     if (path[0] === "pair" && path[1] && method === "GET") {
-      if (!user) return send(res, 401, { error: "Sign in required" });
-      const record = await d.collection("pairingSessions").findOne({ sessionId: path[1], userId: user._id });
+      const record = await d.collection("pairingSessions").findOne({ publicId: path[1], expiresAt: { $gt: new Date() } });
       if (!record) return send(res, 404, { error: "Pairing session not found" });
       const base = String(process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
       const apiKey = String(process.env.SHAN_API_KEY || "").trim();
