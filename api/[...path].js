@@ -169,10 +169,20 @@ export default async function handler(req, res) {
     if (path[0] === "me") {
       if (!user) return send(res, 401, { error: "Sign in required" });
       const keys = await d.collection("keys").find({ userId: user._id, revoked: { $ne: true } }).toArray();
+      const used = keys.reduce((sum, key) => sum + (key.used || 0), 0);
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const keyIds = keys.map(key => key._id);
+      const monthResult = keyIds.length ? await d.collection("usage").aggregate([
+        { $match: { keyId: { $in: keyIds }, at: { $gte: monthStart } } },
+        { $count: "total" }
+      ]).toArray() : [];
       return send(res, 200, { user: {
         name: user.name, email: user.email, isAdmin: isAdmin(user),
         plan: user.plan || "free", keyCount: keys.length,
-        used: keys.reduce((sum, key) => sum + (key.used || 0), 0)
+        used, monthUsed: monthResult[0]?.total || 0,
+        limit: (user.plan || "free") === "premium" ? null : Math.max(50, keys.length * 50)
       }});
     }
 
