@@ -66,3 +66,7 @@
 .coins-action .action-arrow{color:#e0a1ff}
 @media(max-width:760px){.primary-actions{gap:12px;margin-bottom:17px}.primary-action{min-height:95px;padding:14px;gap:11px}.primary-action .action-symbol{font-size:30px}.action-copy b{font-size:13px}.action-copy small{font-size:10px}.action-arrow{font-size:22px}}
 @media(max-width:520px){.primary-actions{grid-template-columns:1fr;gap:10px}.primary-action{min-height:82px;padding:12px 15px}.action-copy b{font-size:14px}.action-copy small{font-size:11px}}
+
+.coins-wallet{padding:25px;background:radial-gradient(circle at 90% 10%,#8d31e955,transparent 45%),linear-gradient(120deg,#0a1a3a,#171039);border-color:#8a38dc;box-shadow:0 0 18px #8429e955}
+.coins-wallet h2{font-size:25px;margin:8px 0}.coin-balance{font-size:48px;font-weight:900;color:#ffd45b;text-shadow:0 0 18px #d98b25}.coin-balance small{font-size:13px;letter-spacing:2px}
+.coins-feature-grid{margin:16px 0}.feature-emoji{font-size:31px;filter:drop-shadow(0 0 8px #b44dff)}.feature-status{font-size:11px;color:#c48cff}.coins-notice{border-color:#56417e}
