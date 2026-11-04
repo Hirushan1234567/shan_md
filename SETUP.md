@@ -11,6 +11,8 @@ Open Project → Settings → Environment Variables. Add these separately for Pr
 - `ADMIN_EMAIL`: the email address reserved for the site administrator, in lowercase.
 - `ADMIN_PASSWORD`: a strong private password for the administrator account (at least 16 characters recommended).
 - `APP_URL`: your deployed site origin, e.g. `https://your-project.vercel.app` (no trailing slash).
+- `BOT_API_URL`: your SHAN MINI BOT VPS HTTPS base URL (required for WhatsApp pairing).
+- `SHAN_API_KEY`: private server-to-server key accepted by the bot pairing API.
 
 No Google Client ID, Google Client Secret, Google Cloud project, or Google billing is required.
 
@@ -33,6 +35,6 @@ Free keys have a lifetime cap of 50 requests total.
 - Never commit real credentials or API keys.
 - Passwords for normal accounts are stored as salted scrypt hashes; login sessions use HttpOnly cookies.
 - Keep `ADMIN_PASSWORD` private and use a unique strong password.
-- The current release includes email/password accounts, API catalogue, API key issuance, API registration and a basic GET gateway.
-- WhatsApp pairing and the existing Mini Bot Coins service are not connected yet. They need the bot server base URL and a server-to-server authentication contract before integration.
+- The current release includes email/password accounts, API catalogue, API key issuance, API registration, a basic GET gateway, dashboard usage metrics and an authenticated Mini Bot pairing proxy.
+- WhatsApp pairing requires `BOT_API_URL` and `SHAN_API_KEY` to match the VPS bot's HTTPS API and authentication contract. The Mini Bot Coins service is not connected yet.
 - The gateway currently forwards GET requests to the configured upstream URL. It does not yet support configurable methods, request bodies, custom upstream headers or full OpenAPI import.
