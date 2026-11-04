@@ -1,126 +1,32 @@
-const $ = selector => document.querySelector(selector);
-let me = null;
-const toast = message => {
-  const node = $("#toast");
-  node.textContent = message;
-  node.style.display = "block";
-  setTimeout(() => node.style.display = "none", 3000);
-};
-async function req(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) }
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw Error(data.error || "Request failed");
-  return data;
+const $=s=>document.querySelector(s);
+let me=null, apis=[];
+const toast=m=>{const n=$("#toast");n.textContent=m;n.style.display="block";setTimeout(()=>n.style.display="none",3200)};
+async function req(url,options={}){const r=await fetch(url,{...options,credentials:"same-origin",headers:{"Content-Type":"application/json",...(options.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||d.message||"Request failed");return d}
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const apiCard=x=>'<article class="api-card"><small>'+esc((x.plan||"free").toUpperCase())+' API</small><h3>'+esc(x.name)+'</h3><p>'+esc(x.description||"")+'</p><small>/api/gateway/'+esc(x.slug)+'</small></article>';
+async function loadCatalog(){try{const d=await req("/api/catalog");apis=d.apis||[];$("#catalog").innerHTML=apis.map(apiCard).join("")||'<p class="muted">No APIs have been published yet.</p>';$("#apiCount").textContent=apis.length;$("#publicCatalog")&&($("#publicCatalog").innerHTML=apis.map(apiCard).join(""));}catch(e){toast(e.message)}}
+function view(name){$("#workspace").classList.toggle("hidden",!me);$("#authScreen").classList.add("hidden");$("#subView").classList.toggle("hidden",name==="overview");document.querySelectorAll(".side-link").forEach(b=>b.classList.toggle("active",b.dataset.view===name));if(name==="overview"){ $("#subView").classList.add("hidden");$("#workspace").classList.remove("hidden");return;}$("#workspace").classList.add("hidden");const v=$("#subView");v.classList.remove("hidden");
+const head=t=>'<div class="eyebrow">SHAN API HUB</div><h1>'+t+'</h1>';
+if(name==="catalog")v.innerHTML=head("API Categories")+'<div class="api-grid">'+(apis.map(apiCard).join("")||"No APIs registered yet.")+'</div>';
+else if(name==="keys")renderKeys(v);
+else if(name==="pair")v.innerHTML=head("SHAN MINI BOT Pair System")+'<div class="subpanel"><h2>Connect your WhatsApp account</h2><p class="muted">Enter your WhatsApp number with country code to request a pairing code.</p><form id="pairForm" class="formgrid"><input id="pairNumber" placeholder="947XXXXXXXX" inputmode="numeric" required><button class="primary">Get Pair Code</button></form><div id="pairResult"></div><p class="muted">Keep your pairing code private. Never share it with anyone.</p></div>';
+else if(name==="playground")v.innerHTML=head("API Playground")+'<div class="subpanel"><p>Test an API using your personal API key.</p><form id="playForm" class="formgrid"><select id="playApi">'+apis.map(x=>'<option value="'+esc(x.slug)+'">'+esc(x.name)+'</option>').join("")+'</select><input id="playKey" placeholder="Your API key" required><button class="primary">Send GET Request</button></form><pre id="playResult" class="subpanel">Response will appear here.</pre></div>';
+else if(name==="analytics")v.innerHTML=head("Usage Analytics")+'<div class="subpanel"><h2>Lifetime usage</h2><p>'+esc(me.used||0)+' total requests recorded across your active keys.</p><p class="muted">Detailed charts will appear as usage records are connected.</p></div>';
+else if(name==="docs")v.innerHTML=head("Documentation")+'<div class="subpanel"><h2>Quick start</h2><pre>curl '+location.origin+'/api/gateway/API_SLUG \\\n -H "x-api-key: YOUR_API_KEY"</pre><p class="muted">Free API keys include 50 requests total for the entire lifetime of each key.</p></div>';
+else if(name==="admin")renderAdmin(v);
+else if(name==="premium")v.innerHTML=head("Premium Plan")+'<div class="subpanel"><h2>Premium access</h2><p>Premium plan activation is managed by the SHAN API administrator.</p></div>';
+else v.innerHTML=head("Support")+'<div class="subpanel"><p>Support centre is coming soon.</p></div>';
 }
-const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
-  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-}[char]));
-function card(api) {
-  return '<article class="api-card"><small>' + esc(api.plan || "API").toUpperCase() +
-    '</small><h3>' + esc(api.name) + '</h3><p>' + esc(api.description || "") +
-    '</p><small>/api/gateway/' + esc(api.slug) + '</small></article>';
-}
-async function load() {
-  try {
-    const data = await req("/api/catalog");
-    const html = (data.apis || []).map(card).join("") || '<p class="muted">No APIs registered yet.</p>';
-    $("#publicCatalog").innerHTML = html;
-    $("#catalog").innerHTML = html;
-  } catch (error) { toast(error.message); }
-}
-async function keys() {
-  const data = await req("/api/keys");
-  $("#keysList").innerHTML = (data.keys || []).map(key =>
-    '<div class="api-card"><b>' + esc(key.label) + '</b><p>Plan: ' + esc(key.plan) +
-    ' · Used: ' + key.used + ' / ' + (key.plan === "free" ? 50 : "∞") +
-    '</p><small>' + esc(key.prefix) + '••••••••</small></div>'
-  ).join("") || '<p class="muted">No keys yet.</p>';
-}
-async function session() {
-  try {
-    const data = await req("/api/me");
-    me = data.user;
-    $("#workspace").classList.remove("hidden");
-    $("#welcome").textContent = "Welcome, " + me.name;
-    $("#role").textContent = me.isAdmin ? "Admin" : "Developer";
-    $("#adminTab").classList.toggle("hidden", !me.isAdmin);
-    $("#loginArea").classList.add("hidden");
-    $("#logoutBtn").classList.remove("hidden");
-    $("#plan").textContent = me.plan || "Free";
-    $("#keyCount").textContent = me.keyCount || 0;
-    $("#used").textContent = me.used || 0;
-    await keys();
-  } catch {
-    $("#loginArea").classList.remove("hidden");
-    $("#workspace").classList.add("hidden");
-    $("#logoutBtn").classList.add("hidden");
-  }
-}
-function showAuth(mode) {
-  const register = mode === "register";
-  $("#authTitle").textContent = register ? "Create your account" : "Welcome back";
-  $("#authSubmit").textContent = register ? "Create account" : "Login";
-  $("#nameField").classList.toggle("hidden", !register);
-  $("#authSwitch").textContent = register ? "Already have an account? Login" : "New here? Create an account";
-  $("#authForm").dataset.mode = mode;
-  $("#authPassword").autocomplete = register ? "new-password" : "current-password";
-}
-$("#authSwitch").onclick = () => showAuth($("#authForm").dataset.mode === "register" ? "login" : "register");
-$("#authForm").onsubmit = async event => {
-  event.preventDefault();
-  const form = new FormData(event.currentTarget);
-  const mode = event.currentTarget.dataset.mode || "login";
-  const payload = {
-    name: form.get("name"),
-    email: form.get("email"),
-    password: form.get("password")
-  };
-  try {
-    await req("/api/auth/" + (mode === "register" ? "register" : "login"), {
-      method: "POST", body: JSON.stringify(payload)
-    });
-    toast(mode === "register" ? "Account created" : "Login successful");
-    await session();
-  } catch (error) { toast(error.message); }
-};
-$("#logoutBtn").onclick = async () => {
-  await req("/api/auth/logout", { method: "POST" });
-  location.reload();
-};
-document.querySelectorAll(".tab").forEach(button => button.onclick = () => {
-  document.querySelectorAll(".tab").forEach(item => item.classList.remove("active"));
-  document.querySelectorAll(".tabpage").forEach(item => item.classList.add("hidden"));
-  button.classList.add("active");
-  $("#" + button.dataset.tab).classList.remove("hidden");
-});
-$("#newKey").onclick = async () => {
-  try {
-    const data = await req("/api/keys", { method: "POST", body: "{}" });
-    const box = document.createElement("div");
-    box.className = "api-card";
-    box.innerHTML = "<b>New API key — copy it now</b><p></p>";
-    box.querySelector("p").textContent = data.key;
-    $("#keysList").prepend(box);
-    toast("Copy your key now; it is shown once.");
-    await session();
-  } catch (error) { toast(error.message); }
-};
-$("#apiForm").onsubmit = async event => {
-  event.preventDefault();
-  try {
-    await req("/api/admin/apis", {
-      method: "POST",
-      body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget)))
-    });
-    toast("API registered");
-    event.currentTarget.reset();
-    load();
-  } catch (error) { toast(error.message); }
-};
-$("#year").textContent = new Date().getFullYear();
-showAuth("login");
-load();
-session();
+async function renderKeys(v=$("#subView")){try{const d=await req("/api/keys");v.innerHTML='<div class="eyebrow">DEVELOPER SECURITY</div><h1>My API Keys</h1><div class="subpanel"><button id="createKey" class="primary">＋ Create API Key</button><p class="muted">The full key is shown only once. Copy and store it safely.</p><div id="keyRows">'+(d.keys||[]).map(k=>'<div class="api-card"><b>'+esc(k.label||"API Key")+'</b><p>'+esc(k.plan)+' · Used '+esc(k.used||0)+' / '+(k.plan==="free"?"50":"Unlimited")+'</p><small>'+esc(k.prefix)+'••••••••</small></div>').join("")+'</div></div>';$("#createKey").onclick=async()=>{try{const x=await req("/api/keys",{method:"POST",body:"{}"});const box=document.createElement("div");box.className="api-card";box.textContent="NEW KEY (copy now): "+x.key;$("#keyRows").prepend(box);toast("New key created. Copy it now.");}catch(e){toast(e.message)}}}catch(e){toast(e.message)}}
+async function renderAdmin(v=$("#subView")){if(!me?.isAdmin){toast("Admin access denied");return view("overview")}v.innerHTML='<div class="eyebrow">PRIVATE ADMIN AREA</div><h1>Admin Control Panel</h1><div class="subpanel"><h2>Register / Update API</h2><form id="adminApiForm" class="formgrid"><input name="name" placeholder="API name" required><input name="slug" placeholder="slug e.g. weather" required><input name="description" placeholder="Description" required><input name="sourceUrl" type="url" placeholder="HTTPS upstream URL" required><select name="plan"><option value="free">Free</option><option value="premium">Premium</option></select><button class="primary">Save API</button></form></div><div class="subpanel"><h2>Admin security</h2><p>Admin tools are available only to the configured administrator email. All write routes are checked on the server.</p></div>';
+$("#adminApiForm").onsubmit=async e=>{e.preventDefault();try{await req("/api/admin/apis",{method:"POST",body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});toast("API saved");e.currentTarget.reset();await loadCatalog()}catch(err){toast(err.message)}}}
+async function session(){try{const d=await req("/api/me");me=d.user;$("#authScreen").classList.add("hidden");$("#workspace").classList.remove("hidden");$("#subView").classList.add("hidden");$("#welcomeName").textContent=me.name||"Developer";$("#sideName").textContent=me.name||"Developer";$("#topName").textContent=me.name||"Developer";$("#sidePlan").textContent=(me.plan||"free").toUpperCase()+" PLAN";$("#keyCount").textContent=me.keyCount||0;$("#used").textContent=me.used||0;$("#plan").textContent=(me.plan||"free").toUpperCase();$("#adminNav").classList.toggle("hidden",!me.isAdmin);$("#logoutBtn").classList.remove("hidden");await loadCatalog()}catch{me=null;$("#authScreen").classList.remove("hidden");$("#workspace").classList.add("hidden");$("#subView").classList.add("hidden");$("#logoutBtn").classList.add("hidden")}}
+function authMode(mode){const reg=mode==="register";$("#authForm").dataset.mode=mode;$("#authTitle").textContent=reg?"Create your developer account":"Sign in to your workspace";$("#authSubmit").textContent=reg?"Create Account":"Sign In";$("#nameField").classList.toggle("hidden",!reg);$("#authSwitch").textContent=reg?"Already registered? Sign in":"Create a free account";$("#authPassword").autocomplete=reg?"new-password":"current-password"}
+$("#authSwitch").onclick=()=>authMode($("#authForm").dataset.mode==="register"?"login":"register");
+$("#authForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),mode=e.currentTarget.dataset.mode||"login";try{await req("/api/auth/"+(mode==="register"?"register":"login"),{method:"POST",body:JSON.stringify({name:f.get("name"),email:f.get("email"),password:f.get("password")})});toast("Signed in successfully");await session()}catch(x){toast(x.message)}};
+$("#logoutBtn").onclick=async()=>{await req("/api/auth/logout",{method:"POST"});location.reload()};
+document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>view(b.dataset.view)));
+$("#menuToggle").onclick=()=>document.querySelector(".sidebar").classList.toggle("mobile-open");
+$("#globalSearch").oninput=e=>{const q=e.target.value.toLowerCase();if(q){view("catalog");setTimeout(()=>document.querySelectorAll("#subView .api-card").forEach(c=>c.classList.toggle("hidden",!c.textContent.toLowerCase().includes(q))),0)}};
+document.addEventListener("submit",async e=>{if(e.target.id==="pairForm"){e.preventDefault();const n=$("#pairNumber").value;$("#pairResult").textContent="Requesting pairing code…";try{const d=await req("/api/pair/create",{method:"POST",body:JSON.stringify({phoneNumber:n})});$("#pairResult").innerHTML='<div class="api-card"><b>Pair Code</b><h1>'+esc(d.pairCode||"Check status below")+'</h1><p>Session: '+esc(d.sessionId)+'</p><p>Status: '+esc(d.status||"pending")+'</p></div>';toast("Pair request sent")}catch(x){$("#pairResult").textContent=x.message;toast(x.message)}}if(e.target.id==="playForm"){e.preventDefault();const out=$("#playResult");out.textContent="Loading…";try{const slug=$("#playApi").value,key=$("#playKey").value;const d=await fetch("/api/gateway/"+encodeURIComponent(slug),{headers:{"x-api-key":key}});out.textContent=await d.text()}catch(x){out.textContent=x.message}}});
+$("#year").textContent=new Date().getFullYear();authMode("login");loadCatalog();session();
