@@ -90,3 +90,23 @@
 @media(max-width:520px){.public-home{margin-top:8px}.public-hero{padding:25px 15px 23px;border-radius:17px}.public-feature-strip{gap:7px}.public-feature-strip article{padding:12px 5px}.public-feature-strip small{font-size:9px}.public-links{gap:7px}.public-links button{font-size:11px;padding:9px 11px}}
 
 .public-signup{display:block;margin:14px auto 0;color:#8edfff;text-decoration:underline;text-underline-offset:4px}.status-list{display:grid;gap:10px;margin:18px 0}.status-list p{display:flex;justify-content:space-between;gap:16px;padding:13px 15px;margin:0;border:1px solid #17365b;border-radius:12px;background:#081329;color:#b8cde8}.status-list b{color:#ffd36b}
+
+/* Live animated SHAN landing experience */
+.public-hero{isolation:isolate;min-height:390px;background:radial-gradient(ellipse at 50% 0%,#07518c88,transparent 58%),linear-gradient(145deg,#091b3c,#050817 68%,#17072b);}
+.public-hero:before,.public-hero:after{content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(2px)}
+.public-hero:before{width:250px;height:250px;left:-95px;top:35%;background:radial-gradient(circle,#00aaff55,transparent 68%);animation:floatGlow 7s ease-in-out infinite alternate}
+.public-hero:after{width:280px;height:280px;right:-110px;top:8%;background:radial-gradient(circle,#b000ff55,transparent 68%);animation:floatGlow 8s ease-in-out infinite alternate-reverse}
+@keyframes floatGlow{from{transform:translate3d(0,-12px,0) scale(.88);opacity:.55}to{transform:translate3d(18px,20px,0) scale(1.18);opacity:1}}
+.brand-emblem{position:relative;width:76px;height:76px;margin:0 auto 13px;display:grid;place-items:center;border-radius:23px;background:linear-gradient(145deg,#0c8fe9,#7025d9 58%,#e10a91);box-shadow:0 0 18px #00baff99,0 0 42px #9b25ff55;transform:rotate(-7deg);animation:emblemFloat 3.5s ease-in-out infinite}
+.brand-emblem span{font-size:38px;filter:drop-shadow(0 2px 8px #001)}
+.brand-emblem i{position:absolute;inset:-6px;border:1px solid #69dcff88;border-radius:27px;animation:emblemPulse 2.4s ease-out infinite}
+@keyframes emblemFloat{0%,100%{transform:translateY(0) rotate(-7deg)}50%{transform:translateY(-7px) rotate(3deg)}}
+@keyframes emblemPulse{0%{transform:scale(.92);opacity:.8}100%{transform:scale(1.28);opacity:0}}
+.online-pill{gap:9px;box-shadow:0 0 18px #20ff8a22}.online-pill i{animation:livePulse 1.5s ease-in-out infinite}.live-clock{padding-left:8px;border-left:1px solid #277b57;color:#d7ffe8;font-variant-numeric:tabular-nums}
+@keyframes livePulse{0%,100%{box-shadow:0 0 4px #35f68a;opacity:1}50%{box-shadow:0 0 15px #35f68a;opacity:.55}}
+.gradient-words{background:linear-gradient(90deg,#39d7ff,#c17bff,#ff62b5,#39d7ff);background-size:220% auto;color:transparent;background-clip:text;-webkit-background-clip:text;animation:gradientFlow 5s linear infinite}
+@keyframes gradientFlow{to{background-position:220% center}}
+.hero-pair-button{animation:buttonGlow 2.8s ease-in-out infinite;transition:transform .2s,filter .2s}.hero-pair-button:hover{transform:translateY(-3px) scale(1.015);filter:brightness(1.15)}
+@keyframes buttonGlow{0%,100%{box-shadow:0 0 18px #b000ff55}50%{box-shadow:0 0 32px #b000ff99,0 0 48px #007dff44}}
+.public-feature-strip article{transition:transform .25s,border-color .25s,box-shadow .25s}.public-feature-strip article:hover{transform:translateY(-5px);border-color:#28c9ff;box-shadow:0 8px 24px #007bff33}
+@media(prefers-reduced-motion:reduce){.public-hero:before,.public-hero:after,.brand-emblem,.brand-emblem i,.online-pill i,.gradient-words,.hero-pair-button{animation:none!important}.public-feature-strip article{transition:none}}
