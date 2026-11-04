@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050817">
-<title>SHAN MINI BOT | Developer Portal</title><link rel="stylesheet" href="/style.css?v=20261104-portal2">
+<title>SHAN MINI BOT | Developer Portal</title><link rel="stylesheet" href="/style.css?v=20261104-portal3">
 </head>
 <body>
 <div class="portal">
@@ -22,6 +22,7 @@
  <button data-view="analytics">▥ <span>Stats</span></button>
  <button data-view="settings">⚙ <span>Settings</span></button>
  <button data-view="pair">◉ <span>Link Mini Bot</span></button>
+ <button data-view="coins">🪙 <span>Coins & Dashboard</span></button>
  <button data-view="admin" id="drawerAdmin" class="hidden">♛ <span>Admin Panel</span></button>
 </aside>
 <main class="portal-main">
@@ -34,6 +35,10 @@
  <section class="welcome-panel">
   <div class="welcome-crown">♛</div><div class="welcome-copy"><h1>Welcome Back, <span id="welcomeName">Shan</span>! 👋</h1><p>Manage your bot, get API keys and track usage easily.</p></div>
   <div class="welcome-right"><div class="crown-outline">♛</div><b>Developer Portal</b><small>Build · Connect · Grow</small></div>
+ </section>
+ <section class="primary-actions">
+  <button class="primary-action bot-action" data-view="pair"><span class="action-symbol">🤖</span><span class="action-copy"><b>LINK SHAN MINI BOT</b><small>Connect WhatsApp · Get Pair Code · Receive Bot Key</small></span><span class="action-arrow">→</span></button>
+  <button class="primary-action coins-action" data-view="coins"><span class="action-symbol">🪙</span><span class="action-copy"><b>COINS &amp; DASHBOARD</b><small>Coin Wallet · Rewards · Premium Access</small></span><span class="action-arrow">→</span></button>
  </section>
  <section class="stats-grid">
   <article class="stat-card"><div class="stat-icon">🚀</div><div><small>Total Requests</small><b id="totalRequests">0</b><strong id="totalTrend">↗ Lifetime</strong></div></article>
@@ -61,5 +66,5 @@
  <button data-view="overview" class="active"><b>⌂</b><span>Home</span></button><button data-view="keys"><b>⚿</b><span>API Keys</span></button><button data-view="docs"><b>▣</b><span>Docs</span></button><button data-view="analytics"><b>▥</b><span>Stats</span></button><button data-view="settings"><b>⚙</b><span>Settings</span></button>
 </nav>
 </div>
-<div id="toast" role="status"></div><script src="/app.js?v=20261104-portal2" defer></script>
+<div id="toast" role="status"></div><script src="/app.js?v=20261104-portal3" defer></script>
 </body></html>
