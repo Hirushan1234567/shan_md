@@ -1,23 +1,22 @@
 # SHAN API HUB
 
-Vercel + MongoDB API marketplace.
+Vercel + MongoDB API marketplace with email/password accounts.
 
 ## Vercel environment variables
-- MONGODB_URI
-- GOOGLE_CLIENT_ID
-- GOOGLE_CLIENT_SECRET
-- AUTH_SECRET (32+ random characters)
-- ADMIN_EMAIL (Google account allowed to register APIs)
-- APP_URL (deployed https URL)
+- `MONGODB_URI` — MongoDB Atlas connection string
+- `MONGODB_DB` — `shan_api_hub` (optional)
+- `ADMIN_EMAIL` — reserved administrator email
+- `ADMIN_PASSWORD` — private administrator password
+- `APP_URL` — deployed HTTPS site URL
 
-Google OAuth callback: https://YOUR_DOMAIN/api/auth/callback
+No Google OAuth credentials or Google Cloud billing are required.
 
 ## Features
-- Google sign-in, no OTP
+- Email/password registration and login
+- Salted scrypt password hashes and HttpOnly login sessions
 - API catalogue and admin registration
-- Developer keys stored as SHA-256 hashes; raw key shown once
+- Developer API keys stored as SHA-256 hashes; raw key shown once
 - Free keys: 50 lifetime requests total
-- Premium plan flag is admin-configurable in MongoDB
-- API gateway: GET /api/gateway/:slug with x-api-key
+- API gateway: GET `/api/gateway/:slug` with `x-api-key`
 
-Only public HTTPS upstream URLs are accepted. Never put upstream secrets in browser code. This initial release does not yet integrate WhatsApp pairing or the Coins service.
+The initial release does not yet integrate WhatsApp pairing or the Coins service. See [SETUP.md](SETUP.md) for deployment instructions.
