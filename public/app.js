@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s);
 let me=null,apis=[],keyData=[],pairSession=null;
 const toast=m=>{const n=$("#toast");n.textContent=m;n.style.display="block";clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>n.style.display="none",3200)};
-async function req(url,options={}){const r=await fetch(url,{...options,credentials:"same-origin",headers:{"Content-Type":"application/json",...(options.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||d.message||"Request failed");return d}
+async function req(url,options={}){let r;try{r=await fetch(url,{...options,credentials:"same-origin",headers:{"Content-Type":"application/json",...(options.headers||{})}})}catch(e){throw Error("Network error: "+(e.message||"Could not reach the server"))}const raw=await r.text();let d={};try{d=raw?JSON.parse(raw):{}}catch{}if(!r.ok)throw Error(d.error||d.message||("Request failed (HTTP "+r.status+")"+(raw?" — "+raw.slice(0,180):"")));return d}
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n||0).toLocaleString();
 const head=t=>'<div class="subview-heading"><button class="back-dashboard" id="backDashboard">← Back to Home</button><div class="eyebrow">SHAN MINI BOT · DEVELOPER PORTAL</div><h1>'+esc(t)+'</h1></div>';
