@@ -223,6 +223,44 @@ export default async function handler(req, res) {
       }
     }
 
+    if (path[0] === "admin" && path[1] === "users") {
+      if (!isAdmin(user)) return send(res, 403, { error: "Admin access required" });
+      if (method === "GET") {
+        const users = await d.collection("users").find(
+          {},
+          { projection: { passwordHash: 0 } }
+        ).sort({ createdAt: -1 }).limit(200).toArray();
+        return send(res, 200, { users: users.map(item => ({
+          id: String(item._id), name: item.name || "", email: item.email,
+          plan: item.plan || "free", createdAt: item.createdAt || null,
+          isAdmin: isAdmin(item)
+        })) });
+      }
+      if (method === "POST") {
+        const input = await body(req);
+        const plan = input.plan === "premium" ? "premium" : input.plan === "free" ? "free" : null;
+        if (!plan) return send(res, 400, { error: "Choose a valid plan" });
+        if (input.all === true) {
+          const result = await d.collection("users").updateMany(
+            { email: { $ne: adminEmail() } },
+            { $set: { plan, updatedAt: new Date() } }
+          );
+          const users = await d.collection("users").find({ email: { $ne: adminEmail() } }, { projection: { _id: 1 } }).toArray();
+          const ids = users.map(item => item._id);
+          if (ids.length) await d.collection("keys").updateMany({ userId: { $in: ids }, revoked: { $ne: true } }, { $set: { plan } });
+          return send(res, 200, { ok: true, updated: result.modifiedCount, plan });
+        }
+        const email = String(input.email || "").trim().toLowerCase();
+        if (!/^\\S+@\\S+\\.\\S+$/.test(email)) return send(res, 400, { error: "Enter a valid user email" });
+        if (email === adminEmail()) return send(res, 403, { error: "The administrator plan cannot be changed here" });
+        const target = await d.collection("users").findOne({ email });
+        if (!target) return send(res, 404, { error: "User not found" });
+        await d.collection("users").updateOne({ _id: target._id }, { $set: { plan, updatedAt: new Date() } });
+        await d.collection("keys").updateMany({ userId: target._id, revoked: { $ne: true } }, { $set: { plan } });
+        return send(res, 200, { ok: true, email, plan });
+      }
+    }
+
     if (path[0] === "admin" && path[1] === "monetization") {
       if (!isAdmin(user)) return send(res,403,{error:"Admin access required"});
       if (method === "GET") {
