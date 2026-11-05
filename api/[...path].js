@@ -305,10 +305,12 @@ export default async function handler(req, res) {
         try { sampleResponse = input.sampleResponseJSON ? JSON.parse(input.sampleResponseJSON) : null; } catch { return send(res, 400, { error: "Sample response must be valid JSON" }); }
         if (!Array.isArray(parameters) && (typeof parameters !== "object" || parameters === null)) return send(res, 400, { error: "Parameters must be a JSON object or array" });
         const originalSlug = String(input.originalSlug || "").trim().toLowerCase();
-        if (originalSlug && originalSlug !== slug) {
+        if (originalSlug) {
           const oldApi = await d.collection("apis").findOne({ slug: originalSlug });
           if (!oldApi) return send(res, 404, { error: "API being edited was not found" });
-          if (await d.collection("apis").findOne({ slug })) return send(res, 409, { error: "That API slug is already in use" });
+          if (originalSlug !== slug && await d.collection("apis").findOne({ slug })) {
+            return send(res, 409, { error: "That API slug is already in use" });
+          }
         }
         const selector = originalSlug ? { slug: originalSlug } : { slug };
         await d.collection("apis").updateOne(selector, {
