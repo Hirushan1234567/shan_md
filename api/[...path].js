@@ -279,31 +279,39 @@ export default async function handler(req, res) {
     }
     if (path[0] === "admin" && path[1] === "apis") {
       if (!isAdmin(user)) return send(res, 403, { error: "Admin access required" });
+      if (method === "GET") {
+        const items = await d.collection("apis").find({}).sort({ updatedAt: -1, createdAt: -1 }).toArray();
+        return send(res, 200, { apis: items });
+      }
+      if (method === "DELETE" && path[2]) {
+        const result = await d.collection("apis").deleteOne({ slug: path[2] });
+        return send(res, result.deletedCount ? 200 : 404, result.deletedCount ? { ok: true } : { error: "API not found" });
+      }
       if (method === "POST") {
         const input = await body(req);
         let source;
-        try { source = new URL(input.sourceUrl); } catch { return send(res, 400, { error: "Invalid source URL" }); }
-        if (source.protocol !== "https:" || ["localhost", "127.0.0.1", "::1"].includes(source.hostname)) {
+        try { source = new URL(String(input.sourceUrl || "")); } catch { return send(res, 400, { error: "Invalid source URL" }); }
+        if (source.protocol !== "https:" || source.username || source.password || ["localhost", "127.0.0.1", "::1"].includes(source.hostname)) {
           return send(res, 400, { error: "Only public HTTPS upstreams allowed" });
         }
-        const slug = String(input.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
-        if (!slug || !input.name || !input.description) return send(res, 400, { error: "Name, slug and description required" });
+        const slug = String(input.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80);
+        const name = String(input.name || "").trim().slice(0, 100);
+        const description = String(input.description || "").trim().slice(0, 500);
+        if (!slug || !name || !description) return send(res, 400, { error: "Name, slug and description required" });
         const category = ["movie","ai","download","image","search","utility","other"].includes(input.category) ? input.category : "other";
-        const method = input.method === "POST" ? "POST" : "GET";
+        const apiMethod = input.method === "POST" ? "POST" : "GET";
         let parameters = [], sampleResponse = null;
         try { parameters = input.parametersJSON ? JSON.parse(input.parametersJSON) : []; } catch { return send(res, 400, { error: "Parameters must be valid JSON" }); }
         try { sampleResponse = input.sampleResponseJSON ? JSON.parse(input.sampleResponseJSON) : null; } catch { return send(res, 400, { error: "Sample response must be valid JSON" }); }
         if (!Array.isArray(parameters) && (typeof parameters !== "object" || parameters === null)) return send(res, 400, { error: "Parameters must be a JSON object or array" });
         await d.collection("apis").updateOne({ slug }, {
           $set: {
-            name: String(input.name).slice(0, 100), slug,
-            description: String(input.description).slice(0, 500),
-            category, method, sourceUrl: source.toString(),
+            name, slug, description, category, method: apiMethod, sourceUrl: source.toString(),
             parameters, sampleResponse,
             docsUrl: String(input.docsUrl || "").trim().slice(0, 500),
             tags: String(input.tags || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean).slice(0, 12),
             plan: input.plan === "premium" ? "premium" : "free",
-            active: true, updatedAt: new Date()
+            active: input.active === false || input.active === "false" ? false : true, updatedAt: new Date()
           },
           $setOnInsert: { createdAt: new Date() }
         }, { upsert: true });
