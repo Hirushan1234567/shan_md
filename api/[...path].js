@@ -311,7 +311,7 @@ export default async function handler(req, res) {
       }
     }
 
-    if (path[0] === "gateway" && path[1] && method === "GET") {
+    if (path[0] === "gateway" && path[1] && ["GET", "POST"].includes(method)) {
       const raw = req.headers["x-api-key"];
       if (!raw) return send(res, 401, { error: "x-api-key header required" });
       const key = await d.collection("keys").findOne({ keyHash: sha(String(raw)), revoked: { $ne: true } });
@@ -324,7 +324,7 @@ export default async function handler(req, res) {
       if (target.protocol !== "https:" || target.username || target.password) return send(res, 400, { error: "Unsafe upstream" });
       const incoming = new URL(req.url || "/", "https://hub.invalid");
       for (const [name, value] of incoming.searchParams) target.searchParams.set(name, value);
-      const upstream = await fetch(target, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(20000), redirect: "error" });
+      const upstream = await fetch(target, { method: api.method === "POST" ? "POST" : "GET", headers: { Accept: "application/json", ...(api.method === "POST" ? { "Content-Type": req.headers["content-type"] || "application/json" } : {}) }, ...(api.method === "POST" ? { body: JSON.stringify(await body(req)) } : {}), signal: AbortSignal.timeout(20000), redirect: "error" });
       const response = await upstream.text();
       await d.collection("keys").updateOne({ _id: key._id }, { $inc: { used: 1 } });
       await d.collection("usage").insertOne({ keyId: key._id, apiSlug: api.slug, status: upstream.status, at: new Date() });
