@@ -273,13 +273,16 @@ export default async function handler(req, res) {
       if (api.plan === "premium" && key.plan !== "premium") return send(res, 403, { error: "Premium plan required" });
       if (key.plan !== "premium" && key.used >= 50) return send(res, 429, { error: "Free lifetime quota of 50 requests reached" });
       const target = new URL(api.sourceUrl);
-      if (target.protocol !== "https:") return send(res, 400, { error: "Unsafe upstream" });
-      const upstream = await fetch(target, { headers: { Accept: "application/json" } });
+      if (target.protocol !== "https:" || target.username || target.password) return send(res, 400, { error: "Unsafe upstream" });
+      const incoming = new URL(req.url || "/", "https://hub.invalid");
+      for (const [name, value] of incoming.searchParams) target.searchParams.set(name, value);
+      const upstream = await fetch(target, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(20000), redirect: "error" });
       const response = await upstream.text();
       await d.collection("keys").updateOne({ _id: key._id }, { $inc: { used: 1 } });
       await d.collection("usage").insertOne({ keyId: key._id, apiSlug: api.slug, status: upstream.status, at: new Date() });
       res.statusCode = upstream.status;
       res.setHeader("Content-Type", upstream.headers.get("content-type") || "application/json");
+      res.setHeader("Cache-Control", "no-store");
       return res.end(response);
     }
 
