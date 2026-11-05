@@ -304,7 +304,14 @@ export default async function handler(req, res) {
         try { parameters = input.parametersJSON ? JSON.parse(input.parametersJSON) : []; } catch { return send(res, 400, { error: "Parameters must be valid JSON" }); }
         try { sampleResponse = input.sampleResponseJSON ? JSON.parse(input.sampleResponseJSON) : null; } catch { return send(res, 400, { error: "Sample response must be valid JSON" }); }
         if (!Array.isArray(parameters) && (typeof parameters !== "object" || parameters === null)) return send(res, 400, { error: "Parameters must be a JSON object or array" });
-        await d.collection("apis").updateOne({ slug }, {
+        const originalSlug = String(input.originalSlug || "").trim().toLowerCase();
+        if (originalSlug && originalSlug !== slug) {
+          const oldApi = await d.collection("apis").findOne({ slug: originalSlug });
+          if (!oldApi) return send(res, 404, { error: "API being edited was not found" });
+          if (await d.collection("apis").findOne({ slug })) return send(res, 409, { error: "That API slug is already in use" });
+        }
+        const selector = originalSlug ? { slug: originalSlug } : { slug };
+        await d.collection("apis").updateOne(selector, {
           $set: {
             name, slug, description, category, method: apiMethod, sourceUrl: source.toString(),
             parameters, sampleResponse,
@@ -314,8 +321,8 @@ export default async function handler(req, res) {
             active: input.active === false || input.active === "false" ? false : true, updatedAt: new Date()
           },
           $setOnInsert: { createdAt: new Date() }
-        }, { upsert: true });
-        return send(res, 201, { ok: true, slug });
+        }, { upsert: !originalSlug });
+        return send(res, originalSlug ? 200 : 201, { ok: true, slug });
       }
     }
 
@@ -326,6 +333,7 @@ export default async function handler(req, res) {
       if (!key) return send(res, 401, { error: "Invalid API key" });
       const api = await d.collection("apis").findOne({ slug: path[1], active: true });
       if (!api) return send(res, 404, { error: "API not found" });
+      if (method !== (api.method === "POST" ? "POST" : "GET")) return send(res, 405, { error: "Method not allowed for this API", allowed: api.method || "GET" });
       if (api.plan === "premium" && key.plan !== "premium") return send(res, 403, { error: "Premium plan required" });
       if (key.plan !== "premium" && key.used >= 50) return send(res, 429, { error: "Free lifetime quota of 50 requests reached" });
       const target = new URL(api.sourceUrl);
