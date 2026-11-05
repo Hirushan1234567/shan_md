@@ -251,7 +251,7 @@ export default async function handler(req, res) {
           return send(res, 200, { ok: true, updated: result.modifiedCount, plan });
         }
         const email = String(input.email || "").trim().toLowerCase();
-        if (!/^\\S+@\\S+\\.\\S+$/.test(email)) return send(res, 400, { error: "Enter a valid user email" });
+        if (!/^\S+@\S+\.\S+$/.test(email)) return send(res, 400, { error: "Enter a valid user email" });
         if (email === adminEmail()) return send(res, 403, { error: "The administrator plan cannot be changed here" });
         const target = await d.collection("users").findOne({ email });
         if (!target) return send(res, 404, { error: "User not found" });
