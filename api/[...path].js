@@ -288,16 +288,26 @@ export default async function handler(req, res) {
         }
         const slug = String(input.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
         if (!slug || !input.name || !input.description) return send(res, 400, { error: "Name, slug and description required" });
+        const category = ["movie","ai","download","image","search","utility","other"].includes(input.category) ? input.category : "other";
+        const method = input.method === "POST" ? "POST" : "GET";
+        let parameters = [], sampleResponse = null;
+        try { parameters = input.parametersJSON ? JSON.parse(input.parametersJSON) : []; } catch { return send(res, 400, { error: "Parameters must be valid JSON" }); }
+        try { sampleResponse = input.sampleResponseJSON ? JSON.parse(input.sampleResponseJSON) : null; } catch { return send(res, 400, { error: "Sample response must be valid JSON" }); }
+        if (!Array.isArray(parameters) && (typeof parameters !== "object" || parameters === null)) return send(res, 400, { error: "Parameters must be a JSON object or array" });
         await d.collection("apis").updateOne({ slug }, {
           $set: {
             name: String(input.name).slice(0, 100), slug,
             description: String(input.description).slice(0, 500),
-            sourceUrl: source.toString(), plan: input.plan === "premium" ? "premium" : "free",
+            category, method, sourceUrl: source.toString(),
+            parameters, sampleResponse,
+            docsUrl: String(input.docsUrl || "").trim().slice(0, 500),
+            tags: String(input.tags || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean).slice(0, 12),
+            plan: input.plan === "premium" ? "premium" : "free",
             active: true, updatedAt: new Date()
           },
           $setOnInsert: { createdAt: new Date() }
         }, { upsert: true });
-        return send(res, 201, { ok: true });
+        return send(res, 201, { ok: true, slug });
       }
     }
 
