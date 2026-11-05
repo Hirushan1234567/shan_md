@@ -145,3 +145,7 @@
 .showcase-heading h2{font-size:23px;margin:4px 0}.showcase-heading p{margin:3px 0;color:#a9b8d6;font-size:14px}.offer-heading{margin-top:28px;padding-top:22px;border-top:1px solid #ffffff18}
 .home-showcase .api-card{min-width:0}.home-showcase .api-card code{display:inline-block;max-width:100%;overflow-wrap:anywhere;color:#6ddfff}
 @media(max-width:520px){.home-showcase{padding:14px;margin-top:17px}.showcase-heading{align-items:flex-start;flex-direction:column}.showcase-heading h2{font-size:20px}.showcase-heading .gradient-button{align-self:flex-start}}
+
+
+/* API marketplace manager and in-page API tester */
+.api-manager-tools{margin-top:24px;padding-top:18px;border-top:1px solid #ffffff18}.api-manager-tools h3{margin:0 0 6px;color:#d9edff}.api-manager-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.api-test-box{margin-top:14px;padding:12px;border:1px solid #ffffff20;border-radius:12px;background:#050b1b}.api-test-box summary{cursor:pointer;color:#70dfff;font-weight:700;padding:4px}.api-test-box input,.api-test-box textarea{width:100%;box-sizing:border-box;margin:9px 0;padding:11px;border:1px solid #29466c;border-radius:9px;background:#08152b;color:#eaf5ff;font:inherit}.api-test-output{max-height:280px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border-radius:9px;background:#020611;color:#9fe9ff;font-size:12px}.api-test-box button{margin:5px 0}
