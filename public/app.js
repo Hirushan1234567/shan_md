@@ -57,7 +57,7 @@ function authMode(mode){const reg=mode==="register";$("#authForm").dataset.mode=
 $("#authSwitch").onclick=()=>authMode($("#authForm").dataset.mode==="register"?"login":"register");
 $("#createAccountBtn")?.addEventListener("click",()=>{$("#publicHome").classList.add("hidden");$("#authScreen").classList.remove("hidden");$("#dashboard").classList.add("hidden");$("#subView").classList.add("hidden");authMode("register")});
 $("#authForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),mode=e.currentTarget.dataset.mode||"login";const button=$("#authSubmit");button.disabled=true;button.textContent="Please wait…";try{await req("/api/auth/"+(mode==="register"?"register":"login"),{method:"POST",body:JSON.stringify({name:f.get("name"),email:f.get("email"),password:f.get("password")})});toast("Welcome to SHAN MINI BOT");await session()}catch(x){toast(x.message)}finally{button.disabled=false;button.textContent=mode==="register"?"Create Account":"Sign In"}};
-async function logout(){try{await req("/api/auth/logout",{method:"POST"})}finally{location.reload()}}
+async function logout(){const button=$("#logoutBtn");if(button)button.disabled=true;try{await req("/api/auth/logout",{method:"POST"});me=null;location.reload()}catch(error){toast("Logout failed: "+error.message);if(button)button.disabled=false}}
 $("#logoutBtn").onclick=logout;
 $("#menuToggle").onclick=()=>{$("#drawer").classList.add("open");$("#menuBackdrop").classList.add("show")};
 $("#menuBackdrop").onclick=closeDrawer;
