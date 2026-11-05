@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050817"><title>SHAN API Playground</title>
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/playground.css">
+<script src="/playground.js" defer></script>
+</head>
+<body class="playground-body">
+<header class="pg-header"><a class="pg-brand" href="/"><span>♛</span><b>SHAN API</b><small>PLAYGROUND</small></a><nav><a href="/">Home</a><a href="/#">Developer Portal</a></nav></header>
+<main class="pg-wrap">
+<section class="pg-hero"><div class="pg-kicker">DEVELOPER TOOLS · LIVE API TESTING</div><h1>SHAN API <span>PLAYGROUND</span></h1><p>Explore published APIs, send a test request and inspect the live JSON response.</p><div class="pg-pills"><span>LIVE ENDPOINTS</span><span>JSON RESPONSE</span><span>API KEY AUTH</span></div></section>
+<section class="pg-layout">
+<aside class="pg-sidebar"><div class="pg-section-title">AVAILABLE APIS</div><div id="apiList" class="pg-api-list"><p class="pg-muted">Loading APIs…</p></div><div class="pg-help"><b>Need an API key?</b><p>Sign in to SHAN API HUB and create a key from the API Keys page.</p><a href="/">Open Developer Portal ↗</a></div></aside>
+<section class="pg-main">
+<div class="pg-card"><div class="pg-card-top"><div><div class="pg-kicker">REQUEST BUILDER</div><h2 id="selectedName">Select an API</h2><p id="selectedDescription" class="pg-muted">Choose an API from the list to get started.</p></div><span id="planTag" class="pg-tag">PUBLIC CATALOG</span></div>
+<label class="pg-label" for="apiKey">Your API Key</label><input id="apiKey" class="pg-input" type="password" autocomplete="off" placeholder="shan_… (required)">
+<div class="pg-endpoint-row"><span class="pg-method">GET</span><code id="endpoint">/api/gateway/{api-slug}</code><button id="copyEndpoint" class="pg-small-btn" type="button">Copy</button></div>
+<label class="pg-label" for="queryParams">Query parameters <span>One per line: key=value</span></label><textarea id="queryParams" class="pg-input pg-textarea" rows="4" placeholder="q=movie name&#10;page=1"></textarea>
+<div class="pg-actions"><button id="sendRequest" class="pg-run-btn" type="button">▶ Send Request</button><span id="requestStatus" class="pg-muted">Ready</span></div>
+</div>
+<div class="pg-card pg-response-card"><div class="pg-response-head"><div><div class="pg-kicker">RESPONSE</div><h2>Live Output</h2></div><div class="pg-response-tools"><span id="statusCode" class="pg-status">—</span><button id="copyResponse" class="pg-small-btn" type="button">Copy JSON</button></div></div><pre id="responseOutput" class="pg-output"><code>Choose an API, enter your API key and send a request.</code></pre></div>
+<div class="pg-card"><div class="pg-kicker">INTEGRATION</div><h2>Example Request</h2><pre id="curlOutput" class="pg-output pg-curl">Select an API to generate a cURL example.</pre></div>
+</section></section>
+<footer class="pg-footer">SHAN API HUB · Powered by SHAN MD</footer>
+</main>
+</body></html>
