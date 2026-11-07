@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);
-let me=null,apis=[],keyData=[],pairSession=null,adminApisCache=[];
+let me=null,apis=[],keyData=[],pairSession=null,pairPollTimer=null,adminApisCache=[];
 const toast=m=>{const n=$("#toast");n.textContent=m;n.style.display="block";clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>n.style.display="none",3200)};
 async function req(url,options={}){let r;try{r=await fetch(url,{...options,credentials:"same-origin",headers:{"Content-Type":"application/json",...(options.headers||{})}})}catch(e){throw Error("Network error: "+(e.message||"Could not reach the server"))}const raw=await r.text();let d={};try{d=raw?JSON.parse(raw):{}}catch{}if(!r.ok)throw Error(d.error||d.message||("Request failed (HTTP "+r.status+")"+(raw?" — "+raw.slice(0,180):"")));return d}
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -132,7 +132,41 @@ $("#profileButton").onclick=()=>view("settings");
 document.addEventListener("click",e=>{const b=e.target.closest("[data-view]");if(b){e.preventDefault();view(b.dataset.view)}if(e.target.id==="backDashboard"){if(me)showDashboard();else showPublicHome();}if(e.target.id==="settingsLogout")logout();});
 $("#generateKey").onclick=createKey;
 $("#usageRange").onchange=()=>{const mode=$("#usageRange").value;const n=mode==="month"?Number(me.monthUsed||0):Number(me.used||0);$("#usedNow").textContent=fmt(n);const lim=me.plan==="premium"?n||1:50;const pct=Math.min(100,Math.round(n/Math.max(1,lim)*100));$("#usagePercent").textContent=pct+"%";$("#usageBar").style.width=pct+"%";$("#usageDonut").style.background="conic-gradient(#05c7ff 0deg,#148cff "+(pct*3.6)+"deg,#273c78 "+(pct*3.6)+"deg 360deg)";};
-document.addEventListener("submit",async e=>{if(e.target.id!=="pairForm")return;e.preventDefault();const number=$("#pairNumber").value.replace(/\D/g,""),result=$("#pairResult"),btn=e.target.querySelector("button");btn.disabled=true;btn.textContent="Requesting…";result.textContent="Connecting to the pairing service…";try{const d=await req("/api/pair/create",{method:"POST",body:JSON.stringify({phoneNumber:number})});pairSession=d.sessionId;const initialCode=d.pairCode||"";result.innerHTML='<div class="pair-code-card"><small>YOUR WHATSAPP PAIR CODE</small><div class="pair-code-value">'+esc(initialCode||"Waiting for code…")+'</div><div class="pair-code-actions"><button type="button" id="copyPair" '+(initialCode?"":"disabled")+'>Copy Code</button><button type="button" id="checkPair">Refresh Status</button></div><div class="pair-status" id="pairStatus">'+esc(d.status||"Waiting for WhatsApp")+'</div></div>';const copy=async()=>{const code=$("#pairResult .pair-code-value").textContent.trim();if(!code||code==="Waiting for code…")return toast("Pairing code is not ready yet");try{await navigator.clipboard.writeText(code);toast("Pair code copied")}catch{toast("Select and copy the code manually")}};const refresh=async()=>{const s=await req("/api/pair/"+encodeURIComponent(pairSession));$("#pairStatus").textContent=s.status||"Waiting";if(s.pairCode){$("#pairResult .pair-code-value").textContent=s.pairCode;$("#copyPair").disabled=false}if(["open","connected","success"].includes(String(s.status||s.connection||"").toLowerCase())){$("#pairStatus").textContent="WhatsApp connected successfully"}};$("#copyPair").onclick=copy;$("#checkPair").onclick=async()=>{try{await refresh()}catch(x){toast(x.message)}};toast("Pair request sent")}catch(x){result.textContent=x.message;toast(x.message)}finally{btn.disabled=false;btn.textContent="Get Pair Code"}});
+document.addEventListener("submit",async e=>{
+ if(e.target.id!=="pairForm")return;
+ e.preventDefault();
+ const number=$("#pairNumber").value.replace(/\D/g,""),result=$("#pairResult"),btn=e.target.querySelector("button");
+ if(pairPollTimer){clearInterval(pairPollTimer);pairPollTimer=null}
+ btn.disabled=true;btn.textContent="Requesting…";result.textContent="Connecting to the pairing service…";
+ try{
+  const d=await req("/api/pair/create",{method:"POST",body:JSON.stringify({phoneNumber:number})});
+  pairSession=d.sessionId;
+  const initialCode=d.pairCode||"";
+  result.innerHTML='<div class="pair-code-card"><small>YOUR WHATSAPP PAIR CODE</small><div class="pair-code-value">'+esc(initialCode||"Waiting for code…")+'</div><div class="pair-code-actions"><button type="button" id="copyPair" '+(initialCode?"":"disabled")+'>Copy Code</button><button type="button" id="checkPair">Refresh Status</button></div><div class="pair-status" id="pairStatus">Enter this code in WhatsApp Linked Devices</div></div>';
+  const copy=async()=>{const code=$("#pairResult .pair-code-value").textContent.trim();if(!code||code==="Waiting for code…")return toast("Pairing code is not ready yet");try{await navigator.clipboard.writeText(code);toast("Pair code copied")}catch{toast("Select and copy the code manually")}};
+  const refresh=async()=>{
+   const s=await req("/api/pair/"+encodeURIComponent(pairSession));
+   const status=String(s.status||"pending").toLowerCase();
+   const statusNode=$("#pairStatus");
+   if(!statusNode)return;
+   if(s.pairCode){$("#pairResult .pair-code-value").textContent=s.pairCode;$("#copyPair").disabled=false}
+   if(["ready","linked","open","connected","success"].includes(status)){
+    statusNode.textContent="WhatsApp linked successfully. Bot is starting…";
+    if(pairPollTimer){clearInterval(pairPollTimer);pairPollTimer=null}
+   }else if(["failed","expired","removed"].includes(status)){
+    statusNode.textContent=s.error||"Pairing failed. Please request a new code.";
+    if(pairPollTimer){clearInterval(pairPollTimer);pairPollTimer=null}
+   }else{
+    statusNode.textContent=status==="linking"?"WhatsApp connected. Saving your session…":"Waiting for you to enter the code in WhatsApp…";
+   }
+  };
+  $("#copyPair").onclick=copy;
+  $("#checkPair").onclick=async()=>{try{await refresh()}catch(x){toast(x.message)}};
+  pairPollTimer=setInterval(()=>{refresh().catch(x=>console.warn("Pair status:",x.message))},4000);
+  toast("Pair code generated. Enter it in WhatsApp Linked Devices.");
+ }catch(x){result.textContent=x.message;toast(x.message)}
+ finally{btn.disabled=false;btn.textContent="Get Pair Code"}
+});
 $("#year")&&($("#year").textContent=new Date().getFullYear());authMode("login");session();
 
 // The unified live clock below updates both landing-page clock displays without duplicate timers.
