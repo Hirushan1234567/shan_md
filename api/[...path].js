@@ -144,41 +144,58 @@ export default async function handler(req, res) {
       const input = await body(req);
       const phoneNumber = String(input.phoneNumber || "").replace(/\D/g, "");
       if (!/^\d{10,15}$/.test(phoneNumber)) return send(res, 400, { error: "Enter a valid phone number with country code" });
-      const base = String(process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
-      const apiKey = String(process.env.SHAN_API_KEY || "").trim();
-      if (!base || !apiKey) return send(res, 503, { error: "WhatsApp pairing service is not configured yet" });
+
+      const configuredBase = String(process.env.PAIR_API_URL || process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
+      const pairSecret = String(process.env.PAIR_API_SECRET || process.env.SHAN_API_KEY || "").trim();
+      if (!configuredBase || !pairSecret) return send(res, 503, { error: "WhatsApp pairing service is not configured. Set PAIR_API_URL and PAIR_API_SECRET." });
+
       let upstreamUrl;
-      try { upstreamUrl = new URL(base); } catch { return send(res, 500, { error: "Invalid BOT_API_URL configuration" }); }
-      if (upstreamUrl.protocol !== "https:") return send(res, 500, { error: "BOT_API_URL must use HTTPS" });
-      const response = await fetch(base + "/api/web/pair", {
+      try { upstreamUrl = new URL(configuredBase); } catch { return send(res, 500, { error: "Invalid PAIR_API_URL configuration" }); }
+      if (upstreamUrl.protocol !== "https:") return send(res, 500, { error: "PAIR_API_URL must use HTTPS" });
+      const pairRoot = configuredBase.replace(/\/pair-api\/?$/, "") + "/pair-api";
+      const response = await fetch(pairRoot + "/api/pair", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey },
-        body: JSON.stringify({ number: phoneNumber, phoneNumber }),
-        signal: AbortSignal.timeout(25000)
+        headers: { "Content-Type": "application/json", "x-pair-secret": pairSecret },
+        body: JSON.stringify({ number: phoneNumber }),
+        signal: AbortSignal.timeout(30000)
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || result.success === false || result.status === false) return send(res, response.status || 502, { error: result.message || result.error || "Could not create pairing session" });
-      const sessionId = String(result.sessionId || result.session || result.id || "");
-      if (!sessionId) return send(res, 502, { error: "Pairing service did not return a session ID" });
+      if (!response.ok) return send(res, response.status || 502, { error: result.error || "Could not create pairing session" });
+      if (!result.pairCode) return send(res, 502, { error: "Pairing service did not return a pairing code" });
+
       const publicId = crypto.randomBytes(24).toString("hex");
-      await d.collection("pairingSessions").insertOne({ publicId, sessionId, phoneNumber, createdAt: new Date(), expiresAt: new Date(Date.now() + 30 * 60000) });
-      return send(res, 200, { success: true, sessionId: publicId, status: result.connection || result.status || "pending", pairCode: result.pairCode || result.code || result.pairingCode || null });
+      await d.collection("pairingSessions").insertOne({
+        publicId, phoneNumber, createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 60000)
+      });
+      return send(res, 200, {
+        success: true, sessionId: publicId, phoneNumber,
+        status: result.status || "pairing", pairCode: result.pairCode
+      });
     }
 
     if (path[0] === "pair" && path[1] && method === "GET") {
-      const record = await d.collection("pairingSessions").findOne({ publicId: path[1], expiresAt: { $gt: new Date() } });
+      const record = await d.collection("pairingSessions").findOne({
+        publicId: path[1], expiresAt: { $gt: new Date() }
+      });
       if (!record) return send(res, 404, { error: "Pairing session not found" });
-      const base = String(process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
-      const apiKey = String(process.env.SHAN_API_KEY || "").trim();
-      if (!base || !apiKey) return send(res, 503, { error: "WhatsApp pairing service is not configured yet" });
-      const upstreamUrl = new URL(base);
-      if (upstreamUrl.protocol !== "https:") return send(res, 500, { error: "BOT_API_URL must use HTTPS" });
-      const response = await fetch(base + "/api/status/" + encodeURIComponent(record.sessionId), {
-        headers: { "x-api-key": apiKey }, signal: AbortSignal.timeout(15000)
+
+      const configuredBase = String(process.env.PAIR_API_URL || process.env.BOT_API_URL || "").trim().replace(/\/+$/, "");
+      const pairSecret = String(process.env.PAIR_API_SECRET || process.env.SHAN_API_KEY || "").trim();
+      if (!configuredBase || !pairSecret) return send(res, 503, { error: "WhatsApp pairing service is not configured" });
+      const upstreamUrl = new URL(configuredBase);
+      if (upstreamUrl.protocol !== "https:") return send(res, 500, { error: "PAIR_API_URL must use HTTPS" });
+      const pairRoot = configuredBase.replace(/\/pair-api\/?$/, "") + "/pair-api";
+      const response = await fetch(pairRoot + "/api/pair/" + encodeURIComponent(record.phoneNumber), {
+        headers: { "x-pair-secret": pairSecret }, signal: AbortSignal.timeout(15000)
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) return send(res, response.status, { error: result.message || result.error || "Could not read pairing status" });
-      return send(res, 200, { success: true, sessionId: record.sessionId, phoneNumber: record.phoneNumber, status: result.connection || result.status || "pending", pairCode: result.pairCode || result.code || result.pairingCode || null });
+      if (!response.ok) return send(res, response.status, { error: result.error || "Could not read pairing status" });
+      return send(res, 200, {
+        success: true, sessionId: path[1], phoneNumber: record.phoneNumber,
+        status: result.status || "pending", pairCode: result.pairCode || null,
+        active: result.active === true, error: result.error || null
+      });
     }
 
     if (path[0] === "me") {
