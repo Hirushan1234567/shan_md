@@ -2,7 +2,7 @@ import { Router } from "express";
 import { requireApiKey, apiKeyRateLimit } from "../middleware/apiKeyAuth.js";
 import ApiCategory from "../models/ApiCategory.js";
 import ApiEndpoint from "../models/ApiEndpoint.js";
-import { listMovies, getMovie } from "../modules/movies/controller.js";
+import { moduleRegistry } from "../modules/registry.js";
 
 const router = Router();
 router.use(requireApiKey, apiKeyRateLimit);
@@ -35,10 +35,8 @@ router.all("/:category/:action", async (req, res, next) => {
       }
     }
 
-    if (categorySlug === "movies") {
-      if (action === "list" || action === "search") return listMovies(req, res, next);
-      if (action === "detail") return getMovie(req, res, next);
-    }
+    const handler = moduleRegistry[categorySlug]?.[action];
+    if (handler) return handler(req, res, next);
 
     return res.status(501).json({
       success: false, error: "MODULE_NOT_IMPLEMENTED",
