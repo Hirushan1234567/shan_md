@@ -14,5 +14,4 @@ const userSchema = new mongoose.Schema({
   isBlocked: { type: Boolean, default: false, index: true }
 }, { timestamps: true });
 
-userSchema.index({ email: 1 }, { unique: true });
 export default mongoose.models.User || mongoose.model("User", userSchema);
