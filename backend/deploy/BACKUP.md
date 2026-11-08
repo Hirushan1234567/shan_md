@@ -9,7 +9,7 @@ cd /opt/shan_md/backend
 npm run backup
 ```
 
-Backups are written outside the backend source tree to `/opt/shan_md/backups` by default. The script writes a temporary MongoDB config file with restrictive permissions so the URI is not passed as a process command-line argument, then removes that temporary file. It prunes matching backups older than 14 days by default.
+Backups are written outside the backend source tree to `/opt/shan_md/backend/backups` by default. The script writes a temporary MongoDB config file with restrictive permissions so the URI is not passed as a process command-line argument, then removes that temporary file. It prunes matching backups older than 14 days by default.
 
 Optional environment variables:
 - `BACKUP_DIR` — backup destination directory
