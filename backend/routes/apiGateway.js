@@ -24,7 +24,7 @@ router.all("/:category/:action", async (req, res, next) => {
       return res.status(403).json({ success: false, error: "CATEGORY_NOT_ALLOWED", message: "Your current plan does not include this API category." });
     }
 
-    const paid = ["premium", "membership"].includes(req.apiUser.planSlug);
+    const paid = req.apiUser.planSlug !== "free" && (!req.apiUser.planExpiresAt || req.apiUser.planExpiresAt > new Date());
     if ((category.access === "premium" || endpoint.requiresPlan === "premium") && !paid) {
       return res.status(403).json({ success: false, error: "PREMIUM_REQUIRED", message: "This endpoint requires a Premium or Membership plan." });
     }
