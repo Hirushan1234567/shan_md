@@ -26,3 +26,28 @@
 #supportForm label{display:grid;gap:7px;color:#c8d5e9;font-size:13px;margin-bottom:15px}#supportForm input,#supportForm textarea{width:100%;background:#0a1220;border:1px solid #2b3b53;border-radius:9px;padding:11px 12px;color:white}#supportForm textarea{min-height:100px;resize:vertical}
 
 .doc-search{display:grid;gap:7px;max-width:520px;margin:0 0 16px;color:#c8d5e9;font-size:13px}.doc-search input{background:#0a1220;border:1px solid #2b3b53;border-radius:9px;padding:11px 12px;color:white}
+
+
+/* SHAN API HUB admin workspace — shares the public site's navy/blue/cyan theme */
+.admin-panel{padding:clamp(16px,2.5vw,28px);overflow:hidden}
+.admin-panel>.panel-title{padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.admin-panel>.stats-grid{margin-bottom:22px}
+.admin-shell{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;align-items:start}
+.admin-nav{position:sticky;top:94px;display:grid;gap:7px;padding:10px;background:#0b1422;border:1px solid var(--line);border-radius:14px}
+.admin-nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:12px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);font-weight:650;text-align:left;cursor:pointer;transition:.18s}
+.admin-nav-item:hover{background:#15243a;color:var(--text)}
+.admin-nav-item.active{background:linear-gradient(110deg,#243b62,#172b43);border-color:#3d5c86;color:#fff;box-shadow:inset 3px 0 var(--cyan)}
+.admin-nav-icon{width:25px;height:25px;display:grid;place-items:center;border-radius:7px;background:#1c3150;color:var(--cyan);font-size:15px}
+.admin-workspace{min-width:0}
+.admin-section{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.admin-section.active{display:grid}
+.admin-section-heading{grid-column:1/-1;padding:4px 2px 10px}
+.admin-section-heading h3{font-size:21px;margin:4px 0}
+.admin-section-heading p{color:var(--muted);margin:0;font-size:13px}
+.admin-section .subpanel{min-width:0;height:100%;background:linear-gradient(145deg,#111e30,#0b1422);border-color:#2a3b54}
+.admin-section .subpanel>div{overflow-wrap:anywhere}
+.admin-section .subpanel input,.admin-section .subpanel select,.admin-section .subpanel textarea{min-width:0}
+.admin-section .subpanel .btn{max-width:100%}
+.admin-section .subpanel h3{font-size:15px;color:#eaf1ff}
+@media(max-width:850px){.admin-shell{grid-template-columns:1fr}.admin-nav{position:static;display:flex;overflow-x:auto;gap:6px;padding:8px}.admin-nav-item{width:auto;min-width:max-content;padding:9px 11px}.admin-nav-icon{display:none}}
+@media(max-width:620px){.admin-section.active{grid-template-columns:1fr}.admin-section-heading{grid-column:1}.admin-panel>.panel-title{align-items:flex-start}}
