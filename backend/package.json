@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": "22.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed:admin": "node scripts/seed-admin.js"
+    "seed:admin": "node scripts/seed-admin.js",
+    "check": "find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
