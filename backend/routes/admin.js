@@ -58,7 +58,7 @@ router.patch("/users/:id", async (req, res, next) => {
 
 router.post("/users/:id/coins", async (req, res, next) => {
   try {
-    const amount = Number.parseInt(req.body.amount, 10);
+    const amount = Number(req.body.amount);
     const reason = String(req.body.reason || "Admin coin adjustment").trim().slice(0, 160);
     if (!Number.isSafeInteger(amount) || amount === 0 || Math.abs(amount) > 1000000) {
       return res.status(400).json({ success: false, error: "INVALID_AMOUNT" });
