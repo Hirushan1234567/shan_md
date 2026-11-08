@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { connectDatabase } from "../config/database.js";
 import User from "../models/User.js";
 import Plan from "../models/Plan.js";
+import ApiCategory from "../models/ApiCategory.js";
+import ApiEndpoint from "../models/ApiEndpoint.js";
 
 async function main() {
   const email = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
@@ -22,6 +24,24 @@ async function main() {
   ];
   for (const plan of planSeeds) {
     await Plan.updateOne({ slug: plan.slug }, { $set: plan }, { upsert: true });
+  }
+
+  const moviesCategory = await ApiCategory.findOneAndUpdate(
+    { slug: "movies" },
+    { $set: { name: "Movies", slug: "movies", description: "Search and browse admin-published movie metadata.", access: "free", enabled: true } },
+    { upsert: true, new: true }
+  );
+  const movieEndpoints = [
+    { name: "List Movies", action: "list", method: "GET", description: "List published movies with pagination.", parameters: [{ name: "page", type: "number" }, { name: "limit", type: "number" }], requiresPlan: "free" },
+    { name: "Search Movies", action: "search", method: "GET", description: "Search published movies by title, genre or year.", parameters: [{ name: "q", type: "string" }, { name: "genre", type: "string" }, { name: "year", type: "number" }], requiresPlan: "free" },
+    { name: "Movie Detail", action: "detail", method: "GET", description: "Get one published movie by id or title.", parameters: [{ name: "id", type: "string" }, { name: "title", type: "string" }], requiresPlan: "free" }
+  ];
+  for (const endpoint of movieEndpoints) {
+    await ApiEndpoint.updateOne(
+      { categoryId: moviesCategory._id, action: endpoint.action },
+      { $set: { ...endpoint, categoryId: moviesCategory._id, enabled: true } },
+      { upsert: true }
+    );
   }
 
   const freePlan = await Plan.findOne({ slug: "free" });
