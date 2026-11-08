@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   planId: { type: mongoose.Schema.Types.ObjectId, ref: "Plan", default: null },
   planSlug: { type: String, default: "free", index: true },
   planExpiresAt: { type: Date, default: null },
+  requestsUsed: { type: Number, default: 0, min: 0 },
   coinBalance: { type: Number, default: 0, min: 0 },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false, index: true }
