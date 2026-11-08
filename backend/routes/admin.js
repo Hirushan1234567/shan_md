@@ -242,6 +242,7 @@ router.post("/content", async (req, res, next) => {
       poster: String(req.body.poster || "").slice(0, 1000),
       trailerUrl: String(req.body.trailerUrl || "").slice(0, 1000),
       links: Array.isArray(req.body.links) ? req.body.links.slice(0, 30) : [],
+      customFields: req.body.customFields && typeof req.body.customFields === "object" && !Array.isArray(req.body.customFields) ? req.body.customFields : {},
       published: req.body.published === true, createdBy: req.user._id
     };
     if (categorySlug === "movies") {
