@@ -4,7 +4,7 @@ A separate Express + MongoDB/Mongoose API platform. Existing root Vercel routes 
 
 ## Local / VPS setup
 
-See [VPS deployment guide](./deploy/DEPLOY.md). Quick start:
+See [VPS deployment guide](./deploy/DEPLOY.md) and [database backup guide](./deploy/BACKUP.md). Quick start:
 
 ```bash
 cp .env.example .env
@@ -64,6 +64,10 @@ Only administrator-published records are returned. This module does not scrape w
 - `GET/POST/PATCH /api/admin/plans`
 - `GET/POST/PATCH/DELETE /api/admin/announcements`
 - `GET/PATCH /api/admin/support/tickets`
+
+## Database backups
+
+Install MongoDB Database Tools and run `npm run backup` for a compressed backup with configurable retention. See `deploy/BACKUP.md`.
 
 ## Web interface
 
