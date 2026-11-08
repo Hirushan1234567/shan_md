@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { listMovies, getMovie } from "./controller.js";
 
+export const handlers = Object.freeze({ list: listMovies, search: listMovies, detail: getMovie });
+
 const router = Router();
 router.get("/list", listMovies);
 router.get("/search", listMovies);
