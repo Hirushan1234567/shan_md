@@ -10,6 +10,7 @@ import apiKeyRoutes from "./routes/apiKeys.js";
 import apiGatewayRoutes from "./routes/apiGateway.js";
 import publicRoutes from "./routes/public.js";
 import adminRoutes from "./routes/admin.js";
+import planRoutes from "./routes/plans.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3035);
@@ -46,6 +47,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/keys", apiKeyRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/plans", planRoutes);
 app.use("/api/v1", apiGatewayRoutes);
 
 app.use((_req, res) => res.status(404).json({ error: "Route not found" }));
