@@ -4,7 +4,7 @@ export async function listCategoryItems(db, slug, { q = "", page = 1, limit = 20
   const filter = { categorySlug: slug, published: true };
   if (q) filter.$or = [
     { title: { $regex: escapeRegex(q), $options: "i" } },
-    { customFields: { $regex: escapeRegex(q), $options: "i" } }
+    { searchText: { $regex: escapeRegex(q), $options: "i" } }
   ];
   const [items, total] = await Promise.all([
     db.collection("moduleItems").find(filter, { projection: { categorySlug: 0 } })
