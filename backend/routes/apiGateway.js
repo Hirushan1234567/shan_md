@@ -2,7 +2,7 @@ import { Router } from "express";
 import { requireApiKey, apiKeyRateLimit } from "../middleware/apiKeyAuth.js";
 import ApiCategory from "../models/ApiCategory.js";
 import ApiEndpoint from "../models/ApiEndpoint.js";
-import { moduleRegistry } from "../modules/registry.js";
+import { moduleRegistry, customContentHandlers } from "../modules/registry.js";
 
 const router = Router();
 router.use(requireApiKey, apiKeyRateLimit);
@@ -35,7 +35,7 @@ router.all("/:category/:action", async (req, res, next) => {
       }
     }
 
-    const handler = moduleRegistry[categorySlug]?.[action];
+    const handler = moduleRegistry[categorySlug]?.[action] || customContentHandlers[action];
     if (handler) return handler(req, res, next);
 
     return res.status(501).json({
