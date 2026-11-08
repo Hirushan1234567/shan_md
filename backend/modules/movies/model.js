@@ -8,6 +8,7 @@ const movieSchema = new mongoose.Schema({
   poster: { type: String, default: "" },
   trailerUrl: { type: String, default: "" },
   links: { type: [mongoose.Schema.Types.Mixed], default: [] },
+  customFields: { type: mongoose.Schema.Types.Mixed, default: {} },
   published: { type: Boolean, default: false, index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
