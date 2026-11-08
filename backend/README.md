@@ -52,7 +52,7 @@ Keys use the `myapi_<32 hex characters>` format. Only SHA-256 hashes are stored.
 - `GET /api/v1/movies/search?q=title&genre=genre&year=2025`
 - `GET /api/v1/movies/detail?id=MONGODB_ID` or `?title=title`
 
-Only administrator-published records are returned. This module does not scrape websites or provide unauthorized downloads.
+Only administrator-published records are returned. This module does not scrape websites or provide unauthorized downloads. Admin-created categories automatically receive generic `list`, `search` and `detail` endpoints backed by their own category data; a dedicated module can override those handlers.
 
 ### Admin (Bearer JWT + admin role)
 - `GET /api/admin/overview`
