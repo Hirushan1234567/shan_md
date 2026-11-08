@@ -93,8 +93,101 @@ let adminCategoriesCache=[],adminCategoryItemsCache=[];
 async function loadAdminCategories(){const host=$("#adminCategoryList"),select=$("#categoryManagerSelect");if(!host||!select)return;try{const d=await req("/api/admin/categories");adminCategoriesCache=d.categories||[];const previous=select.value;select.innerHTML='<option value="">Select a category</option>'+adminCategoriesCache.map(c=>'<option value="'+esc(c.slug)+'">'+esc(c.name)+' ('+esc(c.slug)+')</option>').join("");if(adminCategoriesCache.some(c=>c.slug===previous))select.value=previous;host.innerHTML=adminCategoriesCache.length?adminCategoriesCache.map(c=>'<article class="api-card"><small>'+esc(c.access||"free").toUpperCase()+' · '+(c.enabled===false?"DISABLED":"ENABLED")+' · '+esc(c.quotaPeriod||"lifetime")+'</small><h3>'+esc(c.name)+'</h3><p>'+esc(c.description)+'</p><p>Free: '+fmt(c.freeLimit??200)+' · Premium: '+fmt(c.premiumLimit??5000)+'</p><code>/api/v1/'+esc(c.slug)+'/list</code><div class="api-manager-actions"><button class="gradient-button compact" data-edit-category="'+esc(c.slug)+'">Edit</button><button class="danger-button" data-delete-category="'+esc(c.slug)+'">Delete</button></div></article>').join(""):'<p class="muted">No categories created yet. Create one above.</p>';if(select.value)await loadCategoryItems(select.value)}catch(error){host.textContent=error.message}}
 async function loadCategoryItems(slug){const host=$("#categoryItemsList");if(!host)return;if(!slug){host.textContent="Choose a category to manage its items.";return}try{const d=await req("/api/admin/categories/"+encodeURIComponent(slug));adminCategoryItemsCache=d.items||[];host.innerHTML=adminCategoryItemsCache.length?adminCategoryItemsCache.map(item=>'<article class="api-card"><small>'+(item.published===false?"DRAFT":"PUBLISHED")+'</small><h3>'+esc(item.title)+'</h3><pre>'+esc(JSON.stringify(item.customFields||{},null,2))+'</pre><div class="api-manager-actions"><button class="gradient-button compact" data-edit-category-item="'+esc(item._id)+'">Edit</button><button class="danger-button" data-delete-category-item="'+esc(item._id)+'">Delete</button></div></article>').join(""):'<p class="muted">No items in this category yet. Add the first item above.</p>'}catch(error){host.textContent=error.message}}
 async function loadCategoryStats(){const host=$("#categoryStatsChart");if(!host)return;try{const d=await req("/api/admin/category-stats"),stats=d.stats||[],max=Math.max(1,...stats.map(x=>Number(x.requests)||0));host.innerHTML=stats.length?stats.map(x=>'<article class="api-card"><div style="display:flex;justify-content:space-between;gap:10px"><b>'+esc(x.slug)+'</b><strong>'+fmt(x.requests)+'</strong></div><div class="usage-bar" style="margin-top:12px"><i style="width:'+Math.max(2,Math.round(x.requests/max*100))+'%"></i></div><small class="muted">Last request: '+(x.lastRequest?new Date(x.lastRequest).toLocaleString():"—")+'</small></article>').join(""):'<p class="muted">No requests recorded by API categories yet.</p>'}catch(error){host.textContent=error.message}}
-async function renderCategoryDocs(v){const d=await req("/api/v1/categories"),categories=d.result||[];v.innerHTML=head("API Documentation")+'<div class="subpanel"><h2>Quick Start</h2><p class="muted">Create an API key in your dashboard. Send it using the x-api-key header. Category quotas and access rules are applied automatically.</p><pre>curl '+location.origin+'/api/v1/quotes/list \\\n -H "x-api-key: YOUR_API_KEY"</pre></div><div class="subpanel"><h2>Enabled API Categories</h2><div id="generatedCategoryDocs" class="api-grid"></div></div>';const host=$("#generatedCategoryDocs");if(!categories.length){host.textContent="No enabled API categories are available yet.";return}host.innerHTML="";categories.forEach(category=>{const card=document.createElement("article");card.className="api-card";const meta=document.createElement("small");meta.textContent=(category.access||"free").toUpperCase()+" ACCESS · "+(category.quotaPeriod||"lifetime").toUpperCase();card.appendChild(meta);const title=document.createElement("h3");title.textContent=category.name;card.appendChild(title);const description=document.createElement("p");description.textContent=category.description||"";card.appendChild(description);const endpoint=document.createElement("code");endpoint.textContent="/api/v1/"+category.slug+"/list?api_key=YOUR_API_KEY";card.appendChild(endpoint);const params=document.createElement("details"),paramsTitle=document.createElement("summary"),paramsBody=document.createElement("pre");paramsTitle.textContent="Parameters";paramsBody.textContent=JSON.stringify(category.parameters||[{name:"page",required:false},{name:"limit",required:false},{name:"q",required:false}],null,2);params.append(paramsTitle,paramsBody);card.appendChild(params);const example=document.createElement("details"),exampleTitle=document.createElement("summary"),exampleBody=document.createElement("pre");exampleTitle.textContent="Example response";exampleBody.textContent=JSON.stringify(category.exampleResponse||{status:true,creator:category.creator||"@SHAN",result:[]},null,2);example.append(exampleTitle,exampleBody);card.appendChild(example);const tester=document.createElement("details");tester.className="api-test-box";const testTitle=document.createElement("summary");testTitle.textContent="Try it";tester.appendChild(testTitle);const key=document.createElement("input");key.type="password";key.autocomplete="off";key.placeholder="Your API key";tester.appendChild(key);const query=document.createElement("textarea");query.rows=3;query.value='{"page":1,"limit":10}';query.placeholder="Query parameters JSON";tester.appendChild(query);const run=document.createElement("button");run.type="button";run.className="gradient-button compact";run.textContent="Send Request";tester.appendChild(run);const output=document.createElement("pre");output.textContent="API response will appear here.";tester.appendChild(output);run.onclick=async()=>{if(!key.value.trim()){output.textContent="Enter your API key first.";return}let data={};try{data=JSON.parse(query.value||"{}")}catch{output.textContent="Parameters must be valid JSON.";return}const url=new URL("/api/v1/"+encodeURIComponent(category.slug)+"/list",location.origin);Object.entries(data).forEach(([k,val])=>url.searchParams.set(k,String(val)));run.disabled=true;run.textContent="Sending…";try{const response=await fetch(url,{headers:{"x-api-key":key.value.trim()}});const raw=await response.text();try{output.textContent=JSON.stringify(JSON.parse(raw),null,2)}catch{output.textContent=raw}}catch(error){output.textContent=error.message}finally{run.disabled=false;run.textContent="Send Request"}};card.appendChild(tester);host.appendChild(card)})}
-
+async function renderCategoryDocs(v){
+  const d=await req("/api/v1/categories"),categories=d.result||[];
+  v.innerHTML=head("API Documentation")+
+    '<div class="subpanel"><h2>Quick Start</h2><p class="muted">Create an API key in your dashboard. Send it using the x-api-key header. Category quotas and access rules are applied automatically.</p><pre>curl '+location.origin+'/api/v1/quotes/list \\\n -H "x-api-key: YOUR_API_KEY"</pre></div>'+
+    '<div class="subpanel"><h2>Enabled API Categories</h2><div id="generatedCategoryDocs" class="api-grid"></div></div>';
+  const host=$("#generatedCategoryDocs");
+  if(!categories.length){host.textContent="No enabled API categories are available yet.";return}
+  host.innerHTML="";
+  categories.forEach(category=>{
+    const card=document.createElement("article");
+    card.className="api-card";
+    const meta=document.createElement("small");
+    meta.textContent=(category.access||"free").toUpperCase()+" ACCESS · "+(category.quotaPeriod||"lifetime").toUpperCase();
+    card.appendChild(meta);
+    const title=document.createElement("h3");
+    title.textContent=category.name;
+    card.appendChild(title);
+    const description=document.createElement("p");
+    description.textContent=category.description||"";
+    card.appendChild(description);
+    const endpointList=document.createElement("div");
+    endpointList.className="api-endpoints";
+    ["list","search","latest"].forEach(action=>{
+      const line=document.createElement("p");
+      const code=document.createElement("code");
+      code.textContent="/api/v1/"+category.slug+"/"+action;
+      line.appendChild(code);
+      endpointList.appendChild(line);
+    });
+    card.appendChild(endpointList);
+    const params=document.createElement("details");
+    const paramsTitle=document.createElement("summary");
+    const paramsBody=document.createElement("pre");
+    paramsTitle.textContent="Parameters";
+    paramsBody.textContent=JSON.stringify(category.parameters||[{name:"page",required:false},{name:"limit",required:false},{name:"q",required:false}],null,2);
+    params.append(paramsTitle,paramsBody);
+    card.appendChild(params);
+    const example=document.createElement("details");
+    const exampleTitle=document.createElement("summary");
+    const exampleBody=document.createElement("pre");
+    exampleTitle.textContent="Example response";
+    exampleBody.textContent=JSON.stringify(category.exampleResponse||{status:true,creator:category.creator||"@SHAN",result:[]},null,2);
+    example.append(exampleTitle,exampleBody);
+    card.appendChild(example);
+    const tester=document.createElement("details");
+    tester.className="api-test-box";
+    const testTitle=document.createElement("summary");
+    testTitle.textContent="Try it";
+    tester.appendChild(testTitle);
+    const key=document.createElement("input");
+    key.type="password";
+    key.autocomplete="off";
+    key.placeholder="Your API key";
+    tester.appendChild(key);
+    const action=document.createElement("select");
+    ["list","search","latest"].forEach(name=>{
+      const option=document.createElement("option");
+      option.value=name;
+      option.textContent=name.toUpperCase();
+      action.appendChild(option);
+    });
+    tester.appendChild(action);
+    const query=document.createElement("textarea");
+    query.rows=3;
+    query.value='{"page":1,"limit":10}';
+    query.placeholder='Query parameters JSON, e.g. {"q":"hello","limit":10}';
+    tester.appendChild(query);
+    const run=document.createElement("button");
+    run.type="button";
+    run.className="gradient-button compact";
+    run.textContent="Send Request";
+    tester.appendChild(run);
+    const output=document.createElement("pre");
+    output.textContent="API response will appear here.";
+    tester.appendChild(output);
+    run.onclick=async()=>{
+      if(!key.value.trim()){output.textContent="Enter your API key first.";return}
+      let data={};
+      try{data=JSON.parse(query.value||"{}")}catch{output.textContent="Parameters must be valid JSON.";return}
+      if(!data||typeof data!=="object"||Array.isArray(data)){output.textContent="Parameters must be a JSON object.";return}
+      const url=new URL("/api/v1/"+encodeURIComponent(category.slug)+"/"+action.value,location.origin);
+      Object.entries(data).forEach(([k,val])=>{if(val!==undefined&&val!==null)url.searchParams.set(k,String(val))});
+      run.disabled=true;
+      run.textContent="Sending…";
+      try{
+        const response=await fetch(url,{headers:{"x-api-key":key.value.trim()}});
+        const raw=await response.text();
+        try{output.textContent=JSON.stringify(JSON.parse(raw),null,2)}catch{output.textContent=raw}
+      }catch(error){output.textContent=error.message}
+      finally{run.disabled=false;run.textContent="Send Request"}
+    };
+    card.appendChild(tester);
+    host.appendChild(card)
+  })
+}
 async function loadAdminApis(){
  const host=$("#adminApiList");if(!host)return;
  try{
