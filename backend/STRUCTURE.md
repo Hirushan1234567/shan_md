@@ -28,6 +28,10 @@ backend/
 ├── modules/
 │   ├── registry.js
 │   ├── README.md
+│   ├── custom-content/
+│   │   ├── model.js
+│   │   ├── controller.js
+│   │   └── routes.js
 │   └── movies/
 │       ├── model.js
 │       ├── controller.js
