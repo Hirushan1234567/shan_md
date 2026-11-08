@@ -92,7 +92,7 @@ export const apiKeyRateLimit = rateLimit({
   limit: 60,
   standardHeaders: "draft-7",
   legacyHeaders: false,
-  keyGenerator: req => req.apiKey ? String(req.apiKey._id) : req.ip
+  keyGenerator: req => String(req.apiKey._id)
 });
 
 export default requireApiKey;
