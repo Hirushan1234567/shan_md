@@ -16,8 +16,8 @@ router.get("/", async (_req, res, next) => {
 router.post("/:slug/purchase", requireAuth, async (req, res, next) => {
   try {
     const slug = String(req.params.slug || "").toLowerCase();
-    if (!["premium", "membership"].includes(slug)) {
-      return res.status(400).json({ success: false, error: "INVALID_PLAN", message: "Only paid plans can be purchased with coins." });
+    if (!slug || slug === "free") {
+      return res.status(400).json({ success: false, error: "INVALID_PLAN", message: "Select an active paid plan." });
     }
     const plan = await Plan.findOne({ slug, isActive: true }).lean();
     if (!plan) return res.status(404).json({ success: false, error: "PLAN_NOT_FOUND" });
