@@ -214,7 +214,7 @@ export default async function handler(req, res) {
         name: user.name, email: user.email, isAdmin: isAdmin(user),
         plan: user.plan || "free", keyCount: keys.length,
         used, monthUsed: monthResult[0]?.total || 0,
-        limit: (user.plan || "free") === "premium" ? null : Math.max(50, keys.length * 50)
+        limit: null
       }});
     }
 
@@ -317,6 +317,15 @@ export default async function handler(req, res) {
         if (!slug || !name || !description) return send(res, 400, { error: "Name, slug and description required" });
         const category = ["movie","ai","download","image","search","utility","other"].includes(input.category) ? input.category : "other";
         const apiMethod = input.method === "POST" ? "POST" : "GET";
+        const freeLimit = Number(input.freeLimit ?? 200);
+        const premiumLimit = Number(input.premiumLimit ?? 5000);
+        if (!Number.isSafeInteger(freeLimit) || freeLimit < 1 || freeLimit > 1000000000 ||
+            !Number.isSafeInteger(premiumLimit) || premiumLimit < 1 || premiumLimit > 1000000000) {
+          return send(res, 400, { error: "Free and Premium limits must be whole numbers between 1 and 1,000,000,000" });
+        }
+        const quotaPeriod = ["lifetime", "daily", "monthly"].includes(input.quotaPeriod) ? input.quotaPeriod : "lifetime";
+        const creator = String(input.creator || "@SHAN").trim().slice(0, 60) || "@SHAN";
+        const quotaMessage = String(input.quotaMessage || "Please upgrade to Premium or Membership on the SHAN Developer Portal.").trim().slice(0, 240);
         let parameters = [], sampleResponse = null;
         try { parameters = input.parametersJSON ? JSON.parse(input.parametersJSON) : []; } catch { return send(res, 400, { error: "Parameters must be valid JSON" }); }
         try { sampleResponse = input.sampleResponseJSON ? JSON.parse(input.sampleResponseJSON) : null; } catch { return send(res, 400, { error: "Sample response must be valid JSON" }); }
@@ -337,6 +346,7 @@ export default async function handler(req, res) {
             docsUrl: String(input.docsUrl || "").trim().slice(0, 500),
             tags: String(input.tags || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean).slice(0, 12),
             plan: input.plan === "premium" ? "premium" : "free",
+            freeLimit, premiumLimit, quotaPeriod, creator, quotaMessage,
             active: input.active === false || input.active === "false" ? false : true, updatedAt: new Date()
           },
           $setOnInsert: { createdAt: new Date() }
@@ -354,7 +364,24 @@ export default async function handler(req, res) {
       if (!api) return send(res, 404, { error: "API not found" });
       if (method !== (api.method === "POST" ? "POST" : "GET")) return send(res, 405, { error: "Method not allowed for this API", allowed: api.method || "GET" });
       if (api.plan === "premium" && key.plan !== "premium") return send(res, 403, { error: "Premium plan required" });
-      if (key.plan !== "premium" && key.used >= 50) return send(res, 429, { error: "Free lifetime quota of 50 requests reached" });
+      const quotaLimit = key.plan === "premium" ? Number(api.premiumLimit ?? 5000) : Number(api.freeLimit ?? 50);
+      const quotaQuery = { keyId: key._id, apiSlug: api.slug };
+      const quotaPeriod = ["lifetime", "daily", "monthly"].includes(api.quotaPeriod) ? api.quotaPeriod : "lifetime";
+      if (quotaPeriod !== "lifetime") {
+        const periodStart = new Date();
+        if (quotaPeriod === "daily") periodStart.setUTCHours(0, 0, 0, 0);
+        else { periodStart.setUTCDate(1); periodStart.setUTCHours(0, 0, 0, 0); }
+        quotaQuery.at = { $gte: periodStart };
+      }
+      const usedForApi = await d.collection("usage").countDocuments(quotaQuery);
+      if (usedForApi >= quotaLimit) {
+        const upgrade = api.quotaMessage || "Please upgrade to Premium or Membership on the SHAN Developer Portal.";
+        return send(res, 429, {
+          status: false,
+          creator: api.creator || "@SHAN",
+          detail: `Request quota exhausted (${usedForApi}/${quotaLimit} requests used). ${upgrade}`
+        });
+      }
       const target = new URL(api.sourceUrl);
       if (target.protocol !== "https:" || target.username || target.password) return send(res, 400, { error: "Unsafe upstream" });
       const incoming = new URL(req.url || "/", "https://hub.invalid");
