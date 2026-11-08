@@ -12,6 +12,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const outputDir = path.resolve(process.env.BACKUP_DIR || path.join(here, "../../backups"));
 const retentionDays = Math.max(1, Number(process.env.BACKUP_RETENTION_DAYS) || 14);
 fs.mkdirSync(outputDir, { recursive: true, mode: 0o700 });
+fs.chmodSync(outputDir, 0o700);
 
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const archive = path.join(outputDir, "shan-api-" + stamp + ".archive.gz");
@@ -26,6 +27,7 @@ try {
     child.once("exit", code => code === 0 ? resolve() : reject(new Error("mongodump exited with code " + code)));
   });
 
+  fs.chmodSync(archive, 0o600);
   const cutoff = Date.now() - retentionDays * 86400000;
   for (const name of fs.readdirSync(outputDir)) {
     if (!/^shan-api-.*\.archive\.gz$/.test(name)) continue;
