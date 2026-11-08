@@ -22,3 +22,5 @@
 .w-95{width:95%}
 .w-100{width:100%}
 .status-line{display:flex;align-items:center;gap:10px;font-size:18px}.status-dot{width:11px;height:11px;border-radius:50%;display:inline-block}.status-dot.operational{background:#55dfb5;box-shadow:0 0 15px #55dfb577}.status-dot.degraded{background:#ff9d61;box-shadow:0 0 15px #ff9d6177}
+
+#supportForm label{display:grid;gap:7px;color:#c8d5e9;font-size:13px;margin-bottom:15px}#supportForm input,#supportForm textarea{width:100%;background:#0a1220;border:1px solid #2b3b53;border-radius:9px;padding:11px 12px;color:white}#supportForm textarea{min-height:100px;resize:vertical}
