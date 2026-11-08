@@ -53,6 +53,63 @@ router.patch("/users/:id", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.post("/users/:id/coins", async (req, res, next) => {
+  try {
+    const amount = Number.parseInt(req.body.amount, 10);
+    const reason = String(req.body.reason || "Admin coin adjustment").trim().slice(0, 160);
+    if (!Number.isSafeInteger(amount) || amount === 0 || Math.abs(amount) > 1000000) {
+      return res.status(400).json({ success: false, error: "INVALID_AMOUNT" });
+    }
+    const filter = { _id: req.params.id };
+    if (amount < 0) filter.coinBalance = { $gte: Math.abs(amount) };
+    const user = await User.findOneAndUpdate(filter, { $inc: { coinBalance: amount } }, { new: true })
+      .select("name email coinBalance");
+    if (!user) return res.status(404).json({ success: false, error: amount < 0 ? "USER_NOT_FOUND_OR_INSUFFICIENT_COINS" : "USER_NOT_FOUND" });
+    const transaction = await (await import("../models/CoinTransaction.js")).default.create({
+      userId: user._id, type: amount > 0 ? "credit" : "debit",
+      amount: Math.abs(amount), reason, balanceAfter: user.coinBalance
+    });
+    res.json({ success: true, user, transaction });
+  } catch (error) { next(error); }
+});
+
+router.get("/plans", async (_req, res, next) => {
+  try { res.json({ success: true, plans: await Plan.find().sort({ priceCoins: 1 }).lean() }); }
+  catch (error) { next(error); }
+});
+
+router.post("/plans", async (req, res, next) => {
+  try {
+    const name = String(req.body.name || "").trim().slice(0, 80);
+    const slug = slugify(req.body.slug || name);
+    if (!name || !slug) return res.status(400).json({ success: false, error: "NAME_REQUIRED" });
+    const plan = await Plan.create({
+      name, slug, priceCoins: Math.max(0, Number(req.body.priceCoins) || 0),
+      durationDays: req.body.durationDays == null ? null : Math.max(1, Number(req.body.durationDays) || 30),
+      requestLimit: Math.max(0, Number(req.body.requestLimit) || 0),
+      unlimited: req.body.unlimited === true,
+      allowedCategories: Array.isArray(req.body.allowedCategories) ? req.body.allowedCategories.map(String) : [],
+      isActive: req.body.isActive !== false
+    });
+    res.status(201).json({ success: true, plan });
+  } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ success: false, error: "PLAN_SLUG_EXISTS" });
+    next(error);
+  }
+});
+
+router.patch("/plans/:id", async (req, res, next) => {
+  try {
+    const update = {};
+    for (const field of ["name", "priceCoins", "durationDays", "requestLimit", "unlimited", "allowedCategories", "isActive"]) {
+      if (req.body[field] !== undefined) update[field] = req.body[field];
+    }
+    const plan = await Plan.findByIdAndUpdate(req.params.id, { $set: update }, { new: true, runValidators: true });
+    if (!plan) return res.status(404).json({ success: false, error: "PLAN_NOT_FOUND" });
+    res.json({ success: true, plan });
+  } catch (error) { next(error); }
+});
+
 router.get("/categories", async (_req, res, next) => {
   try { res.json({ success: true, categories: await ApiCategory.find().sort({ createdAt: -1 }).lean() }); }
   catch (error) { next(error); }
