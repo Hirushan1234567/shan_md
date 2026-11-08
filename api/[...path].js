@@ -403,7 +403,7 @@ export default async function handler(req, res) {
         }, { upsert: !originalSlug });
         return send(res, originalSlug ? 200 : 201, { ok: true, slug });
       }
-      if (method === "DELETE" && path[2]) {
+      if (method === "DELETE" && path[2] && path.length === 3) {
         const slug = String(path[2]).toLowerCase();
         const result = await d.collection("apiCategories").deleteOne({ slug });
         await d.collection("moduleItems").deleteMany({ categorySlug: slug });
