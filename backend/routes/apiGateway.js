@@ -19,6 +19,11 @@ router.all("/:category/:action", async (req, res, next) => {
     }).lean();
     if (!endpoint) return res.status(404).json({ success: false, error: "ENDPOINT_NOT_FOUND", message: "API endpoint not found or disabled." });
 
+    if (Array.isArray(req.apiPlan.allowedCategories) && req.apiPlan.allowedCategories.length &&
+        !req.apiPlan.allowedCategories.includes(categorySlug)) {
+      return res.status(403).json({ success: false, error: "CATEGORY_NOT_ALLOWED", message: "Your current plan does not include this API category." });
+    }
+
     const paid = ["premium", "membership"].includes(req.apiUser.planSlug);
     if ((category.access === "premium" || endpoint.requiresPlan === "premium") && !paid) {
       return res.status(403).json({ success: false, error: "PREMIUM_REQUIRED", message: "This endpoint requires a Premium or Membership plan." });
