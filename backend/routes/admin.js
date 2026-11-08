@@ -129,9 +129,9 @@ router.post("/categories", async (req, res, next) => {
       enabled: req.body.enabled !== false
     });
     const defaultEndpoints = [
-      { name: "List " + name, action: "list", description: "List published items in this category." },
-      { name: "Search " + name, action: "search", description: "Search published items in this category." },
-      { name: name + " detail", action: "detail", description: "Get one published item by id or title." }
+      { name: "List " + name, action: "list", description: "List published items in this category.", parameters: [{ name: "page", type: "number" }, { name: "limit", type: "number" }] },
+      { name: "Search " + name, action: "search", description: "Search published items in this category.", parameters: [{ name: "q", type: "string" }, { name: "genre", type: "string" }, { name: "year", type: "number" }, { name: "page", type: "number" }, { name: "limit", type: "number" }] },
+      { name: name + " detail", action: "detail", description: "Get one published item by id or title.", parameters: [{ name: "id", type: "string" }, { name: "title", type: "string" }] }
     ];
     await ApiEndpoint.insertMany(defaultEndpoints.map(endpoint => ({
       ...endpoint, categoryId: category._id, method: "GET",
