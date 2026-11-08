@@ -559,17 +559,17 @@ export default async function handler(req, res) {
           detail: "Request quota exhausted (" + used + "/" + quotaLimit + " requests used). " +
             (category.quotaMessage || "Please upgrade your plan.") });
       }
-      await d.collection("usage").insertOne({
-        keyId: key._id, apiSlug: "v1:" + slug + "/" + action, categorySlug: slug,
-        status: 200, at: new Date()
-      });
-      await d.collection("keys").updateOne({ _id: key._id }, { $inc: { used: 1 } });
       const query = Object.fromEntries(incoming.searchParams.entries());
       delete query.api_key;
       const result = await dispatchCategory({ db: d, category, action, query });
       if (result.statusCode !== 200) return send(res, result.statusCode, {
         status: false, creator: category.creator || "@SHAN", detail: result.detail || "API action failed"
       });
+      await d.collection("usage").insertOne({
+        keyId: key._id, apiSlug: "v1:" + slug + "/" + action, categorySlug: slug,
+        status: 200, at: new Date()
+      });
+      await d.collection("keys").updateOne({ _id: key._id }, { $inc: { used: 1 } });
       return send(res, 200, { status: true, creator: category.creator || "@SHAN",
         result: result.result, ...(result.pagination ? { pagination: result.pagination } : {}) });
     }
