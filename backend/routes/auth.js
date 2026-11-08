@@ -70,15 +70,24 @@ router.post("/login", authLimiter, async (req, res, next) => {
   }
 });
 
-router.get("/me", requireAuth, (req, res) => {
-  const user = req.user;
-  res.json({
-    user: {
-      id: String(user._id), name: user.name, email: user.email,
-      role: user.role, plan: user.planSlug, planExpiresAt: user.planExpiresAt,
-      coinBalance: user.coinBalance, isVerified: user.isVerified
+router.get("/me", requireAuth, async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (user.planSlug !== "free" && user.planExpiresAt && user.planExpiresAt <= new Date()) {
+      const freePlan = await Plan.findOne({ slug: "free", isActive: true });
+      user.planSlug = "free";
+      user.planId = freePlan?._id || null;
+      user.planExpiresAt = null;
+      await user.save();
     }
-  });
+    res.json({
+      user: {
+        id: String(user._id), name: user.name, email: user.email,
+        role: user.role, plan: user.planSlug, planExpiresAt: user.planExpiresAt,
+        coinBalance: user.coinBalance, isVerified: user.isVerified
+      }
+    });
+  } catch (error) { next(error); }
 });
 
 export default router;
