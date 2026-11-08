@@ -2,7 +2,7 @@ import { Router } from "express";
 import { requireApiKey, apiKeyRateLimit } from "../middleware/apiKeyAuth.js";
 import ApiCategory from "../models/ApiCategory.js";
 import ApiEndpoint from "../models/ApiEndpoint.js";
-import moviesRouter from "../modules/movies/routes.js";
+import { listMovies, getMovie } from "../modules/movies/controller.js";
 
 const router = Router();
 router.use(requireApiKey, apiKeyRateLimit);
@@ -31,7 +31,8 @@ router.all("/:category/:action", async (req, res, next) => {
     }
 
     if (categorySlug === "movies") {
-      return moviesRouter.handle(req, res, next);
+      if (action === "list" || action === "search") return listMovies(req, res, next);
+      if (action === "detail") return getMovie(req, res, next);
     }
 
     return res.status(501).json({
