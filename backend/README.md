@@ -37,6 +37,8 @@ Keys use the `myapi_<32 hex characters>` format. Only SHA-256 hashes are stored.
 - `GET /api/public/categories`
 - `GET /api/public/docs/:category`
 - `GET /api/public/announcements`
+- `GET /api/public/status`
+- `GET/POST /api/support/tickets` (Bearer JWT)
 
 ### Dynamic API gateway
 - `/api/v1/:category/:action`
@@ -61,11 +63,12 @@ Only administrator-published records are returned. This module does not scrape w
 - `GET/POST/PATCH/DELETE /api/admin/content`
 - `GET/POST/PATCH /api/admin/plans`
 - `GET/POST/PATCH/DELETE /api/admin/announcements`
+- `GET/PATCH /api/admin/support/tickets`
 
 ## Web interface
 
 The responsive dark UI is served by Express:
-- `/home`, `/doc`, `/playground`, `/buy`, `/tools`, `/terms`, `/privacy`
+- `/home`, `/doc`, `/playground`, `/buy`, `/tools`, `/status`, `/terms`, `/privacy`
 
 ## Safety / deployment notes
 
