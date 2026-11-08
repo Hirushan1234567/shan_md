@@ -63,10 +63,16 @@ app.get(["/home", "/doc", "/playground", "/buy", "/tools", "/status", "/terms", 
 app.use((_req, res) => res.status(404).json({ error: "Route not found" }));
 app.use((error, _req, res, _next) => {
   if (error.message === "Origin is not allowed by CORS") {
-    return res.status(403).json({ error: "Origin is not allowed" });
+    return res.status(403).json({ success: false, error: "ORIGIN_NOT_ALLOWED", message: "Origin is not allowed." });
+  }
+  if (error?.code === 11000) {
+    return res.status(409).json({ success: false, error: "DUPLICATE_RESOURCE", message: "A record with this value already exists." });
+  }
+  if (error?.name === "ValidationError" || error?.name === "CastError" || error?.name === "BSONError") {
+    return res.status(400).json({ success: false, error: "INVALID_REQUEST", message: "One or more request fields are invalid." });
   }
   console.error("[server]", error);
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json({ success: false, error: "INTERNAL_ERROR", message: "Internal server error." });
 });
 
 try {
