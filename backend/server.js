@@ -56,7 +56,7 @@ app.use("/api/v1", apiGatewayRoutes);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname, "web"), { index: "index.html", maxAge: "1h" }));
-app.get(["/home", "/doc", "/playground", "/buy", "/tools", "/terms", "/privacy"], (_req, res) => {
+app.get(["/home", "/doc", "/playground", "/buy", "/tools", "/status", "/terms", "/privacy"], (_req, res) => {
   res.sendFile(path.join(__dirname, "web", "index.html"));
 });
 
