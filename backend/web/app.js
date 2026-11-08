@@ -41,7 +41,7 @@ async function loadDashboard(){if(!token){$("#authNotice").classList.remove("hid
 const daily=d.usageByDay||[];const maxDaily=Math.max(1,...daily.map(x=>x.count));$("#usageChart").innerHTML=daily.map(x=>'<div class="usage-bar-row"><span>'+escapeHtml(x._id)+'</span><div class="usage-track"><i class="w-'+Math.max(5,Math.round(x.count/maxDaily*20)*5)+'"></i></div><b>'+x.count+'</b></div>').join("")||'<div class="empty">No activity this week.</div>';
 $("#coinHistory").innerHTML=(d.coinTransactions||[]).map(x=>'<div class="usage-row"><span>'+escapeHtml(x.reason)+'</span><b class="'+(x.type==="credit"?"credit-text":"debit-text")+'">'+(x.type==="credit"?'+':'-')+x.amount+'</b></div>').join("")||'<div class="empty">No coin transactions yet.</div>';if(u.role==="admin"){ $("#adminPanel").classList.remove("hidden");loadAdmin();}else $("#adminPanel").classList.add("hidden");loadTickets();}catch(e){token="";sessionStorage.removeItem("shan_api_token");updateAuthUI();$("#authNotice").textContent="Please login again. "+e.message;$("#authNotice").classList.remove("hidden");}}
 $("#createKey").onclick=async()=>{const name=prompt("Name this API key","My application");if(name===null)return;try{const d=await request("/api/keys",{method:"POST",body:JSON.stringify({name})});$("#playKey").value=d.apiKey;alert("Copy this API key now. It will not be shown again:\n\n"+d.apiKey);loadDashboard();}catch(e){toast(e.message);}};
-async function loadAdmin(){try{const d=await request("/api/admin/overview");$("#adminStats").innerHTML=Object.entries(d.stats).map(([k,v])=>'<div class="stat-card"><small>'+escapeHtml(k)+'</small><b>'+v+'</b></div>').join("");await loadCategories();const all=await request("/api/admin/categories");$("#endpointCategory").innerHTML=all.categories.map(c=>'<option value="'+c._id+'">'+escapeHtml(c.name)+(c.enabled?"":" (disabled)")+"</option>").join("");$("#contentCategory").innerHTML=all.categories.map(c=>'<option value="'+escapeHtml(c.slug)+'">'+escapeHtml(c.name)+(c.enabled?"":" (disabled)")+"</option>").join("");$("#contentFormCategory").innerHTML=all.categories.map(c=>'<option value="'+escapeHtml(c.slug)+'">'+escapeHtml(c.name)+(c.enabled?"":" (disabled)")+"</option>").join("");}catch(e){toast("Admin data: "+e.message);}}
+async function loadAdmin(){try{buildAdminLayout();const d=await request("/api/admin/overview");$("#adminStats").innerHTML=Object.entries(d.stats).map(([k,v])=>'<div class="stat-card"><small>'+escapeHtml(k)+'</small><b>'+v+'</b></div>').join("");await loadCategories();const all=await request("/api/admin/categories");$("#endpointCategory").innerHTML=all.categories.map(c=>'<option value="'+c._id+'">'+escapeHtml(c.name)+(c.enabled?"":" (disabled)")+"</option>").join("");$("#contentCategory").innerHTML=all.categories.map(c=>'<option value="'+escapeHtml(c.slug)+'">'+escapeHtml(c.name)+(c.enabled?"":" (disabled)")+"</option>").join("");$("#contentFormCategory").innerHTML=all.categories.map(c=>'<option value="'+escapeHtml(c.slug)+'">'+escapeHtml(c.name)+(c.enabled?"":" (disabled)")+"</option>").join("");}catch(e){toast("Admin data: "+e.message);}}
 $("#categoryForm").onsubmit=async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.currentTarget));try{await request("/api/admin/categories",{method:"POST",body:JSON.stringify(body)});toast("Category created");e.currentTarget.reset();loadAdmin();}catch(x){toast(x.message);}};
 $("#endpointForm").onsubmit=async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.currentTarget));try{body.parameters=body.parameters.trim()?JSON.parse(body.parameters):[];body.exampleRequest=body.exampleRequest.trim()?JSON.parse(body.exampleRequest):{};body.exampleResponse=body.exampleResponse.trim()?JSON.parse(body.exampleResponse):{};if(!Array.isArray(body.parameters))throw new Error("Parameters must be a JSON array");await request("/api/admin/endpoints",{method:"POST",body:JSON.stringify(body)});toast("Endpoint created");e.currentTarget.reset();}catch(x){toast(x.message);}};
 $("#contentForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const body=Object.fromEntries(f);try{body.year=body.year?Number(body.year):undefined;body.genres=String(body.genres||"").split(",").map(x=>x.trim()).filter(Boolean);body.links=body.links.trim()?JSON.parse(body.links):[];body.customFields=body.customFields.trim()?JSON.parse(body.customFields):{};if(!Array.isArray(body.links)||!body.customFields||typeof body.customFields!=="object"||Array.isArray(body.customFields))throw new Error("Links must be an array and custom fields must be a JSON object");body.published=f.has("published");await request("/api/admin/content",{method:"POST",body:JSON.stringify(body)});toast("Content saved");e.currentTarget.reset();}catch(x){toast(x.message);}};
@@ -84,3 +84,63 @@ $("#docSearch").oninput=()=>{const q=$("#docSearch").value.trim().toLowerCase();
 $("#loadAnnouncementsAdmin").onclick=async()=>{try{const d=await request("/api/admin/announcements");$("#adminAnnouncements").innerHTML=d.announcements.map(a=>'<div class="user-line"><b>'+escapeHtml(a.title)+'</b> · '+(a.active?'Active':'Inactive')+'<br><button class="btn btn-ghost btn-small" data-ann-toggle="'+a._id+'" data-active="'+(!a.active)+'">'+(a.active?'Disable':'Enable')+'</button> <button class="btn btn-ghost btn-small" data-ann-delete="'+a._id+'">Delete</button></div>').join("")||'<p class="muted">No announcements.</p>';$$("[data-ann-toggle]").forEach(b=>b.onclick=async()=>{try{await request("/api/admin/announcements/"+b.dataset.annToggle,{method:"PATCH",body:JSON.stringify({active:b.dataset.active==="true"})});$("#loadAnnouncementsAdmin").click();loadAnnouncements();}catch(e){toast(e.message);}});$$("[data-ann-delete]").forEach(b=>b.onclick=async()=>{if(!confirm("Delete this announcement?"))return;try{await request("/api/admin/announcements/"+b.dataset.annDelete,{method:"DELETE"});$("#loadAnnouncementsAdmin").click();loadAnnouncements();}catch(e){toast(e.message);}});}catch(e){toast(e.message);}};
 
 $("#loadPlansAdmin").onclick=async()=>{try{const d=await request("/api/admin/plans");$("#adminPlans").innerHTML=d.plans.map(p=>'<div class="user-line"><b>'+escapeHtml(p.name)+'</b> · '+p.priceCoins+' coins · '+(p.unlimited?'Unlimited':p.requestLimit+' requests')+' · '+(p.isActive?'Active':'Inactive')+'<br><button class="btn btn-ghost btn-small" data-plan-toggle="'+p._id+'" data-active="'+(!p.isActive)+'">'+(p.isActive?'Disable':'Enable')+'</button></div>').join("");$$("[data-plan-toggle]").forEach(b=>b.onclick=async()=>{try{await request("/api/admin/plans/"+b.dataset.planToggle,{method:"PATCH",body:JSON.stringify({isActive:b.dataset.active==="true"})});$("#loadPlansAdmin").click();loadPlans();}catch(e){toast(e.message);}});}catch(e){toast(e.message);}};
+
+
+// Admin workspace navigation: reorganize existing tools without changing API actions.
+function buildAdminLayout(){
+  const panel=$("#adminPanel");
+  if(!panel || panel.dataset.organized==="true") return;
+  const grid=panel.querySelector(".admin-grid");
+  if(!grid) return;
+  const groups=[
+    {id:"overview",label:"Overview",icon:"◈",selectors:[]},
+    {id:"apis",label:"API Management",icon:"⌘",selectors:["#categoryForm","#endpointForm","#loadDefinitions"]},
+    {id:"content",label:"Content Manager",icon:"▤",selectors:["#contentForm","#contentCategory"]},
+    {id:"plans",label:"Plans & Coins",icon:"◇",selectors:["#planForm","#coinForm","#loadPlansAdmin"]},
+    {id:"users",label:"Users",icon:"◎",selectors:["#loadUsers"]},
+    {id:"support",label:"Support",icon:"✉",selectors:["#loadSupportQueue"]},
+    {id:"announcements",label:"Announcements",icon:"◉",selectors:["#announcementForm","#loadAnnouncementsAdmin"]},
+    {id:"system",label:"System & Backups",icon:"⚙",selectors:["#copyBackup"]}
+  ];
+  const shell=document.createElement("div");
+  shell.className="admin-shell";
+  const nav=document.createElement("aside");
+  nav.className="admin-nav";
+  nav.setAttribute("aria-label","Admin sections");
+  const workspace=document.createElement("div");
+  workspace.className="admin-workspace";
+  const overview=document.createElement("section");
+  overview.className="admin-section active";
+  overview.dataset.adminSection="overview";
+  overview.innerHTML='<div class="admin-section-heading"><span class="eyebrow">WORKSPACE</span><h3>Admin overview</h3><p>Monitor your platform and manage each area from the navigation.</p></div>';
+  workspace.appendChild(overview);
+  for(const group of groups.slice(1)){
+    const section=document.createElement("section");
+    section.className="admin-section";
+    section.dataset.adminSection=group.id;
+    section.innerHTML='<div class="admin-section-heading"><span class="eyebrow">MANAGEMENT</span><h3>'+group.label+'</h3></div>';
+    for(const selector of group.selectors){
+      const node=grid.querySelector(selector)?.closest(".subpanel");
+      if(node && !node.dataset.adminMoved){section.appendChild(node);node.dataset.adminMoved="true";}
+    }
+    workspace.appendChild(section);
+    const button=document.createElement("button");
+    button.type="button";button.className="admin-nav-item";button.dataset.adminTarget=group.id;
+    button.innerHTML='<span class="admin-nav-icon">'+group.icon+'</span><span>'+group.label+'</span>';
+    nav.appendChild(button);
+  }
+  const overviewButton=document.createElement("button");
+  overviewButton.type="button";overviewButton.className="admin-nav-item active";overviewButton.dataset.adminTarget="overview";
+  overviewButton.innerHTML='<span class="admin-nav-icon">◈</span><span>Overview</span>';
+  nav.insertBefore(overviewButton,nav.firstChild);
+  shell.append(nav,workspace);
+  grid.replaceWith(shell);
+  nav.addEventListener("click",event=>{
+    const button=event.target.closest("[data-admin-target]");
+    if(!button)return;
+    const target=button.dataset.adminTarget;
+    nav.querySelectorAll(".admin-nav-item").forEach(item=>item.classList.toggle("active",item===button));
+    workspace.querySelectorAll(".admin-section").forEach(section=>section.classList.toggle("active",section.dataset.adminSection===target));
+  });
+  panel.dataset.organized="true";
+}
