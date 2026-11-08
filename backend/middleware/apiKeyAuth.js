@@ -13,7 +13,7 @@ export async function requireApiKey(req, res, next) {
   }
 
   try {
-    const key = await ApiKey.findOne({ keyHash: sha256(rawKey), isActive: true });
+    const key = await ApiKey.findOne({ keyHash: sha256(rawKey), isActive: true }).select("+keyHash");
     if (!key) {
       return res.status(401).json({ success: false, error: "INVALID_API_KEY", message: "API key is invalid or revoked." });
     }
@@ -39,7 +39,7 @@ export async function requireApiKey(req, res, next) {
     if (!plan.unlimited) {
       const limit = Number(plan.requestLimit || 0);
       const reserved = await User.findOneAndUpdate(
-        { _id: user._id, requestsUsed: { $lt: limit } },
+        { _id: user._id, $or: [{ requestsUsed: { $lt: limit } }, { requestsUsed: { $exists: false } }] },
         { $inc: { requestsUsed: 1 } },
         { new: true }
       );
