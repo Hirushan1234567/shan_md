@@ -7,6 +7,9 @@ import { connectDatabase } from "./config/database.js";
 import authRoutes from "./routes/auth.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import apiKeyRoutes from "./routes/apiKeys.js";
+import apiGatewayRoutes from "./routes/apiGateway.js";
+import publicRoutes from "./routes/public.js";
+import adminRoutes from "./routes/admin.js";
 
 const app = express();
 const port = Number(process.env.PORT || 3035);
@@ -41,6 +44,9 @@ app.use("/api/", rateLimit({
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/keys", apiKeyRoutes);
+app.use("/api/public", publicRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/v1", apiGatewayRoutes);
 
 app.use((_req, res) => res.status(404).json({ error: "Route not found" }));
 app.use((error, _req, res, _next) => {
