@@ -1,0 +1,26 @@
+name: Backend syntax check
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-check.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-check.yml"
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+      - name: Check JavaScript syntax
+        working-directory: backend
+        run: npm run check
