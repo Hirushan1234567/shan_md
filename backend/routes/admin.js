@@ -8,6 +8,9 @@ import Movie from "../modules/movies/model.js";
 import Announcement from "../models/Announcement.js";
 import User from "../models/User.js";
 import Plan from "../models/Plan.js";
+import ApiKey from "../models/ApiKey.js";
+import CoinTransaction from "../models/CoinTransaction.js";
+import SupportTicket from "../models/SupportTicket.js";
 
 const router = Router();
 router.use(requireAuth, requireAdmin);
@@ -19,7 +22,7 @@ router.get("/overview", async (_req, res, next) => {
   try {
     const [users, categories, endpoints, movies, activeKeys] = await Promise.all([
       User.countDocuments(), ApiCategory.countDocuments(), ApiEndpoint.countDocuments(),
-      Movie.countDocuments(), (await import("../models/ApiKey.js")).default.countDocuments({ isActive: true })
+      Movie.countDocuments(), ApiKey.countDocuments({ isActive: true })
     ]);
     res.json({ success: true, stats: { users, categories, endpoints, movies, activeKeys } });
   } catch (error) { next(error); }
@@ -65,7 +68,7 @@ router.post("/users/:id/coins", async (req, res, next) => {
     const user = await User.findOneAndUpdate(filter, { $inc: { coinBalance: amount } }, { new: true })
       .select("name email coinBalance");
     if (!user) return res.status(404).json({ success: false, error: amount < 0 ? "USER_NOT_FOUND_OR_INSUFFICIENT_COINS" : "USER_NOT_FOUND" });
-    const transaction = await (await import("../models/CoinTransaction.js")).default.create({
+    const transaction = await CoinTransaction.create({
       userId: user._id, type: amount > 0 ? "credit" : "debit",
       amount: Math.abs(amount), reason, balanceAfter: user.coinBalance
     });
@@ -268,7 +271,7 @@ router.delete("/content/:id", async (req, res, next) => {
 router.get("/support/tickets", async (req, res, next) => {
   try {
     const filter = req.query.status ? { status: String(req.query.status) } : {};
-    const tickets = await (await import("../models/SupportTicket.js")).default.find(filter)
+    const tickets = await SupportTicket.find(filter)
       .populate("userId", "name email").sort({ createdAt: -1 }).limit(100).lean();
     res.json({ success: true, tickets });
   } catch (error) { next(error); }
@@ -282,7 +285,7 @@ router.patch("/support/tickets/:id", async (req, res, next) => {
       update.adminReply = req.body.adminReply.trim().slice(0, 5000);
       update.repliedAt = new Date();
     }
-    const ticket = await (await import("../models/SupportTicket.js")).default.findByIdAndUpdate(
+    const ticket = await SupportTicket.findByIdAndUpdate(
       req.params.id, { $set: update }, { new: true, runValidators: true }
     ).populate("userId", "name email");
     if (!ticket) return res.status(404).json({ success: false, error: "TICKET_NOT_FOUND" });
