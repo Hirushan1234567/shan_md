@@ -265,6 +265,31 @@ router.delete("/content/:id", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.get("/support/tickets", async (req, res, next) => {
+  try {
+    const filter = req.query.status ? { status: String(req.query.status) } : {};
+    const tickets = await (await import("../models/SupportTicket.js")).default.find(filter)
+      .populate("userId", "name email").sort({ createdAt: -1 }).limit(100).lean();
+    res.json({ success: true, tickets });
+  } catch (error) { next(error); }
+});
+
+router.patch("/support/tickets/:id", async (req, res, next) => {
+  try {
+    const update = {};
+    if (["open", "in_progress", "resolved"].includes(req.body.status)) update.status = req.body.status;
+    if (typeof req.body.adminReply === "string") {
+      update.adminReply = req.body.adminReply.trim().slice(0, 5000);
+      update.repliedAt = new Date();
+    }
+    const ticket = await (await import("../models/SupportTicket.js")).default.findByIdAndUpdate(
+      req.params.id, { $set: update }, { new: true, runValidators: true }
+    ).populate("userId", "name email");
+    if (!ticket) return res.status(404).json({ success: false, error: "TICKET_NOT_FOUND" });
+    res.json({ success: true, ticket });
+  } catch (error) { next(error); }
+});
+
 router.get("/announcements", async (_req, res, next) => {
   try { res.json({ success: true, announcements: await Announcement.find().sort({ createdAt: -1 }).lean() }); }
   catch (error) { next(error); }
