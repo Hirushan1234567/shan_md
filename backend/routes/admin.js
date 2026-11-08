@@ -128,6 +128,15 @@ router.post("/categories", async (req, res, next) => {
       access: req.body.access === "premium" ? "premium" : "free",
       enabled: req.body.enabled !== false
     });
+    const defaultEndpoints = [
+      { name: "List " + name, action: "list", description: "List published items in this category." },
+      { name: "Search " + name, action: "search", description: "Search published items in this category." },
+      { name: name + " detail", action: "detail", description: "Get one published item by id or title." }
+    ];
+    await ApiEndpoint.insertMany(defaultEndpoints.map(endpoint => ({
+      ...endpoint, categoryId: category._id, method: "GET",
+      parameters: [], requiresPlan: "free", enabled: true
+    })));
     res.status(201).json({ success: true, category });
   } catch (error) {
     if (error.code === 11000) return res.status(409).json({ success: false, error: "SLUG_EXISTS" });
