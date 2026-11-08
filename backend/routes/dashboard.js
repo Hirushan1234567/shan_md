@@ -10,6 +10,13 @@ router.use(requireAuth);
 
 router.get("/", async (req, res, next) => {
   try {
+    if (req.user.planSlug !== "free" && req.user.planExpiresAt && req.user.planExpiresAt <= new Date()) {
+      const freePlan = await Plan.findOne({ slug: "free", isActive: true });
+      req.user.planSlug = "free";
+      req.user.planId = freePlan?._id || null;
+      req.user.planExpiresAt = null;
+      await req.user.save();
+    }
     const [plan, keyCount, recentLogs, transactions, usageByDay] = await Promise.all([
       Plan.findById(req.user.planId).lean(),
       ApiKey.countDocuments({ userId: req.user._id, isActive: true }),
