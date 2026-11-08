@@ -10,11 +10,16 @@ router.use(requireAuth);
 
 router.get("/", async (req, res, next) => {
   try {
-    const [plan, keyCount, recentLogs, transactions] = await Promise.all([
+    const [plan, keyCount, recentLogs, transactions, usageByDay] = await Promise.all([
       Plan.findById(req.user.planId).lean(),
       ApiKey.countDocuments({ userId: req.user._id, isActive: true }),
       UsageLog.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(20).lean(),
-      CoinTransaction.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(20).lean()
+      CoinTransaction.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(20).lean(),
+      UsageLog.aggregate([
+        { $match: { userId: req.user._id, createdAt: { $gte: new Date(Date.now() - 6 * 86400000) } } },
+        { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } }
+      ])
     ]);
 
     res.json({
@@ -35,7 +40,8 @@ router.get("/", async (req, res, next) => {
       },
       activeApiKeys: keyCount,
       recentLogs,
-      coinTransactions: transactions
+      coinTransactions: transactions,
+      usageByDay
     });
   } catch (error) {
     next(error);
