@@ -1,45 +1,76 @@
-# SHAN Developer API Backend
+# SHAN API HUB — Backend
 
-This is an isolated Express/Mongoose backend. It does not replace or modify the existing Vercel Pair API handlers.
+A separate Express + MongoDB/Mongoose API platform. Existing root Vercel routes and SHAN MINI BOT Pair System files are kept separate.
 
-## Setup
+## Local / VPS setup
 
-1. Use Node.js 22.
-2. Copy `.env.example` to `.env` and fill in the MongoDB URI, JWT secret, frontend origin and admin credentials.
-3. Run `npm install`.
-4. Run `npm run seed:admin` once.
-5. Run `npm start`.
+See [VPS deployment guide](./deploy/DEPLOY.md). Quick start:
 
-The service listens on 127.0.0.1:3035 by default. Put Nginx in front of it and proxy a dedicated path or subdomain to this port. Keep the existing Pair API reverse-proxy location and environment variables unchanged.
-
-## Initial routes
-
-- `GET /api/health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me` (Bearer token)
-- `GET /api/dashboard` (Bearer token)
-
-## API key management
-
-All key-management routes require `Authorization: Bearer <JWT>`.
-
-- `GET /api/keys` — list key metadata (never returns stored raw keys)
-- `POST /api/keys` with JSON `{"name":"My application"}` — create a key
-- `DELETE /api/keys/:id` — revoke an active key
-
-A newly created key has the format `myapi_<32 hexadecimal characters>`. The raw key is returned only once at creation. Only its SHA-256 hash is stored. Users may have up to five active keys.
-
-## API authentication and quota middleware
-
-Import `requireApiKey` and `apiKeyRateLimit` from `./middleware/apiKeyAuth.js` in a category router. Apply them in this order:
-
-```js
-router.use(requireApiKey, apiKeyRateLimit);
+```bash
+cp .env.example .env
+npm install
+npm run check
+npm run seed:admin
+npm start
 ```
 
-The middleware accepts the key in the `x-api-key` header or `api_key` query parameter. It checks the key, account, plan and expiry. Expired paid plans are downgraded to Free. Free-plan requests use a 200-request lifetime allowance; failed endpoint responses (HTTP 4xx/5xx) release the reserved quota. Successful requests are logged. Paid plans seeded by this project are 30-day unlimited plans.
+Node.js 22 is required. The service binds to `127.0.0.1:3035` by default.
 
-The dashboard response includes `usage.used`, `usage.limit` and `usage.unlimited`. The general backend limiter and per-key limiter both apply.
+## Routes
 
-Never commit `.env`. This backend is separate from the existing Pair System; do not replace root Vercel files or Pair environment variables.
+### Account and dashboard
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me` (Bearer JWT)
+- `GET /api/dashboard` (Bearer JWT)
+
+### API keys
+- `GET /api/keys` — list key metadata
+- `POST /api/keys` — create a key; raw key is returned once
+- `DELETE /api/keys/:id` — revoke a key
+
+Keys use the `myapi_<32 hex characters>` format. Only SHA-256 hashes are stored. Maximum five active keys per account.
+
+### Plans and public discovery
+- `GET /api/plans`
+- `POST /api/plans/:slug/purchase` (Bearer JWT; coin balance required)
+- `GET /api/public/categories`
+- `GET /api/public/docs/:category`
+- `GET /api/public/announcements`
+
+### Dynamic API gateway
+- `/api/v1/:category/:action`
+- Send the API key using `x-api-key` or the `api_key` query parameter.
+- Category and endpoint definitions must exist and be enabled in the database.
+- Free requests have a 200-request lifetime allowance. Premium and Membership are seeded as 30-day unlimited plans. Expired paid plans are downgraded to Free.
+- Per-key rate limit: 60 requests per minute; overall API rate limit: 120 requests per minute per client IP.
+
+### Movies module
+- `GET /api/v1/movies/list?page=1&limit=20`
+- `GET /api/v1/movies/search?q=title&genre=genre&year=2025`
+- `GET /api/v1/movies/detail?id=MONGODB_ID` or `?title=title`
+
+Only administrator-published records are returned. This module does not scrape websites or provide unauthorized downloads.
+
+### Admin (Bearer JWT + admin role)
+- `GET /api/admin/overview`
+- `GET/PATCH /api/admin/users` and `/api/admin/users/:id`
+- `POST /api/admin/users/:id/coins`
+- `GET/POST/PATCH/DELETE /api/admin/categories`
+- `GET/POST/PATCH/DELETE /api/admin/endpoints`
+- `GET/POST/PATCH/DELETE /api/admin/content`
+- `GET/POST/PATCH /api/admin/plans`
+- `GET/POST/PATCH/DELETE /api/admin/announcements`
+
+## Web interface
+
+The responsive dark UI is served by Express:
+- `/home`, `/doc`, `/playground`, `/buy`, `/tools`, `/terms`, `/privacy`
+
+## Safety / deployment notes
+
+- Keep `.env` private and out of Git.
+- Use HTTPS in production.
+- Do not replace root `api/` files, root `package.json`, root `.env.example`, or existing Pair API Nginx routes when deploying this service.
+- Admin should publish only data owned by the platform or licensed for distribution.
+- Run `npm run check` before starting the service. This checks JavaScript syntax; it does not replace integration testing against your MongoDB deployment.
