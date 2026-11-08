@@ -5,7 +5,7 @@ const planSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
   priceCoins: { type: Number, required: true, min: 0, default: 0 },
   durationDays: { type: Number, default: null, min: 1 },
-  requestLimit: { type: Number, default: 200, min: 1 },
+  requestLimit: { type: Number, default: 200, min: 0 },
   unlimited: { type: Boolean, default: false },
   allowedCategories: { type: [String], default: [] },
   isActive: { type: Boolean, default: true }
