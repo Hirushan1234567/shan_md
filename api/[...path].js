@@ -385,7 +385,6 @@ export default async function handler(req, res) {
         if (originalSlug && originalSlug !== slug) {
           const old = await d.collection("apiCategories").findOne({ slug: originalSlug });
           if (!old) return send(res, 404, { error: "Category being edited was not found" });
-          await d.collection("apiCategories").updateMany({ slug: originalSlug }, { $set: { categorySlug: slug } });
           await d.collection("moduleItems").updateMany({ categorySlug: originalSlug }, { $set: { categorySlug: slug } });
           await d.collection("usage").updateMany({ categorySlug: originalSlug }, { $set: { categorySlug: slug } });
         }
@@ -429,7 +428,7 @@ export default async function handler(req, res) {
         if (!customFields || typeof customFields !== "object" || Array.isArray(customFields) || Object.keys(customFields).length > 40) {
           return send(res, 400, { error: "Custom fields must be a JSON object with up to 40 fields" });
         }
-        const item = { categorySlug: slug, title, customFields,
+        const item = { categorySlug: slug, title, customFields, searchText: JSON.stringify(customFields),
           published: input.published === false || input.published === "false" ? false : true,
           createdAt: new Date(), updatedAt: new Date() };
         const result = await d.collection("moduleItems").insertOne(item);
@@ -443,7 +442,8 @@ export default async function handler(req, res) {
         if (input.title !== undefined) update.title = String(input.title || "").trim().slice(0, 160);
         if (input.published !== undefined) update.published = !(input.published === false || input.published === "false");
         if (input.customFieldsJSON !== undefined || input.customFields !== undefined) {
-          try { update.customFields = typeof input.customFieldsJSON === "string" ? JSON.parse(input.customFieldsJSON || "{}") : input.customFields; }
+          try { update.customFields = typeof input.customFieldsJSON === "string" ? JSON.parse(input.customFieldsJSON || "{}") : input.customFields;
+          update.searchText = JSON.stringify(update.customFields); }
           catch { return send(res, 400, { error: "Custom fields must be valid JSON" }); }
           if (!update.customFields || typeof update.customFields !== "object" || Array.isArray(update.customFields) || Object.keys(update.customFields).length > 40) {
             return send(res, 400, { error: "Custom fields must be a JSON object with up to 40 fields" });
