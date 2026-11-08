@@ -21,7 +21,6 @@ backend/
 │   ├── ApiCategory.js
 │   ├── ApiEndpoint.js
 │   ├── ContentItem.js
-│   ├── Movie.js (module-owned model is under modules/movies/)
 │   ├── CoinTransaction.js
 │   ├── UsageLog.js
 │   ├── Announcement.js
