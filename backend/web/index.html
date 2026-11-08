@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090d18">
+  <title>SHAN API HUB</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/home"><span class="brand-mark">S</span><span>SHAN <b>API HUB</b></span></a>
+  <button class="mobile-menu" id="menuToggle" aria-label="Open menu">☰</button>
+  <nav id="mainNav">
+    <a href="/home" data-page="home">Home</a><a href="/doc" data-page="doc">Docs</a>
+    <a href="/playground" data-page="playground">Playground</a><a href="/buy" data-page="buy">Plans</a>
+    <a href="/tools" data-page="tools">Tools</a>
+  </nav>
+  <div class="top-actions"><button class="btn btn-ghost" id="loginOpen">Login</button><button class="btn btn-primary" id="registerOpen">Get started</button><button class="avatar hidden" id="accountBtn">U</button></div>
+</header>
+<main>
+<section class="page active" id="page-home">
+  <div class="hero"><div class="eyebrow"><span class="pulse"></span> DEVELOPER PLATFORM</div>
+    <h1>One API. <span>Endless possibilities.</span></h1>
+    <p>Discover, integrate and manage developer APIs from one clean workspace. Start with 200 free lifetime requests.</p>
+    <div class="hero-actions"><a class="btn btn-primary" href="/doc">Explore documentation ↗</a><button class="btn btn-ghost" id="heroRegister">Create free account</button></div>
+    <div class="hero-stats"><div><b>200</b><small>Free requests</small></div><div><b>24/7</b><small>API access</small></div><div><b>1 place</b><small>Manage keys</small></div></div>
+  </div>
+  <div class="section-head"><div><span class="eyebrow">EXPLORE</span><h2>API categories</h2></div><a href="/doc" class="text-link">View documentation →</a></div>
+  <div class="category-grid" id="homeCategories"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+  <div class="announcement-wrap" id="announcements"></div>
+</section>
+<section class="page" id="page-doc"><div class="page-heading"><span class="eyebrow">DEVELOPER RESOURCES</span><h1>API Documentation</h1><p>Browse available categories, endpoints, parameters and response examples.</p></div>
+  <div class="docs-layout"><aside class="panel docs-sidebar"><h3>Categories</h3><div id="docsCategories" class="side-links">Loading...</div></aside><div class="panel docs-content" id="docsContent"><div class="empty">Choose a category to view its endpoints.</div></div></div>
+</section>
+<section class="page" id="page-playground"><div class="page-heading"><span class="eyebrow">TEST BEFORE YOU BUILD</span><h1>API Playground</h1><p>Send a request using your API key. Keep your key private.</p></div>
+  <div class="panel playground"><label>API Key<input id="playKey" type="password" placeholder="myapi_..."></label><div class="play-row"><label>Category<select id="playCategory"><option value="movies">movies</option></select></label><label>Action<select id="playAction"><option value="list">list</option><option value="search">search</option><option value="detail">detail</option></select></label><label>Method<input value="GET" disabled></label></div>
+  <label>Query parameters<input id="playQuery" placeholder="q=Avatar&limit=10"></label><button class="btn btn-primary" id="sendRequest">Send request</button><div class="response-head"><b>Response</b><span id="responseStatus">Ready</span></div><pre id="playResponse">{ "message": "Your response will appear here." }</pre></div>
+</section>
+<section class="page" id="page-buy"><div class="page-heading"><span class="eyebrow">SIMPLE PRICING</span><h1>Choose your plan</h1><p>Use coins to activate 30-day paid plans. Ask the administrator about coin credits.</p></div><div class="plans-grid" id="plansGrid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></section>
+<section class="page" id="page-tools"><div class="page-heading"><span class="eyebrow">YOUR WORKSPACE</span><h1>Developer Dashboard</h1><p>Manage your API keys, track usage and view account activity.</p></div>
+  <div id="authNotice" class="panel empty">Login to access your developer dashboard.</div>
+  <div id="userDashboard" class="hidden">
+    <div class="stats-grid" id="dashStats"></div>
+    <div class="dashboard-grid"><div class="panel"><div class="panel-title"><h3>API Keys</h3><button class="btn btn-primary btn-small" id="createKey">+ New key</button></div><div id="keyList"></div></div>
+    <div class="panel"><div class="panel-title"><h3>Recent requests</h3></div><div id="usageList" class="table-wrap"></div></div></div>
+    <div class="panel admin-panel hidden" id="adminPanel"><div class="panel-title"><div><span class="eyebrow">RESTRICTED</span><h2>Admin control center</h2></div><span class="admin-tag">ADMIN</span></div>
+      <div id="adminStats" class="stats-grid"></div>
+      <div class="admin-grid">
+        <form id="categoryForm" class="subpanel"><h3>Create API category</h3><input name="name" placeholder="Category name" required><input name="slug" placeholder="slug (optional)"><textarea name="description" placeholder="Description"></textarea><select name="access"><option value="free">Free</option><option value="premium">Premium</option></select><button class="btn btn-primary">Create category</button></form>
+        <form id="endpointForm" class="subpanel"><h3>Create endpoint</h3><select name="categoryId" id="endpointCategory" required></select><input name="name" placeholder="Endpoint name" required><input name="action" placeholder="action slug" required><select name="method"><option>GET</option><option>POST</option></select><textarea name="description" placeholder="Description"></textarea><select name="requiresPlan"><option value="free">Free</option><option value="premium">Premium</option></select><button class="btn btn-primary">Create endpoint</button></form>
+        <form id="contentForm" class="subpanel"><h3>Publish content</h3><input name="categorySlug" placeholder="Category slug (movies)" value="movies" required><input name="title" placeholder="Title" required><input name="year" type="number" placeholder="Year"><input name="genres" placeholder="Genres separated by commas"><textarea name="description" placeholder="Description"></textarea><input name="poster" placeholder="Poster image URL"><input name="trailerUrl" placeholder="Trailer URL"><label class="check"><input type="checkbox" name="published" checked> Publish now</label><button class="btn btn-primary">Save content</button></form>
+        <form id="announcementForm" class="subpanel"><h3>Announcement</h3><input name="title" placeholder="Title" required><textarea name="message" placeholder="Message" required></textarea><button class="btn btn-primary">Publish announcement</button></form>
+        <form id="coinForm" class="subpanel"><h3>Adjust user coins</h3><input name="userId" placeholder="User ID" required><input name="amount" type="number" placeholder="Positive = add, negative = deduct" required><input name="reason" placeholder="Reason"><button class="btn btn-primary">Apply coin change</button></form>
+        <div class="subpanel"><h3>Users</h3><button class="btn btn-ghost" id="loadUsers">Load users</button><div id="adminUsers"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="page legal-page" id="page-terms"><div class="page-heading"><span class="eyebrow">POLICIES</span><h1>Terms of Service</h1></div><article class="panel prose"><h3>Acceptable use</h3><p>Use SHAN API HUB only for lawful development and testing. Do not abuse the service, attempt unauthorized access, interfere with other users, or send excessive traffic.</p><h3>API data</h3><p>API responses contain data supplied by the platform administrator or sources the platform is authorized to use. You are responsible for checking that your use complies with applicable law and third-party rights.</p><h3>Accounts and keys</h3><p>Keep passwords and API keys private. You are responsible for activity performed with your credentials. Revoke a key if you believe it has been exposed.</p><h3>Availability</h3><p>Service availability, quotas and plan features may change. Paid plans are activated for the duration displayed at purchase.</p><h3>Contact</h3><p>Contact the SHAN API HUB administrator through the support channel provided by the operator.</p></article></section>
+<section class="page legal-page" id="page-privacy"><div class="page-heading"><span class="eyebrow">POLICIES</span><h1>Privacy Policy</h1></div><article class="panel prose"><h3>Information collected</h3><p>The service stores account name, email, password hash, API key hashes, plan information, coin transactions and API usage logs needed to operate the platform.</p><h3>How information is used</h3><p>Information is used to authenticate users, provide API access, enforce quotas, prevent abuse and maintain service reliability.</p><h3>API keys</h3><p>Raw API keys are shown once when created. The platform stores a cryptographic hash rather than the original key.</p><h3>Security and retention</h3><p>Reasonable technical safeguards are used. Usage and transaction records may be retained for operational, security and accounting purposes.</p><h3>Your choices</h3><p>Do not share your credentials. Contact the operator to request account assistance or clarification about stored information.</p></article></section>
+</main>
+<footer><a class="brand" href="/home"><span class="brand-mark">S</span><span>SHAN <b>API HUB</b></span></a><span>Built for developers · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></span></footer>
+<div class="modal hidden" id="authModal"><div class="modal-card"><button class="modal-close" id="authClose">×</button><div class="eyebrow">WELCOME TO SHAN API HUB</div><h2 id="authTitle">Login</h2><form id="authForm"><div id="nameField" class="hidden"><label>Name<input name="name" autocomplete="name"></label></div><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Password<input name="password" type="password" minlength="8" autocomplete="current-password" required></label><button class="btn btn-primary full">Continue</button></form><p id="authError" class="error-text"></p><p class="switch-auth" id="authSwitch">No account? <button type="button" id="switchMode">Register</button></p></div></div>
+<div class="toast" id="toast"></div>
+<script src="/app.js" defer></script>
+</body></html>
