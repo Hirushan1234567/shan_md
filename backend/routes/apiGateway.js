@@ -35,7 +35,7 @@ router.all("/:category/:action", async (req, res, next) => {
       }
     }
 
-    const handler = moduleRegistry[categorySlug]?.[action] || customContentHandlers[action];
+    const handler = moduleRegistry[categorySlug]?.[action] || (req.method === "GET" ? customContentHandlers[action] : null);
     if (handler) return handler(req, res, next);
 
     return res.status(501).json({
