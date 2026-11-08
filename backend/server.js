@@ -11,6 +11,8 @@ import apiGatewayRoutes from "./routes/apiGateway.js";
 import publicRoutes from "./routes/public.js";
 import adminRoutes from "./routes/admin.js";
 import planRoutes from "./routes/plans.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const app = express();
 const port = Number(process.env.PORT || 3035);
@@ -49,6 +51,12 @@ app.use("/api/public", publicRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/plans", planRoutes);
 app.use("/api/v1", apiGatewayRoutes);
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, "web"), { index: "index.html", maxAge: "1h" }));
+app.get(["/home", "/doc", "/playground", "/buy", "/tools", "/terms", "/privacy"], (_req, res) => {
+  res.sendFile(path.join(__dirname, "web", "index.html"));
+});
 
 app.use((_req, res) => res.status(404).json({ error: "Route not found" }));
 app.use((error, _req, res, _next) => {
