@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { promisify } from "node:util";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
+import { dispatchCategory } from "../modules/registry.js";
 
 const scrypt = promisify(crypto.scrypt);
 let clientPromise;
@@ -355,6 +356,131 @@ export default async function handler(req, res) {
       }
     }
 
+
+    if (path[0] === "admin" && path[1] === "categories") {
+      if (!isAdmin(user)) return send(res, 403, { error: "Admin access required" });
+      if (method === "GET" && path.length === 2) {
+        const categories = await d.collection("apiCategories").find({}).sort({ createdAt: -1 }).toArray();
+        return send(res, 200, { categories });
+      }
+      if (method === "POST" && path.length === 2) {
+        const input = await body(req);
+        const name = String(input.name || "").trim().slice(0, 80);
+        const slug = String(input.slug || "").trim().toLowerCase();
+        const description = String(input.description || "").trim().slice(0, 500);
+        if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !description) {
+          return send(res, 400, { error: "Enter a name, valid lowercase slug and description" });
+        }
+        const access = input.access === "premium" ? "premium" : "free";
+        const freeLimit = Number(input.freeLimit ?? 200);
+        const premiumLimit = Number(input.premiumLimit ?? 5000);
+        if (!Number.isSafeInteger(freeLimit) || freeLimit < 1 || freeLimit > 1000000000 ||
+            !Number.isSafeInteger(premiumLimit) || premiumLimit < 1 || premiumLimit > 1000000000) {
+          return send(res, 400, { error: "Quota limits must be whole numbers between 1 and 1,000,000,000" });
+        }
+        const quotaPeriod = ["lifetime", "daily", "monthly"].includes(input.quotaPeriod) ? input.quotaPeriod : "lifetime";
+        const originalSlug = String(input.originalSlug || "").trim().toLowerCase();
+        const existing = await d.collection("apiCategories").findOne({ slug });
+        if (existing && slug !== originalSlug) return send(res, 409, { error: "That category slug already exists" });
+        if (originalSlug && originalSlug !== slug) {
+          const old = await d.collection("apiCategories").findOne({ slug: originalSlug });
+          if (!old) return send(res, 404, { error: "Category being edited was not found" });
+          await d.collection("apiCategories").updateMany({ slug: originalSlug }, { $set: { categorySlug: slug } });
+          await d.collection("moduleItems").updateMany({ categorySlug: originalSlug }, { $set: { categorySlug: slug } });
+          await d.collection("usage").updateMany({ categorySlug: originalSlug }, { $set: { categorySlug: slug } });
+        }
+        const enabled = input.enabled === false || input.enabled === "false" ? false : true;
+        const parameters = Array.isArray(input.parameters) ? input.parameters.slice(0, 30) : [];
+        let exampleResponse = null;
+        try { exampleResponse = input.exampleResponseJSON ? JSON.parse(input.exampleResponseJSON) : null; }
+        catch { return send(res, 400, { error: "Example response must be valid JSON" }); }
+        const selector = originalSlug ? { slug: originalSlug } : { slug };
+        await d.collection("apiCategories").updateOne(selector, {
+          $set: { name, slug, description, access, enabled, freeLimit, premiumLimit, quotaPeriod,
+            quotaMessage: String(input.quotaMessage || "Request quota exhausted. Please upgrade your plan.").trim().slice(0, 240),
+            creator: String(input.creator || "@SHAN").trim().slice(0, 60) || "@SHAN",
+            parameters, exampleResponse, updatedAt: new Date() },
+          $setOnInsert: { createdAt: new Date() }
+        }, { upsert: !originalSlug });
+        return send(res, originalSlug ? 200 : 201, { ok: true, slug });
+      }
+      if (method === "DELETE" && path[2]) {
+        const slug = String(path[2]).toLowerCase();
+        const result = await d.collection("apiCategories").deleteOne({ slug });
+        await d.collection("moduleItems").deleteMany({ categorySlug: slug });
+        return send(res, result.deletedCount ? 200 : 404, result.deletedCount ? { ok: true } : { error: "Category not found" });
+      }
+      if (path[2] && path.length === 3 && method === "GET") {
+        const category = await d.collection("apiCategories").findOne({ slug: String(path[2]).toLowerCase() });
+        if (!category) return send(res, 404, { error: "Category not found" });
+        const items = await d.collection("moduleItems").find({ categorySlug: category.slug }).sort({ createdAt: -1 }).limit(200).toArray();
+        return send(res, 200, { category, items });
+      }
+      if (path[2] && path.length === 3 && method === "POST") {
+        const slug = String(path[2]).toLowerCase();
+        const category = await d.collection("apiCategories").findOne({ slug });
+        if (!category) return send(res, 404, { error: "Category not found" });
+        const input = await body(req);
+        const title = String(input.title || "").trim().slice(0, 160);
+        if (!title) return send(res, 400, { error: "Item title is required" });
+        let customFields = {};
+        try { customFields = typeof input.customFieldsJSON === "string" ? JSON.parse(input.customFieldsJSON || "{}") : (input.customFields || {}); }
+        catch { return send(res, 400, { error: "Custom fields must be valid JSON" }); }
+        if (!customFields || typeof customFields !== "object" || Array.isArray(customFields) || Object.keys(customFields).length > 40) {
+          return send(res, 400, { error: "Custom fields must be a JSON object with up to 40 fields" });
+        }
+        const item = { categorySlug: slug, title, customFields,
+          published: input.published === false || input.published === "false" ? false : true,
+          createdAt: new Date(), updatedAt: new Date() };
+        const result = await d.collection("moduleItems").insertOne(item);
+        return send(res, 201, { ok: true, id: String(result.insertedId) });
+      }
+      if (path[2] && path[3] && path.length === 4 && ["PUT", "PATCH"].includes(method)) {
+        const slug = String(path[2]).toLowerCase();
+        if (!ObjectId.isValid(path[3])) return send(res, 400, { error: "Invalid item ID" });
+        const input = await body(req);
+        const update = { updatedAt: new Date() };
+        if (input.title !== undefined) update.title = String(input.title || "").trim().slice(0, 160);
+        if (input.published !== undefined) update.published = !(input.published === false || input.published === "false");
+        if (input.customFieldsJSON !== undefined || input.customFields !== undefined) {
+          try { update.customFields = typeof input.customFieldsJSON === "string" ? JSON.parse(input.customFieldsJSON || "{}") : input.customFields; }
+          catch { return send(res, 400, { error: "Custom fields must be valid JSON" }); }
+          if (!update.customFields || typeof update.customFields !== "object" || Array.isArray(update.customFields) || Object.keys(update.customFields).length > 40) {
+            return send(res, 400, { error: "Custom fields must be a JSON object with up to 40 fields" });
+          }
+        }
+        const result = await d.collection("moduleItems").updateOne({ _id: new ObjectId(path[3]), categorySlug: slug }, { $set: update });
+        return send(res, result.matchedCount ? 200 : 404, result.matchedCount ? { ok: true } : { error: "Item not found" });
+      }
+      if (path[2] && path[3] && path.length === 4 && method === "DELETE") {
+        if (!ObjectId.isValid(path[3])) return send(res, 400, { error: "Invalid item ID" });
+        const result = await d.collection("moduleItems").deleteOne({ _id: new ObjectId(path[3]), categorySlug: String(path[2]).toLowerCase() });
+        return send(res, result.deletedCount ? 200 : 404, result.deletedCount ? { ok: true } : { error: "Item not found" });
+      }
+    }
+
+    if (path[0] === "admin" && path[1] === "category-stats") {
+      if (!isAdmin(user)) return send(res, 403, { error: "Admin access required" });
+      const rows = await d.collection("usage").aggregate([
+        { $match: { categorySlug: { $exists: true, $ne: null } } },
+        { $group: { _id: "$categorySlug", requests: { $sum: 1 }, lastRequest: { $max: "$at" } } },
+        { $sort: { requests: -1 } }
+      ]).toArray();
+      return send(res, 200, { stats: rows.map(x => ({ slug: x._id, requests: x.requests, lastRequest: x.lastRequest })) });
+    }
+
+    if (path[0] === "usage" && path[1] === "categories") {
+      if (!user) return send(res, 401, { error: "Sign in required" });
+      const keys = await d.collection("keys").find({ userId: user._id }, { projection: { _id: 1 } }).toArray();
+      const keyIds = keys.map(x => x._id);
+      const rows = keyIds.length ? await d.collection("usage").aggregate([
+        { $match: { keyId: { $in: keyIds }, categorySlug: { $exists: true, $ne: null } } },
+        { $group: { _id: "$categorySlug", requests: { $sum: 1 } } },
+        { $sort: { requests: -1 } }
+      ]).toArray() : [];
+      return send(res, 200, { stats: rows.map(x => ({ slug: x._id, requests: x.requests })) });
+    }
+
     if (path[0] === "gateway" && path[1] && ["GET", "POST"].includes(method)) {
       const raw = req.headers["x-api-key"];
       if (!raw) return send(res, 401, { error: "x-api-key header required" });
@@ -394,6 +520,58 @@ export default async function handler(req, res) {
       res.setHeader("Content-Type", upstream.headers.get("content-type") || "application/json");
       res.setHeader("Cache-Control", "no-store");
       return res.end(response);
+    }
+
+
+    if (path[0] === "v1" && path[1] === "categories" && method === "GET") {
+      const categories = await d.collection("apiCategories").find({ enabled: true },
+        { projection: { _id: 0, name: 1, slug: 1, description: 1, access: 1, freeLimit: 1, premiumLimit: 1, quotaPeriod: 1, parameters: 1, exampleResponse: 1, creator: 1 } }
+      ).sort({ name: 1 }).toArray();
+      return send(res, 200, { status: true, creator: "@SHAN", result: categories });
+    }
+
+    if (path[0] === "v1" && path[1] && path[2] && method === "GET") {
+      const slug = String(path[1]).toLowerCase();
+      const action = String(path[2]).toLowerCase();
+      const category = await d.collection("apiCategories").findOne({ slug, enabled: true });
+      if (!category) return send(res, 404, { status: false, creator: "@SHAN", detail: "API category not found or disabled" });
+      const incoming = new URL(req.url || "/", "https://hub.invalid");
+      const raw = req.headers["x-api-key"] || incoming.searchParams.get("api_key");
+      if (!raw) return send(res, 401, { status: false, creator: category.creator || "@SHAN", detail: "API key required. Send x-api-key header or api_key query parameter." });
+      const key = await d.collection("keys").findOne({ keyHash: sha(String(raw)), revoked: { $ne: true } });
+      if (!key) return send(res, 401, { status: false, creator: category.creator || "@SHAN", detail: "Invalid API key" });
+      const plan = key.plan === "premium" ? "premium" : "free";
+      if (category.access === "premium" && plan !== "premium") {
+        return send(res, 403, { status: false, creator: category.creator || "@SHAN", detail: "Premium plan required for this API category" });
+      }
+      const quotaLimit = plan === "premium" ? Number(category.premiumLimit ?? 5000) : Number(category.freeLimit ?? 200);
+      const quotaQuery = { keyId: key._id, categorySlug: slug };
+      const quotaPeriod = ["daily", "monthly", "lifetime"].includes(category.quotaPeriod) ? category.quotaPeriod : "lifetime";
+      if (quotaPeriod !== "lifetime") {
+        const periodStart = new Date();
+        if (quotaPeriod === "daily") periodStart.setUTCHours(0, 0, 0, 0);
+        else { periodStart.setUTCDate(1); periodStart.setUTCHours(0, 0, 0, 0); }
+        quotaQuery.at = { $gte: periodStart };
+      }
+      const used = await d.collection("usage").countDocuments(quotaQuery);
+      if (used >= quotaLimit) {
+        return send(res, 429, { status: false, creator: category.creator || "@SHAN",
+          detail: "Request quota exhausted (" + used + "/" + quotaLimit + " requests used). " +
+            (category.quotaMessage || "Please upgrade your plan.") });
+      }
+      await d.collection("usage").insertOne({
+        keyId: key._id, apiSlug: "v1:" + slug + "/" + action, categorySlug: slug,
+        status: 200, at: new Date()
+      });
+      await d.collection("keys").updateOne({ _id: key._id }, { $inc: { used: 1 } });
+      const query = Object.fromEntries(incoming.searchParams.entries());
+      delete query.api_key;
+      const result = await dispatchCategory({ db: d, category, action, query });
+      if (result.statusCode !== 200) return send(res, result.statusCode, {
+        status: false, creator: category.creator || "@SHAN", detail: result.detail || "API action failed"
+      });
+      return send(res, 200, { status: true, creator: category.creator || "@SHAN",
+        result: result.result, ...(result.pagination ? { pagination: result.pagination } : {}) });
     }
 
     return send(res, 404, { error: "Route not found" });
