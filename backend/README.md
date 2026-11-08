@@ -20,6 +20,26 @@ The service listens on 127.0.0.1:3035 by default. Put Nginx in front of it and p
 - `GET /api/auth/me` (Bearer token)
 - `GET /api/dashboard` (Bearer token)
 
-The Free plan starts at 200 requests. Premium and Membership plans are seeded as 30-day unlimited plans; their coin prices are configurable using environment variables and can be managed in a later admin stage.
+## API key management
 
-Never commit `.env`. API keys and quota middleware are added in the next implementation stage.
+All key-management routes require `Authorization: Bearer <JWT>`.
+
+- `GET /api/keys` — list key metadata (never returns stored raw keys)
+- `POST /api/keys` with JSON `{"name":"My application"}` — create a key
+- `DELETE /api/keys/:id` — revoke an active key
+
+A newly created key has the format `myapi_<32 hexadecimal characters>`. The raw key is returned only once at creation. Only its SHA-256 hash is stored. Users may have up to five active keys.
+
+## API authentication and quota middleware
+
+Import `requireApiKey` and `apiKeyRateLimit` from `./middleware/apiKeyAuth.js` in a category router. Apply them in this order:
+
+```js
+router.use(requireApiKey, apiKeyRateLimit);
+```
+
+The middleware accepts the key in the `x-api-key` header or `api_key` query parameter. It checks the key, account, plan and expiry. Expired paid plans are downgraded to Free. Free-plan requests use a 200-request lifetime allowance; failed endpoint responses (HTTP 4xx/5xx) release the reserved quota. Successful requests are logged. Paid plans seeded by this project are 30-day unlimited plans.
+
+The dashboard response includes `usage.used`, `usage.limit` and `usage.unlimited`. The general backend limiter and per-key limiter both apply.
+
+Never commit `.env`. This backend is separate from the existing Pair System; do not replace root Vercel files or Pair environment variables.
