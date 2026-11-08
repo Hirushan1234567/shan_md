@@ -21,12 +21,18 @@ router.get("/", async (req, res, next) => {
       user: {
         id: String(req.user._id), name: req.user.name, email: req.user.email,
         role: req.user.role, plan: req.user.planSlug,
-        planExpiresAt: req.user.planExpiresAt, coinBalance: req.user.coinBalance
+        planExpiresAt: req.user.planExpiresAt, coinBalance: req.user.coinBalance,
+        requestsUsed: req.user.requestsUsed || 0
       },
       plan: plan ? {
         name: plan.name, requestLimit: plan.requestLimit,
         unlimited: plan.unlimited, durationDays: plan.durationDays
       } : null,
+      usage: {
+        used: req.user.requestsUsed || 0,
+        limit: plan?.unlimited ? null : (plan?.requestLimit ?? 0),
+        unlimited: Boolean(plan?.unlimited)
+      },
       activeApiKeys: keyCount,
       recentLogs,
       coinTransactions: transactions
