@@ -2,8 +2,20 @@ import { Router } from "express";
 import ApiCategory from "../models/ApiCategory.js";
 import ApiEndpoint from "../models/ApiEndpoint.js";
 import Announcement from "../models/Announcement.js";
+import mongoose from "mongoose";
 
 const router = Router();
+
+router.get("/status", (_req, res) => {
+  res.json({
+    success: true,
+    service: "SHAN API HUB",
+    status: mongoose.connection.readyState === 1 ? "operational" : "degraded",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    uptimeSeconds: Math.floor(process.uptime()),
+    checkedAt: new Date().toISOString()
+  });
+});
 
 router.get("/categories", async (_req, res, next) => {
   try {
