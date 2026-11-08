@@ -1,6 +1,6 @@
 # SHAN API HUB — Backend
 
-A separate Express + MongoDB/Mongoose API platform. Existing root Vercel routes and SHAN MINI BOT Pair System files are kept separate.
+A separate Express + MongoDB/Mongoose API platform. Existing root Vercel routes and SHAN MINI BOT Pair System files are kept separate. See [backend folder structure](./STRUCTURE.md).
 
 ## Local / VPS setup
 
