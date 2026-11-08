@@ -9,7 +9,7 @@ const uri = String(process.env.MONGODB_URI || "").trim();
 if (!uri) throw new Error("MONGODB_URI is required");
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = path.resolve(process.env.BACKUP_DIR || path.join(here, "../../backups"));
+const outputDir = path.resolve(process.env.BACKUP_DIR || path.join(here, "../backups"));
 const retentionDays = Math.max(1, Number(process.env.BACKUP_RETENTION_DAYS) || 14);
 fs.mkdirSync(outputDir, { recursive: true, mode: 0o700 });
 fs.chmodSync(outputDir, 0o700);
