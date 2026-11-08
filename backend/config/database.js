@@ -11,6 +11,7 @@ export async function connectDatabase() {
     autoIndex: process.env.NODE_ENV !== "production"
   });
 
-  console.log("[database] MongoDB connected");
+  await Promise.all(mongoose.modelNames().map(name => mongoose.model(name).createIndexes()));
+  console.log("[database] MongoDB connected and indexes ensured");
   return mongoose.connection;
 }
