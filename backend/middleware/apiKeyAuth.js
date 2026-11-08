@@ -3,6 +3,7 @@ import ApiKey from "../models/ApiKey.js";
 import Plan from "../models/Plan.js";
 import User from "../models/User.js";
 import UsageLog from "../models/UsageLog.js";
+import rateLimit from "express-rate-limit";
 
 const sha256 = value => crypto.createHash("sha256").update(value).digest("hex");
 
@@ -85,5 +86,13 @@ export async function requireApiKey(req, res, next) {
     next(error);
   }
 }
+
+export const apiKeyRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: req => req.apiKey ? String(req.apiKey._id) : req.ip
+});
 
 export default requireApiKey;
