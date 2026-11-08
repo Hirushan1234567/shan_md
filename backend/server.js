@@ -11,6 +11,7 @@ import apiGatewayRoutes from "./routes/apiGateway.js";
 import publicRoutes from "./routes/public.js";
 import adminRoutes from "./routes/admin.js";
 import planRoutes from "./routes/plans.js";
+import supportRoutes from "./routes/support.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -50,6 +51,7 @@ app.use("/api/keys", apiKeyRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/plans", planRoutes);
+app.use("/api/support", supportRoutes);
 app.use("/api/v1", apiGatewayRoutes);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
