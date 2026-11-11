@@ -23,6 +23,7 @@ const u = await api("GET", "/admin/users");
       </div>
     `).join("") : `<p class="muted">No linked sessions yet.</p>`;
 
+    await loadApis();
     const c = await api("GET", "/comments");
     $("admCms").innerHTML = c.length ? c.map(x => `<div class="cm"><b>${esc(x.name)}</b><br>${esc(x.msg)}
       <button class="btn danger sm" data-adm="delcm" data-id="${esc(x.id)}" type="button" style="margin-top:8px">Delete</button></div>`).join("") : `<p class="muted">No comments.</p>`;
@@ -31,6 +32,27 @@ const u = await api("GET", "/admin/users");
     session.admin = "";
     show($("admLogin"), true); show($("admPanel"), false);
   }
+}
+
+function resetApiForm() {
+  ["apiId","apiName","apiCategory","apiUrl","apiDescription"].forEach(id => $(id).value = "");
+  $("apiMethod").value = "GET"; $("apiPlan").value = "free"; $("apiActive").checked = true;
+  $("apiSave").textContent = "Add API"; show($("apiCancel"), false);
+}
+
+async function loadApis() {
+  const list = await api("GET", "/admin/apis");
+  $("admApis").innerHTML = list.length ? list.map(a => `
+    <div class="card" style="margin:10px 0;padding:12px">
+      <div class="row" style="padding-top:0"><b>${esc(a.name)}</b><span class="pill ${a.active ? "on" : "off"}">${a.active ? "ACTIVE" : "DISABLED"}</span></div>
+      <small class="muted">${esc(a.category)} · ${esc(a.method)} · ${esc(a.plan).toUpperCase()}</small>
+      <code style="display:block;overflow-wrap:anywhere;margin:7px 0">${esc(a.url)}</code>
+      <p class="muted" style="font-size:12px">${esc(a.description || "")}</p>
+      <div class="row-btns" style="margin-top:8px">
+        <button class="btn ghost sm" data-adm="api-edit" data-id="${esc(a.id)}" type="button">Edit</button>
+        <button class="btn danger sm" data-adm="api-delete" data-id="${esc(a.id)}" type="button">Delete</button>
+      </div>
+    </div>`).join("") : `<p class="muted">No APIs added yet.</p>`;
 }
 
 export function openAdmin() { $("admModal").classList.add("show"); if (session.admin) load(); }
@@ -50,6 +72,37 @@ export function initAdmin() {
     if (!b) return;
     const k = b.dataset.adm;
     try {
+      if (k === "api-save") {
+        const id = $("apiId").value;
+        const payload = {
+          name: $("apiName").value.trim(),
+          category: $("apiCategory").value.trim(),
+          url: $("apiUrl").value.trim(),
+          method: $("apiMethod").value,
+          plan: $("apiPlan").value,
+          description: $("apiDescription").value.trim(),
+          active: $("apiActive").checked
+        };
+        if (id) { payload.id = id; await api("PUT", "/admin/apis", payload); toast("API updated"); }
+        else { await api("POST", "/admin/apis", payload); toast("API added"); }
+        resetApiForm(); await loadApis();
+      }
+      if (k === "api-cancel") { resetApiForm(); }
+      if (k === "api-edit") {
+        const a = await api("GET", "/admin/apis");
+        const item = a.find(x => x.id === b.dataset.id);
+        if (!item) throw new Error("API entry not found.");
+        $("apiId").value = item.id; $("apiName").value = item.name; $("apiCategory").value = item.category;
+        $("apiUrl").value = item.url; $("apiMethod").value = item.method; $("apiPlan").value = item.plan;
+        $("apiDescription").value = item.description || ""; $("apiActive").checked = !!item.active;
+        $("apiSave").textContent = "Save changes"; show($("apiCancel"), true);
+        $("apiName").focus();
+      }
+      if (k === "api-delete") {
+        if (!confirm("Delete this API directory entry?")) return;
+        await api("DELETE", "/admin/apis?id=" + encodeURIComponent(b.dataset.id));
+        toast("API deleted"); await loadApis();
+      }
       if (k === "ann") { await api("POST", "/admin/announce", { text: $("admAnn").value.trim() }); toast("Announcement updated"); }
       if (k === "coupon") {
         await api("POST", "/admin/coupons", { code: $("cpCode").value.trim(), coins: +$("cpCoins").value, uses: +$("cpUses").value });
