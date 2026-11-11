@@ -364,6 +364,60 @@ R["GET /admin/sessions"] = async req => {
   }));
 };
 
+// ===== Admin API directory manager =====
+R["GET /admin/apis"] = async req => {
+  needAdmin(req);
+  const list = await (await aux("api_catalog")).find({}).sort({ createdAt: -1 }).limit(300).toArray();
+  return list.map(x => ({
+    id: x._id, name: x.name, category: x.category, url: x.url,
+    method: x.method, plan: x.plan, description: x.description,
+    active: !!x.active, createdAt: x.createdAt, updatedAt: x.updatedAt
+  }));
+};
+
+R["POST /admin/apis"] = async (req, b) => {
+  needAdmin(req);
+  const name = str(b.name, 50), category = str(b.category, 30);
+  const url = str(b.url, 500), method = str(b.method, 8).toUpperCase();
+  const plan = b.plan === "premium" ? "premium" : "free";
+  const description = str(b.description, 300);
+  if (!name || !category || !/^https:\/\//i.test(url) || !["GET","POST","PUT","DELETE"].includes(method))
+    throw new HttpError(400, "Enter a name, category, HTTPS URL and valid method.");
+  try { new URL(url); } catch { throw new HttpError(400, "Invalid API URL."); }
+  const id = crypto.randomUUID();
+  const now = Date.now();
+  await (await aux("api_catalog")).insertOne({
+    _id: id, name, category, url, method, plan, description,
+    active: b.active !== false, createdAt: now, updatedAt: now
+  });
+  return { ok: 1, id };
+};
+
+R["PUT /admin/apis"] = async (req, b) => {
+  needAdmin(req);
+  const id = str(b.id, 64);
+  const name = str(b.name, 50), category = str(b.category, 30);
+  const url = str(b.url, 500), method = str(b.method, 8).toUpperCase();
+  const plan = b.plan === "premium" ? "premium" : "free";
+  const description = str(b.description, 300);
+  if (!id || !name || !category || !/^https:\/\//i.test(url) || !["GET","POST","PUT","DELETE"].includes(method))
+    throw new HttpError(400, "Enter a name, category, HTTPS URL and valid method.");
+  try { new URL(url); } catch { throw new HttpError(400, "Invalid API URL."); }
+  const result = await (await aux("api_catalog")).updateOne({ _id: id }, {
+    $set: { name, category, url, method, plan, description, active: b.active !== false, updatedAt: Date.now() }
+  });
+  if (!result.matchedCount) throw new HttpError(404, "API entry not found.");
+  return { ok: 1 };
+};
+
+R["DELETE /admin/apis"] = async (req, b, q) => {
+  needAdmin(req);
+  const id = str(q.get("id"), 64);
+  const result = await (await aux("api_catalog")).deleteOne({ _id: id });
+  if (!result.deletedCount) throw new HttpError(404, "API entry not found.");
+  return { ok: 1 };
+};
+
 /* ---------- entry ---------- */
 
 export default async function handler(req, res) {
