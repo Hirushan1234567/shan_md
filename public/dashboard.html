@@ -177,6 +177,23 @@
     <label class="field" style="margin-top:18px"><span>WhatsApp Linked Sessions</span></label>
     <div id="admSessions"></div>
 
+    <section class="card" style="margin-top:18px">
+      <h3>API Manager</h3>
+      <p class="muted" style="font-size:12px;margin-bottom:10px">Add and manage API directory entries. Save an HTTPS endpoint, method and plan.</p>
+      <input class="input" id="apiId" type="hidden">
+      <label class="field"><span>API Name</span><input class="input" id="apiName" maxlength="50" placeholder="e.g. Movie Search API"></label>
+      <label class="field"><span>Category</span><input class="input" id="apiCategory" maxlength="30" placeholder="e.g. Movies"></label>
+      <label class="field"><span>Endpoint URL (HTTPS)</span><input class="input" id="apiUrl" type="url" maxlength="500" placeholder="https://api.example.com/v1/search"></label>
+      <div class="grid2" style="margin-top:8px">
+        <label class="field"><span>Method</span><select class="input" id="apiMethod"><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option></select></label>
+        <label class="field"><span>Plan</span><select class="input" id="apiPlan"><option value="free">Free</option><option value="premium">Premium</option></select></label>
+      </div>
+      <label class="field"><span>Description</span><textarea class="input" id="apiDescription" maxlength="300" placeholder="What does this API do?"></textarea></label>
+      <label class="sw"><span>API Active</span><input id="apiActive" type="checkbox" checked></label>
+      <button class="btn" id="apiSave" data-adm="api-save" type="button">Add API</button>
+      <button class="btn ghost" id="apiCancel" data-adm="api-cancel" type="button" hidden>Cancel edit</button>
+      <div id="admApis" style="margin-top:12px"></div>
+    </section>
     <label class="field"><span>Comments</span></label><div id="admCms"></div>
   </div>
   <button class="btn ghost" id="admClose" type="button" style="margin-top:12px">Close</button>
